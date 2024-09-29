@@ -1,15 +1,49 @@
-import {Link} from "react-router-dom";
+import { useState } from 'react';
+import { Link } from "react-router-dom";
+import API from "../../service/service.jsx";
+import { CONFIG_HEADER } from "../../service/config.jsx";
 import LogoAdmin from "../../component/LogoAdmin.jsx";
 
 function Login() {
+    const [userName, setUserName] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (userName === '' || password === '') {
+            setError('All fields are required');
+            return;
+        }
+        const data = {
+            username: userName,
+            password: password,
+        };
+        try {
+            const response = await API.post('/login', data, CONFIG_HEADER);
+            if (response.status === 200) {
+                if(response.data.role === 'SELLER') {
+                    window.location.href = '/';
+                    localStorage.setItem('data', JSON.stringify(response.data));
+                } else {
+                    setError('Username or password is incorrect');
+                }
+            }
+        } catch (error) {
+            console.log(error);
+            setError(error.response?.data?.message || 'An error occurred');
+        }
+    };
+
     return (
         <div className="card">
             <div className="card-body">
-                <LogoAdmin/>
+                <LogoAdmin />
                 <h4 className="mb-2">Welcome to Sneat! 👋</h4>
                 <p className="mb-4">Please sign-in to your account and start the adventure</p>
-
-                <form id="formAuthentication" className="mb-3" action="index.html" method="POST">
+                {error && <p style={{ color: 'red' }}>{error}</p>}
+                <form id="formAuthentication" className="mb-3" onSubmit={handleSubmit}>
                     <div className="mb-3">
                         <label htmlFor="email" className="form-label">Email or Username</label>
                         <input
@@ -19,6 +53,7 @@ function Login() {
                             name="email-username"
                             placeholder="Enter your email or username"
                             autoFocus
+                            onChange={(e) => setUserName(e.target.value)}
                         />
                     </div>
                     <div className="mb-3 form-password-toggle">
@@ -34,15 +69,18 @@ function Login() {
                                 id="password"
                                 className="form-control"
                                 name="password"
-                                placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
+                                placeholder="••••••••"
                                 aria-describedby="password"
+                                onChange={(e) => setPassword(e.target.value)}
                             />
-                            <span className="input-group-text cursor-pointer"><i className="bx bx-hide"></i></span>
+                            <span className="input-group-text cursor-pointer">
+                <i className="bx bx-hide"></i>
+              </span>
                         </div>
                     </div>
                     <div className="mb-3">
                         <div className="form-check">
-                            <input className="form-check-input" type="checkbox" id="remember-me"/>
+                            <input className="form-check-input" type="checkbox" id="remember-me" />
                             <label className="form-check-label" htmlFor="remember-me"> Remember Me </label>
                         </div>
                     </div>
