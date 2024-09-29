@@ -16,8 +16,13 @@ function SideBar() {
             children: [
                 {
                     key: 'layout1',
-                    label: <Link to="/products">List Product</Link>,
+                    label: <Link to="/products">Search Product</Link>,
                     icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>
+                },
+                {
+                    key: 'layout2',
+                    label: <Link to="/products-add">Add Product</Link>,
+                    icon: <i className="menu-icon tf-icons fa-solid fa-plus"></i>
                 }
             ],
         },
@@ -47,30 +52,15 @@ function SideBar() {
             children: [
                 {
                     key: 'login',
-                    label: <Link to="/login" target="_blank">Login</Link>,
+                    label: <Link to="" onClick={() => window.location.href = 'login'}>Login</Link>,
                 },
                 {
                     key: 'register',
-                    label: <Link to="/register" target="_blank">Register</Link>,
+                    label: <Link to="" onClick={() => window.location.href = 'register'}>Register</Link>,
                 },
                 {
                     key: 'forgot-password',
                     label: <Link to="/auth-forgot-password-basic" target="_blank">Forgot Password</Link>,
-                },
-            ],
-        },
-        {
-            key: 'sub5',
-            label: 'Misc',
-            icon: <i className="menu-icon tf-icons bx bx-cube-alt"></i>,
-            children: [
-                {
-                    key: 'error',
-                    label: <Link to="/pages-misc-error">Error</Link>,
-                },
-                {
-                    key: 'under-maintenance',
-                    label: <Link to="/pages-misc-under-maintenance">Under Maintenance</Link>,
                 },
             ],
         },
@@ -85,72 +75,6 @@ function SideBar() {
                     icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>
                 }
             ],
-        },
-        {
-            key: 'extended-ui',
-            label: 'Extended UI',
-            icon: <i className="menu-icon tf-icons bx bx-copy"></i>,
-            children: [
-                {
-                    key: 'perfect-scrollbar',
-                    label: <Link to="/extended-ui-perfect-scrollbar">Perfect Scrollbar</Link>,
-                },
-                {
-                    key: 'text-divider',
-                    label: <Link to="/extended-ui-text-divider">Text Divider</Link>,
-                },
-            ],
-        },
-        {
-            key: 'icons',
-            label: 'Icons',
-            icon: <i className="menu-icon tf-icons bx bx-crown"></i>,
-            children: [
-                {
-                    key: 'boxicons',
-                    label: <Link to="/icons-boxicons">Boxicons</Link>,
-                },
-            ],
-        },
-        {
-            key: 'forms-tables',
-            label: 'Forms & Tables',
-            icon: <i className="menu-icon tf-icons bx bx-detail"></i>,
-            children: [
-                {
-                    key: 'form-elements',
-                    label: 'Form Elements',
-                    children: [
-                        {
-                            key: 'basic-inputs',
-                            label: <Link to="/forms-basic-inputs">Basic Inputs</Link>,
-                        },
-                        {
-                            key: 'input-groups',
-                            label: <Link to="/forms-input-groups">Input Groups</Link>,
-                        },
-                    ],
-                },
-                {
-                    key: 'form-layouts',
-                    label: 'Form Layouts',
-                    children: [
-                        {
-                            key: 'vertical-form',
-                            label: <Link to="/form-layouts-vertical">Vertical Form</Link>,
-                        },
-                        {
-                            key: 'horizontal-form',
-                            label: <Link to="/form-layouts-horizontal">Horizontal Form</Link>,
-                        },
-                    ],
-                },
-            ],
-        },
-        {
-            key: 'tables',
-            label: <Link to="/tables-basic">Tables</Link>,
-            icon: <i className="menu-icon tf-icons bx bx-table"></i>,
         },
         {
             key: 'support',

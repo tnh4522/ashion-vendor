@@ -21,7 +21,6 @@ const columns = [
                 text: 'Electronics',
                 value: 'electronics',
             },
-            // Thêm nhiều danh mục hơn nếu cần
         ],
         width: '20%',
     },

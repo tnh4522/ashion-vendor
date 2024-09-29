@@ -1,14 +1,17 @@
-import { useState } from 'react';
-import { Link } from "react-router-dom";
+import {useState} from 'react';
+import {Link, useNavigate} from "react-router-dom";
 import API from "../../service/service.jsx";
 import { CONFIG_HEADER } from "../../service/config.jsx";
 import LogoAdmin from "../../component/LogoAdmin.jsx";
+import useUserContext from "../../hooks/useUserContext.jsx";
+
 
 function Login() {
     const [userName, setUserName] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-
+    const {setUserData} = useUserContext();
+    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -24,8 +27,9 @@ function Login() {
             const response = await API.post('/login', data, CONFIG_HEADER);
             if (response.status === 200) {
                 if(response.data.role === 'SELLER') {
-                    window.location.href = '/';
+                    setUserData(response.data);
                     localStorage.setItem('data', JSON.stringify(response.data));
+                    navigate('/');
                 } else {
                     setError('Username or password is incorrect');
                 }

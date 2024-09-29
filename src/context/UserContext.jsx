@@ -1,20 +1,29 @@
-import {createContext, useState} from 'react';
+// context/UserContext.jsx
+import { createContext, useState, useEffect } from 'react';
 
 export const UserContext = createContext();
 
-const UserContextProvider = ({children}) => {
+// eslint-disable-next-line react/prop-types
+function UserContextProvider({ children }) {
+    const [userData, setUserData] = useState(null);
 
-        const [user, setUser] = useState(null);
+    useEffect(() => {
+        const data = localStorage.getItem('data');
+        if (data) {
+            setUserData(JSON.parse(data));
+        }
+    }, []);
 
-        const login = (user) => {
-            setUser(user);
-        };
+    const logout = () => {
+        localStorage.removeItem('data');
+        setUserData(null);
+    };
 
-        const logout = () => {
-            setUser(null);
-        };
-
-        return <UserContext.Provider value={{user, login, logout}}>{children}</UserContext.Provider>
+    return (
+        <UserContext.Provider value={{ userData, setUserData, logout }}>
+            {children}
+        </UserContext.Provider>
+    );
 }
 
 export default UserContextProvider;
