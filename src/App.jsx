@@ -10,6 +10,7 @@ import Login from "./page/Authentication/Login.jsx";
 import Register from "./page/Authentication/Register.jsx";
 import Products from "./page/Product/Products.jsx";
 import Users from "./page/User/Users.jsx";
+import AddProduct from "./page/Product/AddProduct.jsx";
 
 
 function App() {
@@ -42,6 +43,7 @@ function App() {
                                     <Route path="/account" element={<ProtectedRoute><Account/></ProtectedRoute>}/>
                                     <Route path="/products" element={<ProtectedRoute><Products/></ProtectedRoute>}/>
                                     <Route path="/users" element={<ProtectedRoute><Users/></ProtectedRoute>}/>
+                                    <Route path="/add-product" element={<ProtectedRoute><AddProduct/></ProtectedRoute>}/>
                                 </Routes>
                             </div>
                             <Footer/>

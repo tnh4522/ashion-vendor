@@ -1,4 +1,4 @@
-import {createContext, useEffect, useState} from "react";
+import {useEffect, useState} from "react";
 import {Link} from "react-router-dom";
 import useUserContext from "../../hooks/useUserContext.jsx";
 import API from "../../service/service.jsx";
@@ -8,7 +8,7 @@ import useNotificationContext from "../../hooks/useNotificationContext.jsx";
 function Account() {
     const {openSuccessNotification, openErrorNotification} = useNotificationContext();
 
-    const {userData} = useUserContext();
+    const {userData, logout} = useUserContext();
 
     const [user, setUser] = useState(null);
 
@@ -44,7 +44,15 @@ function Account() {
                         Authorization: `Bearer ${userData.access}`,
                     },
                 });
+
+                if(response.status === 401) {
+                    openErrorNotification("Unauthorized access");
+                    logout();
+                    return;
+                };
+
                 setUser(response.data);
+                setProfilePictureFile(convertUrl(response.data.profile_picture));
                 setFormData({
                     username: response.data.username || "",
                     email: response.data.email || "",
@@ -75,8 +83,26 @@ function Account() {
         setFormData({...formData, [name]: value});
     };
 
-    const handleFileChange = (e) => {
-        setProfilePictureFile(e.target.files[0]);
+    const handleFileChange = async (e) => {
+        e.preventDefault();
+        try {
+            const formDataToSend = new FormData();
+            formDataToSend.append("username", formData.username);
+            formDataToSend.append("profile_picture", e.target.files[0]);
+
+            const response = await API.put("/me/", formDataToSend, {
+                headers: {
+                    Authorization: `Bearer ${userData.access}`,
+                    "Content-Type": "multipart/form-data",
+                },
+            });
+
+            setProfilePictureFile(convertUrl(response.data.profile_picture));
+            openSuccessNotification("Profile picture updated successfully!");
+        } catch (error) {
+            console.error("Error updating user data:", error);
+            openErrorNotification("Failed to update profile picture.");
+        }
     };
 
     const convertUrl = (url) => {
@@ -119,6 +145,7 @@ function Account() {
             openErrorNotification("Failed to update profile.");
         }
     };
+
     return (
         <div className="container-xxl flex-grow-1 container-p-y">
             <div className="row">
@@ -139,7 +166,7 @@ function Account() {
                             {/* Profile Picture */}
                             <div className="d-flex align-items-start align-items-sm-center gap-4">
                                 <img
-                                    src={user?.profile_picture ? convertUrl(user.profile_picture) : "/img/avatars/avatar-1.jpg"}
+                                    src={profilePictureFile}
                                     alt="user-avatar"
                                     className="d-block rounded"
                                     height="100"
@@ -159,17 +186,6 @@ function Account() {
                                             onChange={handleFileChange}
                                         />
                                     </label>
-                                    <button
-                                        type="button"
-                                        className="btn btn-outline-secondary account-image-reset mb-4"
-                                        onClick={() => {
-                                            setProfilePictureFile(null);
-                                        }}
-                                    >
-                                        <i className="bx bx-reset d-block d-sm-none"></i>
-                                        <span className="d-none d-sm-block">Reset</span>
-                                    </button>
-
                                     <p className="text-muted mb-0">Allowed JPG, GIF or PNG. Max size of 800K</p>
                                 </div>
                             </div>

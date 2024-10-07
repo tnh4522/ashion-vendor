@@ -21,7 +21,7 @@ function SideBar() {
                 },
                 {
                     key: 'layout2',
-                    label: <Link to="/products-add">Add Product</Link>,
+                    label: <Link to="/add-product">Add Product</Link>,
                     icon: <i className="menu-icon tf-icons fa-solid fa-plus"></i>
                 }
             ],
