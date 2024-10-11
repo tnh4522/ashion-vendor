@@ -91,7 +91,7 @@ const Users = () => {
     return (
         <div className="container-xxl flex-grow-1 container-p-y">
             <div className="card">
-                <h5 className="card-header">List Products</h5>
+                <h5 className="card-header">List Customer</h5>
                 <div className="table-responsive text-nowrap">
                     <Table
                         columns={columns}

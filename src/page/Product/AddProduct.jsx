@@ -1,7 +1,13 @@
-import {useState} from 'react';
-import axios from 'axios';
+import {useEffect, useState} from 'react';
+import API from "../../service/service.jsx";
+import useUserContext from "../../hooks/useUserContext.jsx";
+import useNotificationContext from "../../hooks/useNotificationContext.jsx";
+import {useNavigate} from "react-router-dom";
 
 const AddProduct = () => {
+    const {userData, logout} = useUserContext();
+    const {openSuccessNotification, openErrorNotification} = useNotificationContext();
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         name: '',
         sku: '',
@@ -11,7 +17,7 @@ const AddProduct = () => {
         material: '',
         care_instructions: '',
         category: '',
-        tags: '',
+        tags: [],
         price: '',
         sale_price: '',
         start_sale_date: '',
@@ -25,9 +31,6 @@ const AddProduct = () => {
         is_featured: false,
         is_new_arrival: false,
         is_on_sale: false,
-        rating: 0,
-        num_reviews: 0,
-        quantity_sold: 0,
         main_image: null,
         video_url: '',
         meta_title: '',
@@ -38,11 +41,24 @@ const AddProduct = () => {
     const [tags, setTags] = useState([]); // Tags dropdown values
 
     const handleChange = (e) => {
-        const {name, value, type, checked} = e.target;
-        setFormData({
-            ...formData,
-            [name]: type === 'checkbox' ? checked : value,
-        });
+        const {name, value, type, checked, multiple, options} = e.target;
+        if (type === 'checkbox') {
+            setFormData({
+                ...formData,
+                [name]: checked,
+            });
+        } else if (multiple) {
+            const selectedOptions = Array.from(options).filter(option => option.selected).map(option => option.value);
+            setFormData({
+                ...formData,
+                [name]: selectedOptions,
+            });
+        } else {
+            setFormData({
+                ...formData,
+                [name]: value,
+            });
+        }
     };
 
     const handleImageChange = (e) => {
@@ -53,27 +69,69 @@ const AddProduct = () => {
         e.preventDefault();
         const formDataToSend = new FormData();
         Object.keys(formData).forEach((key) => {
-            formDataToSend.append(key, formData[key]);
+            if (formData[key] !== null && formData[key] !== '') {
+                if (key === 'tags') {
+                    formData[key].forEach(tagId => {
+                        formDataToSend.append('tags', tagId);
+                    });
+                } else {
+                    formDataToSend.append(key, formData[key]);
+                }
+            }
         });
 
         try {
-            const response = await axios.post('/api/products/', formDataToSend, {
+            const response = await API.post('products/create/', formDataToSend, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
+                    'Authorization': `Bearer ${userData.access}`,
                 },
             });
-            console.log('Product added successfully:', response.data);
+            if(response.status === 201) {
+                openSuccessNotification('Product added successfully');
+                navigate('/categories');
+            }
         } catch (error) {
+            if (error.response && error.response.status === 401) {
+                openErrorNotification("Unauthorized access");
+                logout();
+                return;
+            }
+            ;
             console.error('There was an error adding the product:', error);
+            openErrorNotification('There was an error adding the product');
         }
     };
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const response = await API.get('categories/');
+                setCategories(response.data.results);
+            } catch (error) {
+                console.error('There was an error fetching the categories:', error);
+            }
+        };
+
+        // const fetchTags = async () => {
+        //     try {
+        //         const response = await API.get('tags/');
+        //         setTags(response.data);
+        //     } catch (error) {
+        //         console.error('There was an error fetching the tags:', error);
+        //     }
+        // };
+
+        fetchCategories();
+        // fetchTags();
+    }, []);
 
     return (
         <div className="container-xxl flex-grow-1 container-p-y">
             <div className="row">
                 <div className="col-md-12">
                     <div className="card mb-4">
-                        <h5 className="card-header">Profile Details</h5>
+                        <h5 className="card-header">Add Product</h5>
                         <hr className="my-0"/>
                         <div className="card-body">
                             <form id="formAddProduct" method="POST" onSubmit={handleSubmit}>
@@ -92,18 +150,42 @@ const AddProduct = () => {
                                         />
                                     </div>
 
-                                    {/* SKU */}
+                                    {/* Category */}
                                     <div className="mb-3 col-md-6">
-                                        <label htmlFor="sku" className="form-label">SKU</label>
-                                        <input
-                                            className="form-control"
-                                            type="text"
-                                            id="sku"
-                                            name="sku"
-                                            value={formData.sku}
+                                        <label htmlFor="category" className="form-label">Category</label>
+                                        <select
+                                            id="category"
+                                            name="category"
+                                            className="form-select"
+                                            value={formData.category}
                                             onChange={handleChange}
-                                            required
-                                        />
+                                        >
+                                            <option value="">Select Category</option>
+                                            {categories.map((category) => (
+                                                <option key={category.id} value={category.id}>
+                                                    {category.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    {/* Tags */}
+                                    <div className="mb-3 col-md-6">
+                                        <label htmlFor="tags" className="form-label">Tags</label>
+                                        <select
+                                            id="tags"
+                                            name="tags"
+                                            className="form-select"
+                                            multiple
+                                            value={formData.tags}
+                                            onChange={handleChange}
+                                        >
+                                            {tags.map((tag) => (
+                                                <option key={tag.id} value={tag.id}>
+                                                    {tag.name}
+                                                </option>
+                                            ))}
+                                        </select>
                                     </div>
 
                                     {/* Barcode */}
@@ -146,23 +228,18 @@ const AddProduct = () => {
                                         ></textarea>
                                     </div>
 
-                                    {/* Category */}
+                                    {/* SKU */}
                                     <div className="mb-3 col-md-6">
-                                        <label htmlFor="category" className="form-label">Category</label>
-                                        <select
-                                            id="category"
-                                            name="category"
-                                            className="form-select"
-                                            value={formData.category}
+                                        <label htmlFor="sku" className="form-label">SKU</label>
+                                        <input
+                                            className="form-control"
+                                            type="text"
+                                            id="sku"
+                                            name="sku"
+                                            value={formData.sku}
                                             onChange={handleChange}
-                                        >
-                                            <option value="">Select Category</option>
-                                            {categories.map((category) => (
-                                                <option key={category.id} value={category.id}>
-                                                    {category.name}
-                                                </option>
-                                            ))}
-                                        </select>
+                                            required
+                                        />
                                     </div>
 
                                     {/* Price */}
@@ -176,6 +253,45 @@ const AddProduct = () => {
                                             value={formData.price}
                                             onChange={handleChange}
                                             required
+                                        />
+                                    </div>
+
+                                    {/* Sale Price */}
+                                    <div className="mb-3 col-md-6">
+                                        <label htmlFor="sale_price" className="form-label">Sale Price</label>
+                                        <input
+                                            className="form-control"
+                                            type="number"
+                                            id="sale_price"
+                                            name="sale_price"
+                                            value={formData.sale_price}
+                                            onChange={handleChange}
+                                        />
+                                    </div>
+
+                                    {/* Start Sale Date */}
+                                    <div className="mb-3 col-md-6">
+                                        <label htmlFor="start_sale_date" className="form-label">Start Sale Date</label>
+                                        <input
+                                            className="form-control"
+                                            type="date"
+                                            id="start_sale_date"
+                                            name="start_sale_date"
+                                            value={formData.start_sale_date}
+                                            onChange={handleChange}
+                                        />
+                                    </div>
+
+                                    {/* End Sale Date */}
+                                    <div className="mb-3 col-md-6">
+                                        <label htmlFor="end_sale_date" className="form-label">End Sale Date</label>
+                                        <input
+                                            className="form-control"
+                                            type="date"
+                                            id="end_sale_date"
+                                            name="end_sale_date"
+                                            value={formData.end_sale_date}
+                                            onChange={handleChange}
                                         />
                                     </div>
 
@@ -193,6 +309,93 @@ const AddProduct = () => {
                                         />
                                     </div>
 
+                                    {/* Weight */}
+                                    <div className="mb-3 col-md-6">
+                                        <label htmlFor="weight" className="form-label">Weight (kg)</label>
+                                        <input
+                                            className="form-control"
+                                            type="number"
+                                            step="0.01"
+                                            id="weight"
+                                            name="weight"
+                                            value={formData.weight}
+                                            onChange={handleChange}
+                                        />
+                                    </div>
+
+                                    {/* Dimensions */}
+                                    <div className="mb-3 col-md-6">
+                                        <label htmlFor="dimensions" className="form-label">Dimensions</label>
+                                        <input
+                                            className="form-control"
+                                            type="text"
+                                            id="dimensions"
+                                            name="dimensions"
+                                            value={formData.dimensions}
+                                            onChange={handleChange}
+                                        />
+                                    </div>
+
+                                    {/* Sizes */}
+                                    <div className="mb-3 col-md-6">
+                                        <label htmlFor="sizes" className="form-label">Sizes (comma-separated)</label>
+                                        <input
+                                            className="form-control"
+                                            type="text"
+                                            id="sizes"
+                                            name="sizes"
+                                            value={formData.sizes}
+                                            onChange={handleChange}
+                                        />
+                                    </div>
+
+                                    {/* Colors */}
+                                    <div className="mb-3 col-md-6">
+                                        <label htmlFor="colors" className="form-label">Colors (comma-separated)</label>
+                                        <input
+                                            className="form-control"
+                                            type="text"
+                                            id="colors"
+                                            name="colors"
+                                            value={formData.colors}
+                                            onChange={handleChange}
+                                        />
+                                    </div>
+
+                                    {/* Status */}
+                                    <div className="mb-3 col-md-6">
+                                        <label htmlFor="status" className="form-label">Status</label>
+                                        <select
+                                            id="status"
+                                            name="status"
+                                            className="form-select"
+                                            value={formData.status}
+                                            onChange={handleChange}
+                                        >
+                                            <option value="ACTIVE">Active</option>
+                                            <option value="INACTIVE">Inactive</option>
+                                            <option value="DRAFT">Draft</option>
+                                        </select>
+                                    </div>
+
+                                    {/* Is Featured */}
+                                    <div className="mb-3 col-md-6">
+                                        <label className="form-label">Is Featured</label>
+                                        <div className="form-check">
+                                            <input
+                                                className="form-check-input"
+                                                type="checkbox"
+                                                id="is_featured"
+                                                name="is_featured"
+                                                checked={formData.is_featured}
+                                                onChange={handleChange}
+                                            />
+                                            <label className="form-check-label" htmlFor="is_featured">
+                                                Featured Product
+                                            </label>
+                                        </div>
+                                    </div>
+
                                     {/* Main Image */}
                                     <div className="mb-3 col-md-6">
                                         <label htmlFor="main_image" className="form-label">Main Image</label>
@@ -201,6 +404,7 @@ const AddProduct = () => {
                                             type="file"
                                             id="main_image"
                                             name="main_image"
+                                            accept="image/*"
                                             onChange={handleImageChange}
                                         />
                                     </div>

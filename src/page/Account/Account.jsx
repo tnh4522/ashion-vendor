@@ -111,6 +111,11 @@ function Account() {
             openSuccessNotification("Profile picture updated successfully!");
         } catch (error) {
             console.error("Error updating user data:", error);
+            if(error.status === 401) {
+                openErrorNotification("Unauthorized access");
+                logout();
+                return;
+            };
             openErrorNotification("Failed to update profile picture.");
         }
     };

@@ -48,7 +48,6 @@ function App() {
                                     <Route path="/add-category" element={<ProtectedRoute><AddCategory/></ProtectedRoute>}/>
                                 </Routes>
                             </div>
-                            <Footer/>
                         </div>
                         <div className="layout-overlay layout-menu-toggle"></div>
                     </div>
