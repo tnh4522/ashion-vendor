@@ -16,6 +16,8 @@ function Account() {
         username: "",
         email: "",
         phone_number: "",
+        first_name: "",
+        last_name: "",
         date_of_birth: "",
         gender: "",
         bio: "",
@@ -45,7 +47,8 @@ function Account() {
                     },
                 });
 
-                if(response.status === 401) {
+
+                if(response.status === 401 || response.code == 'token_not_valid') {
                     openErrorNotification("Unauthorized access");
                     logout();
                     return;
@@ -57,6 +60,8 @@ function Account() {
                     username: response.data.username || "",
                     email: response.data.email || "",
                     phone_number: response.data.phone_number || "",
+                    first_name: response.data.first_name || "",
+                    last_name: response.data.last_name || "",
                     date_of_birth: response.data.date_of_birth || "",
                     gender: response.data.gender || "",
                     bio: response.data.bio || "",
@@ -70,6 +75,11 @@ function Account() {
                 });
             } catch (error) {
                 console.error("Error fetching user data:", error);
+                if(error.status === 401) {
+                    openErrorNotification("Unauthorized access");
+                    logout();
+                    return;
+                };
             }
         };
 
@@ -116,6 +126,8 @@ function Account() {
             formDataToSend.append("username", formData.username);
             formDataToSend.append("email", formData.email);
             formDataToSend.append("phone_number", formData.phone_number);
+            formDataToSend.append("first_name", formData.first_name);
+            formDataToSend.append("last_name", formData.last_name);
             formDataToSend.append("date_of_birth", formData.date_of_birth);
             formDataToSend.append("gender", formData.gender);
             formDataToSend.append("bio", formData.bio);
@@ -127,7 +139,7 @@ function Account() {
                 formDataToSend.append("preferences", JSON.stringify(formData.preferences));
             }
 
-            if (profilePictureFile) {
+            if (profilePictureFile instanceof File) {
                 formDataToSend.append("profile_picture", profilePictureFile);
             }
 
@@ -240,6 +252,30 @@ function Account() {
                                             id="date_of_birth"
                                             name="date_of_birth"
                                             value={formData.date_of_birth}
+                                            onChange={handleInputChange}
+                                        />
+                                    </div>
+                                    {/* First Name */}
+                                    <div className="mb-3 col-md-6">
+                                        <label htmlFor="first_name" className="form-label">First Name</label>
+                                        <input
+                                            className="form-control"
+                                            type="text"
+                                            id="first_name"
+                                            name="first_name"
+                                            value={formData.first_name}
+                                            onChange={handleInputChange}
+                                        />
+                                    </div>
+                                    {/* Last Name */}
+                                    <div className="mb-3 col-md-6">
+                                        <label htmlFor="last_name" className="form-label">Last Name</label>
+                                        <input
+                                            className="form-control"
+                                            type="text"
+                                            id="last_name"
+                                            name="last_name"
+                                            value={formData.last_name}
                                             onChange={handleInputChange}
                                         />
                                     </div>

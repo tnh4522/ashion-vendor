@@ -1,5 +1,4 @@
 import SideBar from "./layout/SideBar.jsx";
-import SearchBar from "./component/SearchBar.jsx";
 import Footer from "./layout/Footer.jsx";
 import UserContextProvider from "./context/UserContext.jsx";
 import {Route, Routes, useLocation} from "react-router-dom";
@@ -36,7 +35,6 @@ function App() {
                     <div className="layout-container">
                         <SideBar/>
                         <div className="layout-page">
-                            <SearchBar/>
                             <div className="content-wrapper">
                                 <Routes>
                                     <Route path="/" element={<ProtectedRoute><Dashboard/></ProtectedRoute>}/>

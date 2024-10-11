@@ -1,6 +1,8 @@
 import {Link} from "react-router-dom";
+import useUserContext from "../hooks/useUserContext.jsx";
 
 function SerachBar() {
+    const {logout} = useUserContext();
     return (
         <nav
             className="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme"
@@ -85,7 +87,7 @@ function SerachBar() {
                                 <div className="dropdown-divider"></div>
                             </li>
                             <li>
-                                <a className="dropdown-item" href="">
+                                <a className="dropdown-item" href="#" onClick={logout}>
                                     <i className="bx bx-power-off me-2"></i>
                                     <span className="align-middle">Log Out</span>
                                 </a>

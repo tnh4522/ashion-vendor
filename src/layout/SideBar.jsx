@@ -1,8 +1,10 @@
 import {Menu} from 'antd';
 import {Link} from 'react-router-dom';
 import LogoAdmin from "../component/LogoAdmin.jsx";
+import useUserContext from "../hooks/useUserContext.jsx";
 
 function SideBar() {
+    const {logout} = useUserContext();
     const items = [
         {
             key: 'sub1',
@@ -23,6 +25,18 @@ function SideBar() {
                     key: 'layout2',
                     label: <Link to="/add-product">Add Product</Link>,
                     icon: <i className="menu-icon tf-icons fa-solid fa-plus"></i>
+                }
+            ],
+        },
+        {
+            key: 'customers',
+            label: 'Customers',
+            icon: <i className="menu-icon tf-icons fa-regular fa-user"></i>,
+            children: [
+                {
+                    key: 'list-customer',
+                    label: <Link to="/users">List Customer</Link>,
+                    icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>
                 }
             ],
         },
@@ -49,32 +63,6 @@ function SideBar() {
             key: 'sub4',
             label: 'Authentications',
             icon: <i className="menu-icon tf-icons bx bx-lock-open-alt"></i>,
-            children: [
-                {
-                    key: 'login',
-                    label: <Link to="" onClick={() => window.location.href = 'login'}>Login</Link>,
-                },
-                {
-                    key: 'register',
-                    label: <Link to="" onClick={() => window.location.href = 'register'}>Register</Link>,
-                },
-                {
-                    key: 'forgot-password',
-                    label: <Link to="/auth-forgot-password-basic" target="_blank">Forgot Password</Link>,
-                },
-            ],
-        },
-        {
-            key: 'users',
-            label: 'Users',
-            icon: <i className="menu-icon tf-icons fa-regular fa-user"></i>,
-            children: [
-                {
-                    key: 'listUser',
-                    label: <Link to="/users">List User</Link>,
-                    icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>
-                }
-            ],
         },
         {
             key: 'support',
@@ -88,6 +76,11 @@ function SideBar() {
                          target="_blank">Documentation</Link>,
             icon: <i className="menu-icon tf-icons bx bx-file"></i>,
         },
+        {
+            key: 'logout',
+            label: <Link to="#" onClick={logout}>Log Out</Link>,
+            icon: <i className="bx bx-power-off me-2"></i>,
+        }
     ];
     return (
         <aside id="layout-menu" className="layout-menu menu-vertical menu bg-menu-theme">
