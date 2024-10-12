@@ -89,7 +89,7 @@ const AddProduct = () => {
             });
             if(response.status === 201) {
                 openSuccessNotification('Product added successfully');
-                navigate('/categories');
+                navigate('/products');
             }
         } catch (error) {
             if (error.response && error.response.status === 401) {

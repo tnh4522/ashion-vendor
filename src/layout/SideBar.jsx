@@ -31,7 +31,7 @@ function SideBar() {
         {
             key: 'sub2',
             label: 'Products',
-            icon: <i className="menu-icon tf-icons bx bx-layout"></i>,
+            icon: <i className="menu-icon tf-icons fa-solid fa-boxes-stacked"></i>,
             children: [
                 {
                     key: 'layout1',
@@ -47,34 +47,42 @@ function SideBar() {
         },
         {
             key: 'customers',
+            label: 'Employee',
+            icon: <i className="menu-icon tf-icons fa-solid fa-users"></i>,
+            children: [
+                {
+                    key: 'list-emloyee',
+                    label: <Link to="/users">List Employee</Link>,
+                    icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>,
+                },
+                {
+                    key: 'add-employee',
+                    label: <Link to="/add-user">Add Employee</Link>,
+                    icon: <i className="menu-icon tf-icons fa-solid fa-plus"></i>
+                }
+            ],
+        },
+        {
+            key: 'customers',
             label: 'Customers',
-            icon: <i className="menu-icon tf-icons fa-regular fa-user"></i>,
+            icon: <i className="menu-icon tf-icons fa-solid fa-address-book"></i>,
             children: [
                 {
                     key: 'list-customer',
                     label: <Link to="/users">List Customer</Link>,
                     icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>
+                },
+                {
+                    key: 'add-customer',
+                    label: <Link to="/add-user">Add Customer</Link>,
+                    icon: <i className="menu-icon tf-icons fa-solid fa-plus"></i>
                 }
             ],
         },
         {
             key: 'sub3',
-            label: 'Account Settings',
-            icon: <i className="menu-icon tf-icons bx bx-dock-top"></i>,
-            children: [
-                {
-                    key: 'account',
-                    label: <Link to="/account">Account</Link>,
-                },
-                {
-                    key: 'notifications',
-                    label: <Link to="/pages-account-settings-notifications">Notifications</Link>,
-                },
-                {
-                    key: 'connections',
-                    label: <Link to="/pages-account-settings-connections">Connections</Link>,
-                },
-            ],
+            label: <Link to="/account">Account Settings</Link>,
+            icon: <i className="menu-icon tf-icons fa-solid fa-address-card"></i>,
         },
         {
             key: 'sub4',
@@ -96,7 +104,7 @@ function SideBar() {
         {
             key: 'logout',
             label: <Link to="#" onClick={logout}>Log Out</Link>,
-            icon: <i className="bx bx-power-off me-2"></i>,
+            icon: <i className="menu-icon bx bx-power-off me-2"></i>,
         }
     ];
     return (

@@ -1,5 +1,5 @@
-import {useEffect, useState} from 'react';
-import {Table} from 'antd';
+import { useEffect, useState } from 'react';
+import { Table } from 'antd';
 import API from "../../service/service.jsx";
 
 const Categories = () => {
@@ -7,6 +7,23 @@ const Categories = () => {
     const [loading, setLoading] = useState(false);
 
     const columns = [
+        {
+            title: 'Image',
+            dataIndex: 'image_url',
+            key: 'image',
+            width: '10%',
+            render: (text, record) => (
+                record.image? (
+                    <img
+                        src={convertUrl(record.image)}
+                        alt={record.name}
+                        style={{ width: '50px', height: '50px', objectFit: 'cover' }}
+                    />
+                ) : (
+                    <div style={{ width: '50px', height: '50px', backgroundColor: '#f0f0f0' }} />
+                )
+            ),
+        },
         {
             title: 'Name',
             dataIndex: 'name',
@@ -34,12 +51,16 @@ const Categories = () => {
             dataIndex: '',
             render: () => (
                 <span>
-                    <i className="fa-solid fa-pen-to-square" style={{marginRight: '10px'}}></i>
+                    <i className="fa-solid fa-pen-to-square" style={{ marginRight: '10px' }}></i>
                     <i className="fa-solid fa-trash"></i>
                 </span>
             ),
         }
     ];
+
+    const convertUrl = (url) => {
+        return url.replace("/media/", "/api/static/");
+    }
 
     useEffect(() => {
         const fetchCategories = async () => {
@@ -61,7 +82,7 @@ const Categories = () => {
         <div className="container-xxl flex-grow-1 container-p-y">
             <div className="card">
                 <h5 className="card-header">List Categories</h5>
-                <div className="table-responsive text-nowrap" style={{padding: '20px'}}>
+                <div className="table-responsive text-nowrap" style={{ padding: '20px' }}>
                     <Table
                         columns={columns}
                         dataSource={data}
@@ -70,7 +91,7 @@ const Categories = () => {
                     />
                 </div>
             </div>
-            <hr className="my-5"/>
+            <hr className="my-5" />
         </div>
     );
 };

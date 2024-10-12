@@ -1,5 +1,4 @@
 import {useEffect, useState} from "react";
-import {Link} from "react-router-dom";
 import useUserContext from "../../hooks/useUserContext.jsx";
 import API from "../../service/service.jsx";
 import useNotificationContext from "../../hooks/useNotificationContext.jsx";
@@ -167,15 +166,6 @@ function Account() {
         <div className="container-xxl flex-grow-1 container-p-y">
             <div className="row">
                 <div className="col-md-12">
-                    {/* Navigation Tabs */}
-                    <ul className="nav nav-pills flex-column flex-md-row mb-3">
-                        <li className="nav-item">
-                            <Link className="nav-link active" to="/account">
-                                <i className="bx bx-user me-1"></i> Account
-                            </Link>
-                        </li>
-                        {/* Other tabs */}
-                    </ul>
                     {/* Profile Details */}
                     <div className="card mb-4">
                         <h5 className="card-header">Profile Details</h5>
@@ -222,6 +212,7 @@ function Account() {
                                             name="username"
                                             value={formData.username}
                                             onChange={handleInputChange}
+                                            disabled={true}
                                         />
                                     </div>
                                     {/* Email */}
@@ -234,6 +225,7 @@ function Account() {
                                             name="email"
                                             value={formData.email}
                                             onChange={handleInputChange}
+                                            disabled={true}
                                         />
                                     </div>
                                     {/* Phone Number */}
