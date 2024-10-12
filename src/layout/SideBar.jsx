@@ -77,6 +77,18 @@ function SideBar() {
             ],
         },
         {
+            key: 'customers',
+            label: 'Customers',
+            icon: <i className="menu-icon tf-icons far fa-user-circle"></i>,
+            children: [
+                {
+                    key: 'listCustomers',
+                    label: <Link to="/customers">List Customers</Link>,
+                    icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>
+                }
+            ],
+        },
+        {
             key: 'support',
             label: <Link to="https://github.com/themeselection/sneat-html-admin-template-free/issues"
                          target="_blank">Support</Link>,
