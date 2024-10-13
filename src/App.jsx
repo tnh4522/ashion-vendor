@@ -11,6 +11,8 @@ import AddProduct from "./page/Product/AddProduct.jsx";
 import Categories from "./page/Category/Categories.jsx";
 import AddCategory from "./page/Category/AddCategory.jsx";
 import Customers from "./page/Customer/Customers.jsx";
+import Users from "./page/User/Users.jsx";
+import AddUser from "./page/User/AddUser.jsx";
 
 
 function App() {
@@ -45,6 +47,8 @@ function App() {
                                     <Route path="/add-product" element={<ProtectedRoute><AddProduct/></ProtectedRoute>}/>
                                     <Route path="/categories" element={<ProtectedRoute><Categories/></ProtectedRoute>}/>
                                     <Route path="/add-category" element={<ProtectedRoute><AddCategory/></ProtectedRoute>}/>
+                                    <Route path="/users" element={<ProtectedRoute><Users/></ProtectedRoute>}/>
+                                    <Route path="/add-user" element={<ProtectedRoute><AddUser/></ProtectedRoute>}/>
                                 </Routes>
                             </div>
                         </div>

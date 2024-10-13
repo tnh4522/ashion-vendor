@@ -46,18 +46,18 @@ function SideBar() {
             ],
         },
         {
-            key: 'customers',
-            label: 'Employee',
+            key: 'users',
+            label: 'Users',
             icon: <i className="menu-icon tf-icons fa-solid fa-users"></i>,
             children: [
                 {
-                    key: 'list-emloyee',
-                    label: <Link to="/users">List Employee</Link>,
+                    key: 'list-user',
+                    label: <Link to="/users">List User</Link>,
                     icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>,
                 },
                 {
-                    key: 'add-employee',
-                    label: <Link to="/add-user">Add Employee</Link>,
+                    key: 'add-user',
+                    label: <Link to="/add-user">Add User</Link>,
                     icon: <i className="menu-icon tf-icons fa-solid fa-plus"></i>
                 }
             ],
@@ -69,12 +69,12 @@ function SideBar() {
             children: [
                 {
                     key: 'list-customer',
-                    label: <Link to="/users">List Customer</Link>,
+                    label: <Link to="/customers">List Customer</Link>,
                     icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>
                 },
                 {
                     key: 'add-customer',
-                    label: <Link to="/add-user">Add Customer</Link>,
+                    label: <Link to="/add-customer">Add Customer</Link>,
                     icon: <i className="menu-icon tf-icons fa-solid fa-plus"></i>
                 }
             ],
