@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Table } from 'antd';
 import API from "../../service/service.jsx";
+import useUserContext from "../../hooks/useUserContext.jsx";
 
 const Categories = () => {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
+    const {logout} = useUserContext();
 
     const columns = [
         {
@@ -69,6 +71,10 @@ const Categories = () => {
                 const response = await API.get('categories/');
                 setData(response.data.results);
             } catch (error) {
+                if(error.status === 401) {
+                    logout();
+                    return;
+                };
                 console.error('There was an error fetching the categories:', error);
             } finally {
                 setLoading(false);

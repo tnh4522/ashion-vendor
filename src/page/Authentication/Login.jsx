@@ -26,7 +26,7 @@ function Login() {
         try {
             const response = await API.post('/login', data, CONFIG_HEADER);
             if (response.status === 200) {
-                if(response.data.role === 'SELLER') {
+                if(response.data.role === 'SELLER' || response.data.role === 'ADMIN') {
                     setUserData(response.data);
                     localStorage.setItem('data', JSON.stringify(response.data));
                     navigate('/');

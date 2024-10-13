@@ -1,5 +1,4 @@
 import SideBar from "./layout/SideBar.jsx";
-import Footer from "./layout/Footer.jsx";
 import UserContextProvider from "./context/UserContext.jsx";
 import {Route, Routes, useLocation} from "react-router-dom";
 import ProtectedRoute from "./page/Authentication/ProtectedRoute.jsx";
@@ -8,10 +7,10 @@ import Account from "./page/Account/Account.jsx";
 import Login from "./page/Authentication/Login.jsx";
 import Register from "./page/Authentication/Register.jsx";
 import Products from "./page/Product/Products.jsx";
-import Users from "./page/User/Users.jsx";
 import AddProduct from "./page/Product/AddProduct.jsx";
 import Categories from "./page/Category/Categories.jsx";
 import AddCategory from "./page/Category/AddCategory.jsx";
+import Customers from "./page/Customer/Customers.jsx";
 
 
 function App() {
@@ -42,7 +41,7 @@ function App() {
                                     <Route path="/" element={<ProtectedRoute><Dashboard/></ProtectedRoute>}/>
                                     <Route path="/account" element={<ProtectedRoute><Account/></ProtectedRoute>}/>
                                     <Route path="/products" element={<ProtectedRoute><Products/></ProtectedRoute>}/>
-                                    <Route path="/users" element={<ProtectedRoute><Users/></ProtectedRoute>}/>
+                                    <Route path="/customers" element={<ProtectedRoute><Customers/></ProtectedRoute>}/>
                                     <Route path="/add-product" element={<ProtectedRoute><AddProduct/></ProtectedRoute>}/>
                                     <Route path="/categories" element={<ProtectedRoute><Categories/></ProtectedRoute>}/>
                                     <Route path="/add-category" element={<ProtectedRoute><AddCategory/></ProtectedRoute>}/>
