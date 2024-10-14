@@ -2,6 +2,7 @@ import {useState} from 'react';
 import API from '../../service/service';
 import useUserContext from '../../hooks/useUserContext';
 import useNotificationContext from '../../hooks/useNotificationContext';
+import {useNavigate} from "react-router-dom";
 
 function AddUser() {
     const {userData} = useUserContext();
@@ -22,6 +23,7 @@ function AddUser() {
         preferences: '',
     });
     const [loading, setLoading] = useState(false);
+    const navigator = useNavigate();
 
     const handleInputChange = (e) => {
         const {name, value} = e.target;
@@ -113,10 +115,10 @@ function AddUser() {
                 instagram: '',
                 preferences: '',
             });
+            navigator('/users');
         } catch (error) {
             console.error('Error creating user:', error);
             if (error.response && error.response.data) {
-                // Handle validation errors
                 const errorMessages = Object.entries(error.response.data)
                     .map(([field, messages]) => `${field}: ${messages.join(' ')}`)
                     .join(' ');

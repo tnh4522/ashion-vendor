@@ -13,6 +13,7 @@ import AddCategory from "./page/Category/AddCategory.jsx";
 import Customers from "./page/Customer/Customers.jsx";
 import Users from "./page/User/Users.jsx";
 import AddUser from "./page/User/AddUser.jsx";
+import UserDetail from "./page/User/UserDetail.jsx";
 
 
 function App() {
@@ -49,6 +50,7 @@ function App() {
                                     <Route path="/add-category" element={<ProtectedRoute><AddCategory/></ProtectedRoute>}/>
                                     <Route path="/users" element={<ProtectedRoute><Users/></ProtectedRoute>}/>
                                     <Route path="/add-user" element={<ProtectedRoute><AddUser/></ProtectedRoute>}/>
+                                    <Route path="/user-detail/:id" element={<ProtectedRoute><UserDetail/></ProtectedRoute>}/>
                                 </Routes>
                             </div>
                         </div>
