@@ -10,6 +10,7 @@ const AddProduct = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         name: '',
+        user: userData.id,
         sku: '',
         barcode: '',
         brand: '',

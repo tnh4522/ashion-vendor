@@ -4,60 +4,99 @@ import API from '../../service/service';
 import useUserContext from '../../hooks/useUserContext';
 import useNotificationContext from '../../hooks/useNotificationContext';
 import {Link} from "react-router-dom";
-
-const columns = [
-    {
-        title: 'Username',
-        dataIndex: 'username',
-        sorter: true,
-        width: '20%',
-    },
-    {
-        title: 'First Name',
-        dataIndex: 'first_name',
-        sorter: true,
-        width: '15%',
-    },
-    {
-        title: 'Last Name',
-        dataIndex: 'last_name',
-        sorter: true,
-        width: '15%',
-    },
-    {
-        title: 'Email',
-        dataIndex: 'email',
-        sorter: true,
-        width: '25%',
-    },
-    {
-        title: 'Role',
-        dataIndex: 'role',
-        filters: [
-            {text: 'Admin', value: 'ADMIN'},
-            {text: 'Manager', value: 'MANAGER'},
-            {text: 'Staff', value: 'STAFF'},
-            {text: 'Seller', value: 'SELLER'},
-            {text: 'Buyer', value: 'BUYER'},
-        ],
-        width: '15%',
-    },
-    {
-        title: 'Action',
-        dataIndex: 'id',
-        width: '10%',
-        render: (id) => (
-            <span>
-                    <Link to={`/user-detail/${id}`}><i className="fa-solid fa-pen-to-square" style={{marginRight: '10px'}}></i></Link>
-                    <i className="fa-solid fa-trash"></i>
-            </span>
-        ),
-    }
-];
+import {Modal} from 'antd';
+import {ExclamationCircleFilled} from "@ant-design/icons";
 
 const Users = () => {
+    const {confirm} = Modal;
+
+    const handleDelete = (id) => {
+        const response = API.delete(`user/${id}/`, {
+            headers: {
+                'Authorization': `Bearer ${userData.access}`,
+            }
+        });
+
+        fetchData();
+        openSuccessNotification('User deleted successfully.');
+        return true;
+    }
+
+    const showPromiseConfirm = (id) => {
+        confirm({
+            title: 'Do you want to delete these users?',
+            icon: <ExclamationCircleFilled/>,
+            content: 'Confirm to delete these users, this action cannot be undone.',
+            okText: 'Confirm',
+            okType: 'danger',
+            onOk() {
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        handleDelete(id) ? resolve() : reject();
+                    }, 1000);
+                }).catch(() =>
+                    openErrorNotification('Error deleting user.')
+                );
+            },
+            onCancel() {
+            },
+        });
+    };
+
+    const columns = [
+        {
+            title: 'Username',
+            dataIndex: 'username',
+            sorter: true,
+            width: '20%',
+        },
+        {
+            title: 'First Name',
+            dataIndex: 'first_name',
+            sorter: true,
+            width: '15%',
+        },
+        {
+            title: 'Last Name',
+            dataIndex: 'last_name',
+            sorter: true,
+            width: '15%',
+        },
+        {
+            title: 'Email',
+            dataIndex: 'email',
+            sorter: true,
+            width: '25%',
+        },
+        {
+            title: 'Role',
+            dataIndex: 'role',
+            filters: [
+                {text: 'Admin', value: 'ADMIN'},
+                {text: 'Manager', value: 'MANAGER'},
+                {text: 'Staff', value: 'STAFF'},
+                {text: 'Seller', value: 'SELLER'},
+                {text: 'Buyer', value: 'BUYER'},
+            ],
+            width: '15%',
+        },
+        {
+            title: 'Action',
+            dataIndex: 'id',
+            width: '10%',
+            render: (id) => (
+                <span>
+                    <Link to={`/user-detail/${id}`}><i className="fa-solid fa-pen-to-square"
+                                                       style={{marginRight: '10px'}}></i></Link>
+                    <i className="fa-solid fa-trash" style={{cursor: 'pointer'}}
+                       onClick={() => showPromiseConfirm(id)}></i>
+            </span>
+            ),
+        }
+    ];
+
     const {userData, logout} = useUserContext();
-    const {openErrorNotification} = useNotificationContext();
+    const {openSuccessNotification, openErrorNotification} = useNotificationContext();
 
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -134,6 +173,7 @@ const Users = () => {
             sorter,
         });
     };
+
 
     return (
         <div className="container-xxl flex-grow-1 container-p-y">

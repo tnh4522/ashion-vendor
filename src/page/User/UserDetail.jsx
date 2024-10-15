@@ -2,14 +2,16 @@ import {useEffect, useState} from "react";
 import useUserContext from "../../hooks/useUserContext.jsx";
 import API from "../../service/service.jsx";
 import useNotificationContext from "../../hooks/useNotificationContext.jsx";
-import {Tabs} from 'antd';
+import {Tabs, Input} from 'antd';
 import Permission from "../User/Permission.jsx";
-import {Link, useParams} from "react-router-dom";
+import {Link, useNavigate, useParams} from "react-router-dom";
+import {EyeInvisibleOutlined, EyeTwoTone} from "@ant-design/icons";
 
 function UserDetail() {
     const {openSuccessNotification, openErrorNotification} = useNotificationContext();
 
     const {userData, logout} = useUserContext();
+    const navigator = useNavigate();
 
     const [user, setUser] = useState(null);
     const user_id = useParams().id;
@@ -161,9 +163,34 @@ function UserDetail() {
 
             setUser(response.data);
             openSuccessNotification("Profile updated successfully!");
+            navigator("/users");
         } catch (error) {
             console.error("Error updating user data:", error);
             openErrorNotification("Failed to update profile.");
+        }
+    };
+
+    const handleAddPermission = async (permission) => {
+        try {
+            if (user.permissions.includes(permission)) {
+                openErrorNotification("This permission is already installed. Please try again.");
+                return;
+            }
+
+            const response = await API.post(`/user/${user_id}/add_permission/`, {permission}, {
+                headers: {
+                    Authorization: `Bearer ${userData.access}`,
+                },
+            });
+
+            setUser((prevUser) => ({
+                ...prevUser,
+                permissions: [...prevUser.permissions, permission],
+            }));
+            openSuccessNotification("Permission added successfully!");
+        } catch (error) {
+            console.error("Error adding permission:", error);
+            openErrorNotification("Failed to add permission.");
         }
     };
 
@@ -338,7 +365,7 @@ function UserDetail() {
                                 {
                                     label: 'Permission',
                                     key: '2',
-                                    children: <Permission user={user}/>
+                                    children: <Permission user={user} onAddPermission={handleAddPermission}/>
                                 },
                                 {
                                     label: 'Account Manager',
@@ -358,7 +385,7 @@ function UserDetail() {
                                                             name="username"
                                                             value={formData.username}
                                                             onChange={handleInputChange}
-                                                            disabled={true}
+                                                            readOnly
                                                         />
                                                     </div>
                                                     {/* Email */}
@@ -371,7 +398,19 @@ function UserDetail() {
                                                             name="email"
                                                             value={formData.email}
                                                             onChange={handleInputChange}
-                                                            disabled={true}
+                                                            readOnly
+                                                        />
+                                                    </div>
+                                                    {/* Password */}
+                                                    <div className="mb-3 col-md-6">
+                                                        <label htmlFor="password"
+                                                               className="form-label">Password</label>
+                                                        <Input.Password
+                                                            style={{padding: '0.5rem 0.75rem'}}
+                                                            placeholder="input password"
+                                                            iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
+                                                            value={formData.email}
+                                                            readOnly
                                                         />
                                                     </div>
                                                 </div>
