@@ -1,7 +1,6 @@
 import {Link} from "react-router-dom";
 
 function LogoAdmin() {
-    document.title = "Login | Ashion";
     const href = window.location.href;
     return (
         <div
@@ -62,7 +61,7 @@ function LogoAdmin() {
                       </g>
                     </svg>
                   </span>
-                <span className="app-brand-text demo text-body fw-bolder">Ashion Vendor</span>
+                <span className="app-brand-text demo text-body fw-bolder">Vendor</span>
             </Link>
         </div>
     );

@@ -2,15 +2,19 @@ import {useEffect, useState} from "react";
 import useUserContext from "../../hooks/useUserContext.jsx";
 import API from "../../service/service.jsx";
 import useNotificationContext from "../../hooks/useNotificationContext.jsx";
-import {Tabs} from 'antd';
+import {Tabs, Input} from 'antd';
 import Permission from "../User/Permission.jsx";
+import {Link, useNavigate, useParams} from "react-router-dom";
+import {EyeInvisibleOutlined, EyeTwoTone} from "@ant-design/icons";
 
-function Account() {
+function UserDetail() {
     const {openSuccessNotification, openErrorNotification} = useNotificationContext();
 
     const {userData, logout} = useUserContext();
+    const navigator = useNavigate();
 
     const [user, setUser] = useState(null);
+    const user_id = useParams().id;
 
     const [formData, setFormData] = useState({
         username: "",
@@ -41,12 +45,11 @@ function Account() {
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                const response = await API.get("/me/", {
+                const response = await API.get("/user/" + user_id + "/", {
                     headers: {
                         Authorization: `Bearer ${userData.access}`,
                     },
                 });
-
 
                 if (response.status === 401 || response.code == 'token_not_valid') {
                     openErrorNotification("Unauthorized access");
@@ -54,12 +57,8 @@ function Account() {
                     return;
                 }
 
-                if (response.data.profile_picture !== null) {
-                    setProfilePictureFile(convertUrl(response.data.profile_picture));
-                }
-
                 setUser(response.data);
-                if (response.data.profile_picture !== null) {
+                if (response.data.profile_picture) {
                     setProfilePictureFile(convertUrl(response.data.profile_picture));
                 }
                 setFormData({
@@ -86,6 +85,7 @@ function Account() {
                     logout();
                     return;
                 }
+                ;
             }
         };
 
@@ -113,10 +113,7 @@ function Account() {
                 },
             });
 
-            if (response.data.profile_picture !== null) {
-                setProfilePictureFile(convertUrl(response.data.profile_picture));
-            }
-
+            setProfilePictureFile(convertUrl(response.data.profile_picture));
             openSuccessNotification("Profile picture updated successfully!");
         } catch (error) {
             console.error("Error updating user data:", error);
@@ -130,9 +127,7 @@ function Account() {
     };
 
     const convertUrl = (url) => {
-        if (url != '') {
-            return url.replace("/media/", "/api/static/");
-        }
+        return url.replace("/media/", "/api/static/");
     }
 
     const handleSubmit = async (e) => {
@@ -168,9 +163,34 @@ function Account() {
 
             setUser(response.data);
             openSuccessNotification("Profile updated successfully!");
+            navigator("/users");
         } catch (error) {
             console.error("Error updating user data:", error);
             openErrorNotification("Failed to update profile.");
+        }
+    };
+
+    const handleAddPermission = async (permission) => {
+        try {
+            if (user.permissions.includes(permission)) {
+                openErrorNotification("This permission is already installed. Please try again.");
+                return;
+            }
+
+            const response = await API.post(`/user/${user_id}/add_permission/`, {permission}, {
+                headers: {
+                    Authorization: `Bearer ${userData.access}`,
+                },
+            });
+
+            setUser((prevUser) => ({
+                ...prevUser,
+                permissions: [...prevUser.permissions, permission],
+            }));
+            openSuccessNotification("Permission added successfully!");
+        } catch (error) {
+            console.error("Error adding permission:", error);
+            openErrorNotification("Failed to add permission.");
         }
     };
 
@@ -178,6 +198,10 @@ function Account() {
         <div className="container-xxl flex-grow-1 container-p-y">
             <div className="row">
                 <div className="col-md-12">
+                    <Link to={"/users"} className="btn btn-primary mb-4">
+                        <i className="bx bx-arrow-back me-2"></i>
+                        Back to Users
+                    </Link>
                     {/* Profile Details */}
                     <div className="card mb-4">
                         <Tabs
@@ -187,67 +211,34 @@ function Account() {
                                 {
                                     label: 'Profile Details',
                                     key: '1',
-                                    children: <>
-                                        <div className="card-body">
-                                            {/* Profile Picture */}
-                                            <div className="d-flex align-items-start align-items-sm-center gap-4">
-                                                <img
-                                                    src={profilePictureFile}
-                                                    alt="user-avatar"
-                                                    className="d-block rounded"
-                                                    height="100"
-                                                    width="100"
-                                                    id="uploadedAvatar"
-                                                />
-                                                <div className="button-wrapper">
-                                                    <label htmlFor="upload" className="btn btn-primary me-2 mb-4"
-                                                           tabIndex="0">
-                                                        <span className="d-none d-sm-block">Upload new photo</span>
-                                                        <i className="bx bx-upload d-block d-sm-none"></i>
-                                                        <input
-                                                            type="file"
-                                                            id="upload"
-                                                            className="account-file-input"
-                                                            hidden
-                                                            accept="image/png, image/jpeg"
-                                                            onChange={handleFileChange}
-                                                        />
-                                                    </label>
-                                                    <p className="text-muted mb-0">Allowed JPG, GIF or PNG. Max size of
-                                                        800K</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <hr className="my-0"/>
-                                        {/* Form */}
+                                    children:
                                         <div className="card-body">
                                             <form id="formAccountSettings" method="POST" onSubmit={handleSubmit}>
                                                 <div className="row">
-                                                    {/* Username */}
+                                                    {/* First Name */}
                                                     <div className="mb-3 col-md-6">
-                                                        <label htmlFor="username"
-                                                               className="form-label">Username</label>
+                                                        <label htmlFor="first_name" className="form-label">First
+                                                            Name</label>
                                                         <input
                                                             className="form-control"
                                                             type="text"
-                                                            id="username"
-                                                            name="username"
-                                                            value={formData.username}
+                                                            id="first_name"
+                                                            name="first_name"
+                                                            value={formData.first_name}
                                                             onChange={handleInputChange}
-                                                            disabled={true}
                                                         />
                                                     </div>
-                                                    {/* Email */}
+                                                    {/* Last Name */}
                                                     <div className="mb-3 col-md-6">
-                                                        <label htmlFor="email" className="form-label">E-mail</label>
+                                                        <label htmlFor="last_name" className="form-label">Last
+                                                            Name</label>
                                                         <input
                                                             className="form-control"
-                                                            type="email"
-                                                            id="email"
-                                                            name="email"
-                                                            value={formData.email}
+                                                            type="text"
+                                                            id="last_name"
+                                                            name="last_name"
+                                                            value={formData.last_name}
                                                             onChange={handleInputChange}
-                                                            disabled={true}
                                                         />
                                                     </div>
                                                     {/* Phone Number */}
@@ -273,32 +264,6 @@ function Account() {
                                                             id="date_of_birth"
                                                             name="date_of_birth"
                                                             value={formData.date_of_birth}
-                                                            onChange={handleInputChange}
-                                                        />
-                                                    </div>
-                                                    {/* First Name */}
-                                                    <div className="mb-3 col-md-6">
-                                                        <label htmlFor="first_name" className="form-label">First
-                                                            Name</label>
-                                                        <input
-                                                            className="form-control"
-                                                            type="text"
-                                                            id="first_name"
-                                                            name="first_name"
-                                                            value={formData.first_name}
-                                                            onChange={handleInputChange}
-                                                        />
-                                                    </div>
-                                                    {/* Last Name */}
-                                                    <div className="mb-3 col-md-6">
-                                                        <label htmlFor="last_name" className="form-label">Last
-                                                            Name</label>
-                                                        <input
-                                                            className="form-control"
-                                                            type="text"
-                                                            id="last_name"
-                                                            name="last_name"
-                                                            value={formData.last_name}
                                                             onChange={handleInputChange}
                                                         />
                                                     </div>
@@ -387,30 +352,80 @@ function Account() {
                                                         ></textarea>
                                                     </div>
                                                 </div>
-                                                <div className="mt-2">
-                                                    <button type="submit" className="btn btn-primary me-2">Save
-                                                        changes
+                                                <div className="mt-2 text-end">
+                                                    <button type="reset"
+                                                            className="btn btn-outline-secondary me-2">Cancel
                                                     </button>
-                                                    <button type="reset" className="btn btn-outline-secondary">Cancel
+                                                    <button type="submit" className="btn btn-primary">Save changes
                                                     </button>
                                                 </div>
                                             </form>
                                         </div>
-                                    </>
                                 },
                                 {
                                     label: 'Permission',
                                     key: '2',
-                                    children: <Permission user={user}/>
+                                    children: <Permission user={user} onAddPermission={handleAddPermission}/>
                                 },
                                 {
                                     label: 'Account Manager',
                                     key: '3',
-                                    children: 'Tab 3',
+                                    children:
+                                        <div className="card-body">
+                                            <form id="formAccountSettings" method="POST" onSubmit={handleSubmit}>
+                                                <div className="row">
+                                                    {/* Username */}
+                                                    <div className="mb-3 col-md-6">
+                                                        <label htmlFor="username"
+                                                               className="form-label">Username</label>
+                                                        <input
+                                                            className="form-control"
+                                                            type="text"
+                                                            id="username"
+                                                            name="username"
+                                                            value={formData.username}
+                                                            onChange={handleInputChange}
+                                                            readOnly
+                                                        />
+                                                    </div>
+                                                    {/* Email */}
+                                                    <div className="mb-3 col-md-6">
+                                                        <label htmlFor="email" className="form-label">E-mail</label>
+                                                        <input
+                                                            className="form-control"
+                                                            type="email"
+                                                            id="email"
+                                                            name="email"
+                                                            value={formData.email}
+                                                            onChange={handleInputChange}
+                                                            readOnly
+                                                        />
+                                                    </div>
+                                                    {/* Password */}
+                                                    <div className="mb-3 col-md-6">
+                                                        <label htmlFor="password"
+                                                               className="form-label">Password</label>
+                                                        <Input.Password
+                                                            style={{padding: '0.5rem 0.75rem'}}
+                                                            placeholder="input password"
+                                                            iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
+                                                            value={formData.email}
+                                                            readOnly
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div className="mt-2 text-end">
+                                                    <button type="reset"
+                                                            className="btn btn-outline-secondary me-2">Cancel
+                                                    </button>
+                                                    <button type="submit" className="btn btn-primary">Save changes
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
                                 },
                             ]}
                         />
-
                     </div>
                 </div>
             </div>
@@ -418,4 +433,4 @@ function Account() {
     );
 }
 
-export default Account;
+export default UserDetail;

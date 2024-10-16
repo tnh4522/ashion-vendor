@@ -1,8 +1,10 @@
 import {Menu} from 'antd';
 import {Link} from 'react-router-dom';
 import LogoAdmin from "../component/LogoAdmin.jsx";
+import useUserContext from "../hooks/useUserContext.jsx";
 
 function SideBar() {
+    const {logout} = useUserContext();
     const items = [
         {
             key: 'sub1',
@@ -10,9 +12,26 @@ function SideBar() {
             icon: <i className="menu-icon tf-icons bx bx-home-circle"></i>
         },
         {
+            key: 'category',
+            label: 'Category',
+            icon: <i className="menu-icon tf-icons fa-solid fa-layer-group"></i>,
+            children: [
+                {
+                    key: 'listCategory',
+                    label: <Link to="/categories">List Category</Link>,
+                    icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>
+                },
+                {
+                    key: 'addCategory',
+                    label: <Link to="/add-category">Add Category</Link>,
+                    icon: <i className="menu-icon tf-icons fa-solid fa-plus"></i>
+                }
+            ]
+        },
+        {
             key: 'sub2',
             label: 'Products',
-            icon: <i className="menu-icon tf-icons bx bx-layout"></i>,
+            icon: <i className="menu-icon tf-icons fa-solid fa-boxes-stacked"></i>,
             children: [
                 {
                     key: 'layout1',
@@ -21,60 +40,54 @@ function SideBar() {
                 },
                 {
                     key: 'layout2',
-                    label: <Link to="/products-add">Add Product</Link>,
+                    label: <Link to="/add-product">Add Product</Link>,
+                    icon: <i className="menu-icon tf-icons fa-solid fa-plus"></i>
+                }
+            ],
+        },
+        {
+            key: 'users',
+            label: 'Users',
+            icon: <i className="menu-icon tf-icons fa-solid fa-users"></i>,
+            children: [
+                {
+                    key: 'list-user',
+                    label: <Link to="/users">List User</Link>,
+                    icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>,
+                },
+                {
+                    key: 'add-user',
+                    label: <Link to="/add-user">Add User</Link>,
+                    icon: <i className="menu-icon tf-icons fa-solid fa-plus"></i>
+                }
+            ],
+        },
+        {
+            key: 'customers',
+            label: 'Customers',
+            icon: <i className="menu-icon tf-icons fa-solid fa-address-book"></i>,
+            children: [
+                {
+                    key: 'list-customer',
+                    label: <Link to="/customers">List Customer</Link>,
+                    icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>
+                },
+                {
+                    key: 'add-customer',
+                    label: <Link to="/add-customer">Add Customer</Link>,
                     icon: <i className="menu-icon tf-icons fa-solid fa-plus"></i>
                 }
             ],
         },
         {
             key: 'sub3',
-            label: 'Account Settings',
-            icon: <i className="menu-icon tf-icons bx bx-dock-top"></i>,
-            children: [
-                {
-                    key: 'account',
-                    label: <Link to="/account">Account</Link>,
-                },
-                {
-                    key: 'notifications',
-                    label: <Link to="/pages-account-settings-notifications">Notifications</Link>,
-                },
-                {
-                    key: 'connections',
-                    label: <Link to="/pages-account-settings-connections">Connections</Link>,
-                },
-            ],
+            label: <Link to="/account">Account Settings</Link>,
+            icon: <i className="menu-icon tf-icons fa-solid fa-address-card"></i>,
         },
         {
             key: 'sub4',
             label: 'Authentications',
             icon: <i className="menu-icon tf-icons bx bx-lock-open-alt"></i>,
-            children: [
-                {
-                    key: 'login',
-                    label: <Link to="" onClick={() => window.location.href = 'login'}>Login</Link>,
-                },
-                {
-                    key: 'register',
-                    label: <Link to="" onClick={() => window.location.href = 'register'}>Register</Link>,
-                },
-                {
-                    key: 'forgot-password',
-                    label: <Link to="/auth-forgot-password-basic" target="_blank">Forgot Password</Link>,
-                },
-            ],
-        },
-        {
-            key: 'users',
-            label: 'Users',
-            icon: <i className="menu-icon tf-icons fa-regular fa-user"></i>,
-            children: [
-                {
-                    key: 'listUser',
-                    label: <Link to="/users">List User</Link>,
-                    icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>
-                }
-            ],
         },
         {
             key: 'customers',
@@ -100,6 +113,11 @@ function SideBar() {
                          target="_blank">Documentation</Link>,
             icon: <i className="menu-icon tf-icons bx bx-file"></i>,
         },
+        {
+            key: 'logout',
+            label: <Link to="#" onClick={logout}>Log Out</Link>,
+            icon: <i className="menu-icon bx bx-power-off me-2"></i>,
+        }
     ];
     return (
         <aside id="layout-menu" className="layout-menu menu-vertical menu bg-menu-theme">

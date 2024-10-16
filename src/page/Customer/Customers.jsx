@@ -5,25 +5,29 @@ import qs from 'qs';
 const columns = [
     {
         title: 'Name',
-        dataIndex: ['name', 'first'],
+        dataIndex: 'name',
         sorter: true,
-        render: (first, record) => `${first} ${record.name.last}`,
+        render: (name) => `${name.first} ${name.last}`,
         width: '20%',
     },
     {
-        title: 'Phone',
-        dataIndex: 'phone',
+        title: 'Gender',
+        dataIndex: 'gender',
+        filters: [
+            {
+                text: 'Male',
+                value: 'male',
+            },
+            {
+                text: 'Female',
+                value: 'female',
+            },
+        ],
         width: '20%',
     },
     {
-        title: 'Address',
-        dataIndex: ['location', 'street', 'name'],
-        render: (street, record) => `${street}, ${record.location.city}, ${record.location.country}`,
-    },
-    {
-        title: 'Purchase History',
-        dataIndex: 'purchaseHistory',
-        render: (purchaseHistory) => purchaseHistory.join(', '),
+        title: 'Email',
+        dataIndex: 'email',
     },
 ];
 
@@ -48,13 +52,7 @@ const Customers = () => {
         fetch(`https://randomuser.me/api?${qs.stringify(getRandomuserParams(tableParams))}`)
             .then((res) => res.json())
             .then(({results}) => {
-                const customers = results.map((result) => ({
-                    name: result.name,
-                    phone: result.phone,
-                    location: result.location,
-                    purchaseHistory: ['Purchase 1', 'Purchase 2', 'Purchase 3'], // Dữ liệu mẫu
-                }));
-                setData(customers);
+                setData(results);
                 setLoading(false);
                 setTableParams({
                     ...tableParams,
@@ -93,11 +91,11 @@ const Customers = () => {
     return (
         <div className="container-xxl flex-grow-1 container-p-y">
             <div className="card">
-                <h5 className="card-header">List Customers</h5>
+                <h5 className="card-header">List Customer</h5>
                 <div className="table-responsive text-nowrap">
                     <Table
                         columns={columns}
-                        rowKey={(record) => record.name.first + record.name.last}
+                        rowKey={(record) => record.login.uuid}
                         dataSource={data}
                         pagination={tableParams.pagination}
                         loading={loading}
