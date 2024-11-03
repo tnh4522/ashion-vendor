@@ -96,7 +96,7 @@ function SideBar() {
                 },
                 {
                     key: 'permissionManagement',
-                    label: <Link to="/">Permission Management</Link>,
+                    label: <Link to="/permissions">Permission Management</Link>,
                     icon: <i className="menu-icon fa-solid fa-briefcase"></i>
                 }
             ]
