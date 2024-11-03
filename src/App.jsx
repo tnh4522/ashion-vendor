@@ -14,6 +14,9 @@ import Customers from "./page/Customer/Customers.jsx";
 import Users from "./page/User/Users.jsx";
 import AddUser from "./page/User/AddUser.jsx";
 import UserDetail from "./page/User/UserDetail.jsx";
+import RoleManagement from "./page/Authorization/RoleManagement.jsx";
+import CreateRole from "./page/Authorization/CreateRole.jsx";
+import ViewRole from "./page/Authorization/ViewRole.jsx";
 
 
 function App() {
@@ -51,6 +54,9 @@ function App() {
                                     <Route path="/users" element={<ProtectedRoute><Users/></ProtectedRoute>}/>
                                     <Route path="/add-user" element={<ProtectedRoute><AddUser/></ProtectedRoute>}/>
                                     <Route path="/user-detail/:id" element={<ProtectedRoute><UserDetail/></ProtectedRoute>}/>
+                                    <Route path="/role" element={<ProtectedRoute><RoleManagement/></ProtectedRoute>}/>
+                                    <Route path="/create-role" element={<ProtectedRoute><CreateRole/></ProtectedRoute>}/>
+                                    <Route path="/view-role/:id" element={<ProtectedRoute><ViewRole/></ProtectedRoute>}/>
                                 </Routes>
                             </div>
                         </div>
