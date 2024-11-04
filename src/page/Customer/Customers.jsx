@@ -29,6 +29,12 @@ const columns = [
         title: 'Email',
         dataIndex: 'email',
     },
+    {
+        title: 'Address',
+        dataIndex: 'location',
+        render: (location) => `${location.street.number} ${location.street.name}, ${location.city}, ${location.state}, ${location.country}`,
+        width: '30%',
+    },
 ];
 
 const getRandomuserParams = (params) => ({
