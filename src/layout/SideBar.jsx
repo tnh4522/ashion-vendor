@@ -86,8 +86,20 @@ function SideBar() {
         },
         {
             key: 'sub4',
-            label: 'Authentications',
+            label: 'Authorization',
             icon: <i className="menu-icon tf-icons bx bx-lock-open-alt"></i>,
+            children: [
+                {
+                    key: 'roleManagement',
+                    label: <Link to="/role">Role Management</Link>,
+                    icon: <i className="menu-icon fa-solid fa-user-tie"></i>
+                },
+                {
+                    key: 'permissionManagement',
+                    label: <Link to="/permissions">Permission Management</Link>,
+                    icon: <i className="menu-icon fa-solid fa-briefcase"></i>
+                }
+            ]
         },
         {
             key: 'customers',
