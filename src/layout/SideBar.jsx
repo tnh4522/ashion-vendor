@@ -46,6 +46,11 @@ function SideBar() {
             ],
         },
         {
+            key: 'orders',
+            label: <Link to="/orders">Orders</Link>,
+            icon: <i className="menu-icon tf-icons fa-solid fa-cart-shopping"></i>
+        },
+        {
             key: 'users',
             label: 'Users',
             icon: <i className="menu-icon tf-icons fa-solid fa-users"></i>,

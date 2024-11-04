@@ -18,6 +18,7 @@ import RoleManagement from "./page/Authorization/RoleManagement.jsx";
 import CreateRole from "./page/Authorization/CreateRole.jsx";
 import ViewRole from "./page/Authorization/ViewRole.jsx";
 import PermissionsManagement from "./page/Authorization/PermissionsManagement.jsx";
+import Orders from './page/Order/Orders';
 
 
 function App() {
@@ -59,6 +60,7 @@ function App() {
                                     <Route path="/create-role" element={<ProtectedRoute><CreateRole/></ProtectedRoute>}/>
                                     <Route path="/view-role/:id" element={<ProtectedRoute><ViewRole/></ProtectedRoute>}/>
                                     <Route path='permissions' element={<ProtectedRoute><PermissionsManagement/></ProtectedRoute>}/>
+                                    <Route path="/orders" element={<ProtectedRoute><Orders/></ProtectedRoute>}/>
                                 </Routes>
                             </div>
                         </div>
