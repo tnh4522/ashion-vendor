@@ -1,11 +1,11 @@
-import {useEffect, useState} from 'react';
-import {Table} from 'antd';
+import { useEffect, useState } from 'react';
+import { Table } from 'antd';
 import qs from 'qs';
 import API from "../../service/service.jsx";
 import useUserContext from "../../hooks/useUserContext.jsx";
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
-const RoleManagement = () => {
+const RolesManagement = () => {
     const navigator = useNavigate();
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -19,7 +19,7 @@ const RoleManagement = () => {
         sortField: null,
     });
 
-    const {userData} = useUserContext();
+    const { userData } = useUserContext();
 
     const fetchData = () => {
         setLoading(true);
@@ -30,7 +30,7 @@ const RoleManagement = () => {
             },
         })
             .then((response) => {
-                const {results, count} = response.data;
+                const { results, count } = response.data;
                 setData(results);
                 setLoading(false);
                 setTableParams({
@@ -53,6 +53,12 @@ const RoleManagement = () => {
 
     const columns = [
         {
+            title: 'ID',
+            dataIndex: 'id',
+            sorter: true,
+            width: '10%',
+        },
+        {
             title: 'Role Name',
             dataIndex: 'name',
             sorter: true,
@@ -66,17 +72,17 @@ const RoleManagement = () => {
         {
             title: 'Action',
             key: 'action',
-            width: '20%',
+            width: '10%',
             render: (text, record) => (
                 <span>
                     <i
                         className="fa-solid fa-pen-to-square"
-                        style={{marginRight: '10px', cursor: 'pointer'}}
+                        style={{ marginRight: '10px', cursor: 'pointer' }}
                         onClick={() => handleEdit(record)}
                     ></i>
                     <i
                         className="fa-solid fa-trash"
-                        style={{cursor: 'pointer'}}
+                        style={{ cursor: 'pointer' }}
                         onClick={() => handleDelete(record)}
                     ></i>
                 </span>
@@ -104,7 +110,7 @@ const RoleManagement = () => {
     };
 
     const handleEdit = (role) => {
-        console.log('Edit role:', role);
+        navigator(`/edit-role/${role.id}`);
     };
 
     const handleDelete = (role) => {
@@ -126,13 +132,13 @@ const RoleManagement = () => {
         <div className="container-xxl flex-grow-1 container-p-y">
             <div className="card">
                 <div className="card-header"
-                     style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                    <h5 className="card-title">Role Management</h5>
+                     style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <h5 className="card-title">Roles Management</h5>
                     <button className="btn btn-primary" onClick={() => navigator('/create-role')}>
                         Create Role
                     </button>
                 </div>
-                <div className="table-responsive text-nowrap" style={{padding: '20px'}}>
+                <div className="table-responsive text-nowrap" style={{ padding: '20px' }}>
                     <Table
                         columns={columns}
                         rowKey={(record) => record.id}
@@ -143,9 +149,9 @@ const RoleManagement = () => {
                     />
                 </div>
             </div>
-            <hr className="my-5"/>
+            <hr className="my-5" />
         </div>
     );
 };
 
-export default RoleManagement;
+export default RolesManagement;

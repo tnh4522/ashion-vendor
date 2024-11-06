@@ -3,12 +3,13 @@ import {Table} from 'antd';
 import API from '../../service/service';
 import useUserContext from '../../hooks/useUserContext';
 import useNotificationContext from '../../hooks/useNotificationContext';
-import {Link} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import {Modal} from 'antd';
 import {ExclamationCircleFilled} from "@ant-design/icons";
 
 const Users = () => {
     const {confirm} = Modal;
+    const navigator = useNavigate();
 
     const handleDelete = (id) => {
         const response = API.delete(`user/${id}/`, {
@@ -178,7 +179,13 @@ const Users = () => {
     return (
         <div className="container-xxl flex-grow-1 container-p-y">
             <div className="card">
-                <h5 className="card-header">List User</h5>
+                <div className="card-header"
+                     style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                    <h5 className="card-title">Users Management</h5>
+                    <button className="btn btn-primary" onClick={() => navigator('/add-user')}>
+                        Create User
+                    </button>
+                </div>
                 <div className="table-responsive text-nowrap" style={{padding: '0 20px 20px'}}>
                     <Table
                         columns={columns}

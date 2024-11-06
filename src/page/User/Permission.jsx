@@ -2,34 +2,7 @@ import {useEffect, useState} from "react";
 import API from "../../service/service.jsx";
 import useUserContext from "../../hooks/useUserContext.jsx";
 import useNotificationContext from "../../hooks/useNotificationContext.jsx";
-import {Modal} from 'antd';
-import {Empty} from 'antd';
-
-const MODEL_CHOICES = [
-    'User',
-    'Address',
-    'Category',
-    'Tag',
-    'Product',
-    'ProductImage',
-    'Cart',
-    'CartItem',
-    'Order',
-    'OrderItem',
-    'Review',
-    'ReviewImage',
-    'Coupon',
-    'LoyaltyPoint',
-    'Transaction',
-    'MessageThread',
-    'Message',
-    'Promotion',
-    'Notification',
-    'ReturnRequest',
-    'ShippingMethod',
-    'PaymentMethod',
-];
-
+import {Modal, Empty, Switch} from 'antd';
 
 function Permission(props) {
     const {userData, logout} = useUserContext();
@@ -38,7 +11,7 @@ function Permission(props) {
     const [openModal, setOpenModal] = useState(false);
 
     const [permissions, setPermissions] = useState([]);
-    const [models, setModels] = useState({});
+    const [availablePermissions, setAvailablePermissions] = useState([]);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -71,55 +44,56 @@ function Permission(props) {
         }
     }, [userData.access, user.id, logout, openErrorNotification]);
 
+    // Lấy danh sách các Permission có sẵn từ API
     useEffect(() => {
-        const initialModels = {};
+        const fetchAvailablePermissions = async () => {
+            try {
+                const response = await API.get("/permissions/", {
+                    headers: {
+                        Authorization: `Bearer ${userData.access}`,
+                    },
+                });
 
-        permissions.forEach((permission) => {
-            const {model_name, action, allowed} = permission;
+                if (response.status === 401 || response.code === "token_not_valid") {
+                    openErrorNotification("Unauthorized access");
+                    logout();
+                    return;
+                }
 
-            if (!initialModels[model_name]) {
-                initialModels[model_name] = {};
+                const permissionsData = response.data.results || response.data;
+                setAvailablePermissions(permissionsData);
+            } catch (error) {
+                if (error.status === 401) {
+                    openErrorNotification("Unauthorized access");
+                    logout();
+                    return;
+                }
+                console.error("Error fetching available permissions:", error);
             }
+        };
 
-            initialModels[model_name][action] = {
-                allowed: allowed,
-                id: permission.id,
-            };
-        });
+        if (userData.access) {
+            fetchAvailablePermissions();
+        }
+    }, [userData.access, logout, openErrorNotification]);
 
-        setModels(initialModels);
-    }, [permissions]);
-
-    const handleCheckboxChange = (model_name, action) => {
-        setModels((prevModels) => ({
-            ...prevModels,
-            [model_name]: {
-                ...prevModels[model_name],
-                [action]: {
-                    ...prevModels[model_name][action],
-                    allowed: !prevModels[model_name][action]?.allowed,
-                },
-            },
-        }));
+    const handleSwitchChange = (permissionId) => {
+        setPermissions((prevPermissions) =>
+            prevPermissions.map((perm) =>
+                perm.id === permissionId
+                    ? {...perm, allowed: !perm.allowed}
+                    : perm
+            )
+        );
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const updatedPermissions = [];
-
-        Object.keys(models).forEach((model_name) => {
-            Object.keys(models[model_name]).forEach((action) => {
-                const permission = models[model_name][action];
-                updatedPermissions.push({
-                    id: permission.id,
-                    model_name: model_name,
-                    action: action,
-                    allowed: permission.allowed,
-                    user: user.id,
-                });
-            });
-        });
+        const updatedPermissions = permissions.map((perm) => ({
+            id: perm.id, // id của UserPermission
+            allowed: perm.allowed,
+        }));
 
         try {
             const response = await API.post(
@@ -147,16 +121,18 @@ function Permission(props) {
     };
 
     const [addPermission, setAddPermission] = useState({
-        model_name: "",
-        action: "",
-        user: user.id,
+        permissionId: "",
         allowed: true,
     });
 
     const handleSubmitPermission = async (e) => {
         e.preventDefault();
         try {
-            const response = await API.post("permissions/create/", addPermission, {
+            const response = await API.post("/user-permissions/create/", {
+                user: user.id,
+                permission: addPermission.permissionId,
+                allowed: addPermission.allowed,
+            }, {
                 headers: {
                     Authorization: `Bearer ${userData.access}`,
                     "Content-Type": "application/json",
@@ -169,6 +145,7 @@ function Permission(props) {
                 return;
             }
 
+            // Cập nhật danh sách permissions sau khi thêm mới
             setPermissions((prev) => [...prev, response.data]);
             openSuccessNotification("Permission added successfully");
             setOpenModal(false);
@@ -177,11 +154,12 @@ function Permission(props) {
             openErrorNotification("There was an error adding the permission");
         }
     }
+
     return (
         <div className="card-body">
             <Modal
                 open={openModal}
-                width={1000}
+                width={600}
                 style={{
                     top: 120,
                 }}
@@ -195,38 +173,23 @@ function Permission(props) {
                 {/* Form */}
                 <div className="card-body">
                     <form id="formAddPermission" method="POST" onSubmit={handleSubmitPermission}>
-                        <div className="row">
-                            <div className="mb-3 col-md-6">
-                                <label htmlFor="model_name" className="form-label">Model name</label>
-                                <select
-                                    id="model_name"
-                                    name="model_name"
-                                    className="form-select"
-                                    onChange={(e) =>
-                                        setAddPermission((prev) => ({...prev, model_name: e.target.value}))}
-                                    required
-                                >
-                                    <option value="">Select a model</option>
-                                    {MODEL_CHOICES.map((model_name) => (
-                                        <option key={model_name} value={model_name}>
-                                            {model_name + " Management"}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className="mb-3 col-md-6">
-                                <label htmlFor="action" className="form-label">Action</label>
-                                <select id="action" name="action" className="form-select" required
-                                        onChange={(e) =>
-                                            setAddPermission((prev) => ({...prev, action: e.target.value}))}>
-                                    <option value="">Select an action</option>
-                                    {["view", "add", "change", "delete"].map((action) => (
-                                        <option key={action} value={action}>
-                                            {action.charAt(0).toUpperCase() + action.slice(1)}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
+                        <div className="mb-3">
+                            <label htmlFor="permissionId" className="form-label">Permission</label>
+                            <select
+                                id="permissionId"
+                                name="permissionId"
+                                className="form-select"
+                                onChange={(e) =>
+                                    setAddPermission((prev) => ({...prev, permissionId: e.target.value}))}
+                                required
+                            >
+                                <option value="">Select a permission</option>
+                                {availablePermissions.map((permission) => (
+                                    <option key={permission.id} value={permission.id}>
+                                        {permission.description} - {permission.action}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
                         <div className="mt-2 text-end">
                             <button type="reset" className="btn btn-outline-secondary me-2"
@@ -237,6 +200,16 @@ function Permission(props) {
                     </form>
                 </div>
             </Modal>
+            <div className="mt-3" style={{textAlign: "end"}}>
+                {permissions.length ? (
+                    <button type="submit" className="btn btn-primary me-2">
+                        Update permissions
+                    </button>
+                ) : null}
+                <button className="btn btn-dark" onClick={() => setOpenModal(true)} type={"button"}>
+                    <i className="fa-solid fa-plus"></i> Add permission
+                </button>
+            </div>
             <form id="formAccountSettings" method="POST" onSubmit={handleSubmit}>
                 {permissions.length ? (
                     <div className="table-responsive text-nowrap">
@@ -244,26 +217,19 @@ function Permission(props) {
                             <thead>
                             <tr>
                                 <th>Permission</th>
-                                <th>View</th>
-                                <th>Create</th>
-                                <th>Edit</th>
-                                <th>Delete</th>
+                                <th>Status</th>
                             </tr>
                             </thead>
                             <tbody className="table-border-bottom-0">
-                            {Object.keys(models).map((model_name) => (
-                                <tr key={model_name}>
-                                    <td>{model_name + " management"}</td>
-                                    {["view", "add", "change", "delete"].map((action) => (
-                                        <td key={action}>
-                                            <input
-                                                type="checkbox"
-                                                className="form-check-input"
-                                                checked={models[model_name][action]?.allowed || false}
-                                                onChange={() => handleCheckboxChange(model_name, action)}
-                                            />
-                                        </td>
-                                    ))}
+                            {permissions.map((userPermission) => (
+                                <tr key={userPermission.id}>
+                                    <td>{userPermission.permission.description} - {userPermission.permission.action}</td>
+                                    <td>
+                                        <Switch
+                                            checked={userPermission.allowed}
+                                            onChange={() => handleSwitchChange(userPermission.id)}
+                                        />
+                                    </td>
                                 </tr>
                             ))}
                             </tbody>

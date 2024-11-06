@@ -1,12 +1,12 @@
-import {useState} from 'react';
+import { useState, useEffect } from 'react';
 import API from '../../service/service';
 import useUserContext from '../../hooks/useUserContext';
 import useNotificationContext from '../../hooks/useNotificationContext';
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function AddUser() {
-    const {userData} = useUserContext();
-    const {openSuccessNotification, openErrorNotification} = useNotificationContext();
+    const { userData } = useUserContext();
+    const { openSuccessNotification, openErrorNotification } = useNotificationContext();
     const [formData, setFormData] = useState({
         username: '',
         email: '',
@@ -22,11 +22,31 @@ function AddUser() {
         instagram: '',
         preferences: '',
     });
+    const [roles, setRoles] = useState([]);
     const [loading, setLoading] = useState(false);
     const navigator = useNavigate();
 
+    useEffect(() => {
+        // Fetch roles from API
+        const fetchRoles = async () => {
+            try {
+                const response = await API.get('roles/', {
+                    headers: {
+                        'Authorization': `Bearer ${userData.access}`,
+                    }
+                });
+                setRoles(response.data.results); // Giả sử API trả về đối tượng có thuộc tính 'results'
+            } catch (error) {
+                console.error('Error fetching roles:', error);
+                openErrorNotification('Error fetching roles.');
+            }
+        };
+
+        fetchRoles();
+    }, [userData, openErrorNotification]);
+
     const handleInputChange = (e) => {
-        const {name, value} = e.target;
+        const { name, value } = e.target;
         setFormData(prevState => ({
             ...prevState,
             [name]: value
@@ -69,7 +89,6 @@ function AddUser() {
                     data[field] = formData[field];
                 }
             });
-
 
             const social_links = {};
             if (formData.twitter) social_links.twitter = formData.twitter;
@@ -120,7 +139,7 @@ function AddUser() {
             console.error('Error creating user:', error);
             if (error.response && error.response.data) {
                 const errorMessages = Object.entries(error.response.data)
-                    .map(([field, messages]) => `${field}: ${messages.join(' ')}`)
+                    .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(' ') : messages}`)
                     .join(' ');
                 openErrorNotification(errorMessages);
             } else {
@@ -140,7 +159,7 @@ function AddUser() {
                         {/* Form */}
                         <div className="card-body">
                             <form id="formAccountSettings" method="POST" onSubmit={handleSubmit}>
-                                <h3 className="text-center" style={{color: '#696cff'}}>CREATE NEW USER</h3>
+                                <h3 className="text-center" style={{ color: '#696cff' }}>CREATE NEW USER</h3>
                                 <hr className="my-2"></hr>
                                 <div className="row">
                                     {/* Username */}
@@ -153,6 +172,7 @@ function AddUser() {
                                             name="username"
                                             value={formData.username}
                                             onChange={handleInputChange}
+                                            required
                                         />
                                     </div>
                                     {/* Email */}
@@ -188,13 +208,14 @@ function AddUser() {
                                             className="form-select"
                                             value={formData.role}
                                             onChange={handleInputChange}
+                                            required
                                         >
                                             <option value="">Select Role</option>
-                                            <option value="ADMIN">Admin</option>
-                                            <option value="MANAGER">Manager</option>
-                                            <option value="STAFF">Staff</option>
-                                            <option value="SELLER">Seller</option>
-                                            <option value="BUYER">Buyer</option>
+                                            {roles.map(role => (
+                                                <option key={role.id} value={role.id}>
+                                                    {role.name}
+                                                </option>
+                                            ))}
                                         </select>
                                     </div>
                                 </div>
@@ -311,8 +332,7 @@ function AddUser() {
                                     </div>
                                     {/* Preferences */}
                                     <div className="mb-3 col-md-12">
-                                        <label htmlFor="preferences" className="form-label">Preferences (JSON
-                                            format)</label>
+                                        <label htmlFor="preferences" className="form-label">Preferences (JSON format)</label>
                                         <textarea
                                             className="form-control"
                                             id="preferences"

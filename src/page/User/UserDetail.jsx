@@ -27,6 +27,7 @@ function UserDetail() {
         bio: "",
         social_links: "",
         preferences: "",
+        password: "",
     });
 
     const [socialLinks, setSocialLinks] = useState({
@@ -72,6 +73,7 @@ function UserDetail() {
                     bio: response.data.bio || "",
                     social_links: response.data.social_links ? JSON.stringify(response.data.social_links) : "",
                     preferences: response.data.preferences ? JSON.stringify(response.data.preferences) : "",
+                    password: response.data.password || "",
                 });
                 setSocialLinks({
                     twitter: response.data.social_links?.twitter || "",
@@ -85,7 +87,6 @@ function UserDetail() {
                     logout();
                     return;
                 }
-                ;
             }
         };
 
@@ -408,8 +409,9 @@ function UserDetail() {
                                                         <Input.Password
                                                             style={{padding: '0.5rem 0.75rem'}}
                                                             placeholder="input password"
-                                                            iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
-                                                            value={formData.email}
+                                                            iconRender={(visible) => (visible ? <EyeTwoTone/> :
+                                                                <EyeInvisibleOutlined/>)}
+                                                            value={formData.password}
                                                             readOnly
                                                         />
                                                     </div>
