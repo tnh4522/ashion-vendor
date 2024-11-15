@@ -144,9 +144,6 @@ const PermissionsManagement = () => {
                 <div className="card-header"
                      style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <h5 className="card-title">Permissions Management</h5>
-                    <button className="btn btn-primary" onClick={() => navigator('/create-permission')}>
-                        Create Permission
-                    </button>
                 </div>
                 <div className="table-responsive text-nowrap" style={{ padding: '20px' }}>
                     <Table

@@ -44,7 +44,6 @@ function Permission(props) {
         }
     }, [userData.access, user.id, logout, openErrorNotification]);
 
-    // Lấy danh sách các Permission có sẵn từ API
     useEffect(() => {
         const fetchAvailablePermissions = async () => {
             try {
