@@ -100,7 +100,7 @@ const CreateStock = () => {
 
                                     <div className="mt-2">
                                         <button type="submit" className="btn btn-primary me-2">Create Stock</button>
-                                        <button type="reset" className="btn btn-outline-secondary">Cancel</button>
+                                        <button type="reset" className="btn btn-outline-secondary" onClick={() => {navigate('/stocks')}}>Cancel</button>
                                     </div>
                                 </div>
                             </form>

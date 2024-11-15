@@ -13,7 +13,7 @@ function SideBar() {
         },
         {
             key: 'category',
-            label: 'Category',
+            label: 'Category Management',
             icon: <i className="menu-icon tf-icons fa-solid fa-layer-group"></i>,
             children: [
                 {
@@ -30,7 +30,7 @@ function SideBar() {
         },
         {
             key: 'sub2',
-            label: 'Products',
+            label: 'Product Management',
             icon: <i className="menu-icon tf-icons fa-solid fa-bag-shopping"></i>,
             children: [
                 {
@@ -46,7 +46,7 @@ function SideBar() {
             ],
         },
         {
-            key: 'stocks',
+            key: 'stock',
             label: 'Stock Management',
             icon: <i className="menu-icon tf-icons fa-solid fa-boxes-stacked"></i>,
             children: [
@@ -64,7 +64,7 @@ function SideBar() {
         },
         {
             key: 'users',
-            label: 'Users',
+            label: 'Collaborator Management',
             icon: <i className="menu-icon tf-icons fa-solid fa-users"></i>,
             children: [
                 {
@@ -81,7 +81,7 @@ function SideBar() {
         },
         {
             key: 'customers',
-            label: 'Customers',
+            label: 'Customer Management',
             icon: <i className="menu-icon tf-icons fa-solid fa-address-book"></i>,
             children: [
                 {

@@ -402,19 +402,6 @@ function UserDetail() {
                                                             readOnly
                                                         />
                                                     </div>
-                                                    {/* Password */}
-                                                    <div className="mb-3 col-md-6">
-                                                        <label htmlFor="password"
-                                                               className="form-label">Password</label>
-                                                        <Input.Password
-                                                            style={{padding: '0.5rem 0.75rem'}}
-                                                            placeholder="input password"
-                                                            iconRender={(visible) => (visible ? <EyeTwoTone/> :
-                                                                <EyeInvisibleOutlined/>)}
-                                                            value={formData.password}
-                                                            readOnly
-                                                        />
-                                                    </div>
                                                 </div>
                                                 <div className="mt-2 text-end">
                                                     <button type="reset"
