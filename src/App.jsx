@@ -18,6 +18,9 @@ import RoleManagement from "./page/Authorization/RoleManagement.jsx";
 import CreateRole from "./page/Authorization/CreateRole.jsx";
 import ViewRole from "./page/Authorization/ViewRole.jsx";
 import PermissionsManagement from "./page/Authorization/PermissionsManagement.jsx";
+import Stocks from "./page/Stock/Stocks.jsx";
+import CreateStock from "./page/Stock/CreateStock.jsx";
+import EditStock from "./page/Stock/EditStock.jsx";
 
 
 function App() {
@@ -58,7 +61,10 @@ function App() {
                                     <Route path="/role" element={<ProtectedRoute><RoleManagement/></ProtectedRoute>}/>
                                     <Route path="/create-role" element={<ProtectedRoute><CreateRole/></ProtectedRoute>}/>
                                     <Route path="/view-role/:id" element={<ProtectedRoute><ViewRole/></ProtectedRoute>}/>
-                                    <Route path='permissions' element={<ProtectedRoute><PermissionsManagement/></ProtectedRoute>}/>
+                                    <Route path='/permissions' element={<ProtectedRoute><PermissionsManagement/></ProtectedRoute>}/>
+                                    <Route path="/stocks" element={<ProtectedRoute><Stocks/></ProtectedRoute>}/>
+                                    <Route path="/add-stock" element={<ProtectedRoute><CreateStock/></ProtectedRoute>}/>
+                                    <Route path="/edit-stock/:id" element={<ProtectedRoute><EditStock/></ProtectedRoute>}/>
                                 </Routes>
                             </div>
                         </div>

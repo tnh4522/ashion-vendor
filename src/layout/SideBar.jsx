@@ -31,7 +31,7 @@ function SideBar() {
         {
             key: 'sub2',
             label: 'Products',
-            icon: <i className="menu-icon tf-icons fa-solid fa-boxes-stacked"></i>,
+            icon: <i className="menu-icon tf-icons fa-solid fa-bag-shopping"></i>,
             children: [
                 {
                     key: 'layout1',
@@ -41,6 +41,23 @@ function SideBar() {
                 {
                     key: 'layout2',
                     label: <Link to="/add-product">Add Product</Link>,
+                    icon: <i className="menu-icon tf-icons fa-solid fa-plus"></i>
+                }
+            ],
+        },
+        {
+            key: 'stocks',
+            label: 'Stock Management',
+            icon: <i className="menu-icon tf-icons fa-solid fa-boxes-stacked"></i>,
+            children: [
+                {
+                    key: 'stocks',
+                    label: <Link to="/stocks">List Stock</Link>,
+                    icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>
+                },
+                {
+                    key: 'add-stock',
+                    label: <Link to="/add-stock">Add Stock</Link>,
                     icon: <i className="menu-icon tf-icons fa-solid fa-plus"></i>
                 }
             ],
