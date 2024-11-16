@@ -207,214 +207,234 @@ function UserDetail() {
                     <div className="card mb-4">
                         <Tabs
                             defaultActiveKey="1"
-                            centered
-                            items={[
-                                {
-                                    label: 'Profile Details',
-                                    key: '1',
-                                    children:
-                                        <div className="card-body">
-                                            <form id="formAccountSettings" method="POST" onSubmit={handleSubmit}>
-                                                <div className="row">
-                                                    {/* First Name */}
-                                                    <div className="mb-3 col-md-6">
-                                                        <label htmlFor="first_name" className="form-label">First
-                                                            Name</label>
-                                                        <input
-                                                            className="form-control"
-                                                            type="text"
-                                                            id="first_name"
-                                                            name="first_name"
-                                                            value={formData.first_name}
-                                                            onChange={handleInputChange}
-                                                        />
-                                                    </div>
-                                                    {/* Last Name */}
-                                                    <div className="mb-3 col-md-6">
-                                                        <label htmlFor="last_name" className="form-label">Last
-                                                            Name</label>
-                                                        <input
-                                                            className="form-control"
-                                                            type="text"
-                                                            id="last_name"
-                                                            name="last_name"
-                                                            value={formData.last_name}
-                                                            onChange={handleInputChange}
-                                                        />
-                                                    </div>
-                                                    {/* Phone Number */}
-                                                    <div className="mb-3 col-md-6">
-                                                        <label className="form-label" htmlFor="phone_number">Phone
-                                                            Number</label>
-                                                        <input
-                                                            type="text"
-                                                            id="phone_number"
-                                                            name="phone_number"
-                                                            className="form-control"
-                                                            value={formData.phone_number}
-                                                            onChange={handleInputChange}
-                                                        />
-                                                    </div>
-                                                    {/* Date of Birth */}
-                                                    <div className="mb-3 col-md-6">
-                                                        <label htmlFor="date_of_birth" className="form-label">Date of
-                                                            Birth</label>
-                                                        <input
-                                                            className="form-control"
-                                                            type="date"
-                                                            id="date_of_birth"
-                                                            name="date_of_birth"
-                                                            value={formData.date_of_birth}
-                                                            onChange={handleInputChange}
-                                                        />
-                                                    </div>
-                                                    {/* Gender */}
-                                                    <div className="mb-3 col-md-6">
-                                                        <label htmlFor="gender" className="form-label">Gender</label>
-                                                        <select
-                                                            id="gender"
-                                                            name="gender"
-                                                            className="form-select"
-                                                            value={formData.gender}
-                                                            onChange={handleInputChange}
-                                                        >
-                                                            <option value="">Select Gender</option>
-                                                            <option value="MALE">Male</option>
-                                                            <option value="FEMALE">Female</option>
-                                                            <option value="OTHER">Other</option>
-                                                        </select>
-                                                    </div>
-                                                    {/* Bio */}
-                                                    <div className="mb-3 col-md-12">
-                                                        <label htmlFor="bio" className="form-label">Bio</label>
-                                                        <textarea
-                                                            className="form-control"
-                                                            id="bio"
-                                                            name="bio"
-                                                            rows="3"
-                                                            value={formData.bio}
-                                                            onChange={handleInputChange}
-                                                        ></textarea>
-                                                    </div>
-                                                    {/* Social Links */}
-                                                    <div className="mb-3 col-md-12">
-                                                        <div className="row">
-                                                            <div className="col-md-4">
-                                                                <label htmlFor="twitter"
-                                                                       className="form-label">Twitter</label>
-                                                                <input
-                                                                    type="text"
-                                                                    id="twitter"
-                                                                    name="twitter"
-                                                                    className="form-control"
-                                                                    value={socialLinks.twitter || ""}
-                                                                    onChange={handleSocialLinksChange}
-                                                                />
-                                                            </div>
-                                                            <div className="col-md-4">
-                                                                <label htmlFor="facebook"
-                                                                       className="form-label">Facebook</label>
-                                                                <input
-                                                                    type="text"
-                                                                    id="facebook"
-                                                                    name="facebook"
-                                                                    className="form-control"
-                                                                    value={socialLinks.facebook || ""}
-                                                                    onChange={handleSocialLinksChange}
-                                                                />
-                                                            </div>
-                                                            <div className="col-md-4">
-                                                                <label htmlFor="instagram"
-                                                                       className="form-label">Instagram</label>
-                                                                <input
-                                                                    type="text"
-                                                                    id="instagram"
-                                                                    name="instagram"
-                                                                    className="form-control"
-                                                                    value={socialLinks.instagram || ""}
-                                                                    onChange={handleSocialLinksChange}
-                                                                />
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Preferences */}
-                                                    <div className="mb-3 col-md-12">
-                                                        <label htmlFor="preferences" className="form-label">Preferences
-                                                            (JSON
-                                                            format)</label>
-                                                        <textarea
-                                                            className="form-control"
-                                                            id="preferences"
-                                                            name="preferences"
-                                                            rows="3"
-                                                            value={formData.preferences}
-                                                            onChange={handleInputChange}
-                                                        ></textarea>
-                                                    </div>
-                                                </div>
-                                                <div className="mt-2 text-end">
-                                                    <button type="reset"
-                                                            className="btn btn-outline-secondary me-2">Cancel
-                                                    </button>
-                                                    <button type="submit" className="btn btn-primary">Save changes
-                                                    </button>
-                                                </div>
-                                            </form>
+                            type="card"
+                            size="large"
+                            style={{margin: '1.5rem 1rem'}}
+                        >
+                            <Tabs.TabPane tab="Profile Details" key="1">
+                                <div className="card-body">
+                                    <form id="formAccountSettings" method="POST" onSubmit={handleSubmit}>
+                                        <div className="row">
+                                            {/* First Name */}
+                                            <div className="mb-3 col-md-6">
+                                                <label htmlFor="first_name" className="form-label">First
+                                                    Name</label>
+                                                <input
+                                                    className="form-control"
+                                                    type="text"
+                                                    id="first_name"
+                                                    name="first_name"
+                                                    value={formData.first_name}
+                                                    onChange={handleInputChange}
+                                                />
+                                            </div>
+                                            {/* Last Name */}
+                                            <div className="mb-3 col-md-6">
+                                                <label htmlFor="last_name" className="form-label">Last
+                                                    Name</label>
+                                                <input
+                                                    className="form-control"
+                                                    type="text"
+                                                    id="last_name"
+                                                    name="last_name"
+                                                    value={formData.last_name}
+                                                    onChange={handleInputChange}
+                                                />
+                                            </div>
+                                            {/* Date of Birth */}
+                                            <div className="mb-3 col-md-6">
+                                                <label htmlFor="date_of_birth" className="form-label">Date of
+                                                    Birth</label>
+                                                <input
+                                                    className="form-control"
+                                                    type="date"
+                                                    id="date_of_birth"
+                                                    name="date_of_birth"
+                                                    value={formData.date_of_birth}
+                                                    onChange={handleInputChange}
+                                                />
+                                            </div>
+                                            {/* Gender */}
+                                            <div className="mb-3 col-md-6">
+                                                <label htmlFor="gender" className="form-label">Gender</label>
+                                                <select
+                                                    id="gender"
+                                                    name="gender"
+                                                    className="form-select"
+                                                    value={formData.gender}
+                                                    onChange={handleInputChange}
+                                                >
+                                                    <option value="">Select Gender</option>
+                                                    <option value="MALE">Male</option>
+                                                    <option value="FEMALE">Female</option>
+                                                    <option value="OTHER">Other</option>
+                                                </select>
+                                            </div>
                                         </div>
-                                },
-                                {
-                                    label: 'Permission',
-                                    key: '2',
-                                    children: <Permission user={user} onAddPermission={handleAddPermission}/>
-                                },
-                                {
-                                    label: 'Account Manager',
-                                    key: '3',
-                                    children:
-                                        <div className="card-body">
-                                            <form id="formAccountSettings" method="POST" onSubmit={handleSubmit}>
-                                                <div className="row">
-                                                    {/* Username */}
-                                                    <div className="mb-3 col-md-6">
-                                                        <label htmlFor="username"
-                                                               className="form-label">Username</label>
-                                                        <input
-                                                            className="form-control"
-                                                            type="text"
-                                                            id="username"
-                                                            name="username"
-                                                            value={formData.username}
-                                                            onChange={handleInputChange}
-                                                            readOnly
-                                                        />
-                                                    </div>
-                                                    {/* Email */}
-                                                    <div className="mb-3 col-md-6">
-                                                        <label htmlFor="email" className="form-label">E-mail</label>
-                                                        <input
-                                                            className="form-control"
-                                                            type="email"
-                                                            id="email"
-                                                            name="email"
-                                                            value={formData.email}
-                                                            onChange={handleInputChange}
-                                                            readOnly
-                                                        />
-                                                    </div>
-                                                </div>
-                                                <div className="mt-2 text-end">
-                                                    <button type="reset"
-                                                            className="btn btn-outline-secondary me-2">Cancel
-                                                    </button>
-                                                    <button type="submit" className="btn btn-primary">Save changes
-                                                    </button>
-                                                </div>
-                                            </form>
+                                        <div className="mt-2 text-end">
+                                            <button type="reset"
+                                                    className="btn btn-outline-secondary me-2">Cancel
+                                            </button>
+                                            <button type="submit" className="btn btn-primary">Save changes
+                                            </button>
                                         </div>
-                                },
-                            ]}
-                        />
+                                    </form>
+                                </div>
+                            </Tabs.TabPane>
+                            <Tabs.TabPane tab="Account Information" key="2">
+                                <div className="card-body">
+                                    <form id="formAccountSettings" method="POST" onSubmit={handleSubmit}>
+                                        <div className="row">
+                                            {/* Username */}
+                                            <div className="mb-3 col-md-6">
+                                                <label htmlFor="username"
+                                                       className="form-label">Username</label>
+                                                <input
+                                                    className="form-control"
+                                                    type="text"
+                                                    id="username"
+                                                    name="username"
+                                                    value={formData.username}
+                                                    onChange={handleInputChange}
+                                                    readOnly
+                                                />
+                                            </div>
+                                            {/* Email */}
+                                            <div className="mb-3 col-md-6">
+                                                <label htmlFor="email" className="form-label">E-mail</label>
+                                                <input
+                                                    className="form-control"
+                                                    type="email"
+                                                    id="email"
+                                                    name="email"
+                                                    value={formData.email}
+                                                    onChange={handleInputChange}
+                                                    readOnly
+                                                />
+                                            </div>
+                                            {/* Phone Number */}
+                                            <div className="mb-3 col-md-6">
+                                                <label className="form-label" htmlFor="phone_number">Phone
+                                                    Number</label>
+                                                <input
+                                                    type="text"
+                                                    id="phone_number"
+                                                    name="phone_number"
+                                                    className="form-control"
+                                                    value={formData.phone_number}
+                                                    onChange={handleInputChange}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="mt-2 text-end">
+                                            <button type="reset"
+                                                    className="btn btn-outline-secondary me-2">Cancel
+                                            </button>
+                                            <button type="submit" className="btn btn-primary">Save changes
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </Tabs.TabPane>
+                            <Tabs.TabPane tab="Address" key="3"></Tabs.TabPane>
+                            <Tabs.TabPane tab="Social Links" key="4">
+                                <div className="card-body">
+                                    <form id="formAccountSettings" method="POST" onSubmit={handleSubmit}>
+                                        <div className="row">
+                                            {/* Social Links */}
+                                            <div className="mb-3 col-md-12">
+                                                <div className="row">
+                                                    <div className="col-md-4">
+                                                        <label htmlFor="twitter"
+                                                               className="form-label">Twitter</label>
+                                                        <input
+                                                            type="text"
+                                                            id="twitter"
+                                                            name="twitter"
+                                                            className="form-control"
+                                                            value={socialLinks.twitter || ""}
+                                                            onChange={handleSocialLinksChange}
+                                                        />
+                                                    </div>
+                                                    <div className="col-md-4">
+                                                        <label htmlFor="facebook"
+                                                               className="form-label">Facebook</label>
+                                                        <input
+                                                            type="text"
+                                                            id="facebook"
+                                                            name="facebook"
+                                                            className="form-control"
+                                                            value={socialLinks.facebook || ""}
+                                                            onChange={handleSocialLinksChange}
+                                                        />
+                                                    </div>
+                                                    <div className="col-md-4">
+                                                        <label htmlFor="instagram"
+                                                               className="form-label">Instagram</label>
+                                                        <input
+                                                            type="text"
+                                                            id="instagram"
+                                                            name="instagram"
+                                                            className="form-control"
+                                                            value={socialLinks.instagram || ""}
+                                                            onChange={handleSocialLinksChange}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {/* Bio */}
+                                            <div className="mb-3 col-md-12">
+                                                <label htmlFor="bio" className="form-label">Bio</label>
+                                                <textarea
+                                                    className="form-control"
+                                                    id="bio"
+                                                    name="bio"
+                                                    rows="3"
+                                                    value={formData.bio}
+                                                    onChange={handleInputChange}
+                                                ></textarea>
+                                            </div>
+                                        </div>
+                                        <div className="mt-2 text-end">
+                                            <button type="reset"
+                                                    className="btn btn-outline-secondary me-2">Cancel
+                                            </button>
+                                            <button type="submit" className="btn btn-primary">Save changes
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </Tabs.TabPane>
+                            <Tabs.TabPane tab="Preferences" key="5">
+                                <div className="card-body">
+                                    <form id="formAccountSettings" method="POST" onSubmit={handleSubmit}>
+                                        <div className="row">
+                                            {/* Preferences */}
+                                            <div className="mb-3 col-md-12">
+                                                <label htmlFor="preferences" className="form-label">Preferences
+                                                    (JSON
+                                                    format)</label>
+                                                <textarea
+                                                    className="form-control"
+                                                    id="preferences"
+                                                    name="preferences"
+                                                    rows="3"
+                                                    value={formData.preferences}
+                                                    onChange={handleInputChange}
+                                                ></textarea>
+                                            </div>
+                                        </div>
+                                        <div className="mt-2 text-end">
+                                            <button type="reset" className="btn btn-outline-secondary me-2">Cancel</button>
+                                            <button type="submit" className="btn btn-primary">Save changes</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </Tabs.TabPane>
+                            <Tabs.TabPane tab="Permissions" key="6">
+                                <Permission user={user} onAddPermission={handleAddPermission}/>
+                            </Tabs.TabPane>
+                        </Tabs>
                     </div>
                 </div>
             </div>
