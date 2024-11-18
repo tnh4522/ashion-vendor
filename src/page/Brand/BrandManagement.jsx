@@ -8,7 +8,7 @@ import {Link, useNavigate} from "react-router-dom";
 
 const {confirm} = Modal;
 
-const Stores = () => {
+const Brands = () => {
     const navigate = useNavigate();
 
     const {userData, logout} = useUserContext();
@@ -45,7 +45,7 @@ const Stores = () => {
                 params.search = searchParams.searchText;
             }
 
-            const response = await API.get('stores/', {
+            const response = await API.get('brands/', {
                 headers: {
                     'Authorization': `Bearer ${userData.access}`,
                 },
@@ -61,8 +61,8 @@ const Stores = () => {
                 },
             });
         } catch (error) {
-            console.error('Error fetching stores:', error);
-            openErrorNotification('Error fetching stores.');
+            console.error('Error fetching brands:', error);
+            openErrorNotification('Error fetching brands.');
             if (error.response && error.response.status === 401) {
                 openErrorNotification("Unauthorized access");
                 logout();
@@ -81,63 +81,61 @@ const Stores = () => {
 
     const handleDelete = (id) => {
         confirm({
-            title: 'Do you want to delete this store?',
-            icon: <ExclamationCircleFilled />,
-            content: 'Confirm to delete this store, this action cannot be undone.',
+            title: 'Do you want to delete this brand?',
+            icon: <ExclamationCircleFilled/>,
+            content: 'Confirm to delete this brand, this action cannot be undone.',
             okText: 'Confirm',
             okType: 'danger',
             onOk() {
-                return API.delete(`stores/${id}/`, {
+                return API.delete(`brands/${id}/`, {
                     headers: {
                         'Authorization': `Bearer ${userData.access}`,
                     }
                 })
                     .then(() => {
-                        openSuccessNotification('Store deleted successfully.');
-                        fetchData(); // Refresh the list after deletion
+                        openSuccessNotification('Brand deleted successfully.');
+                        fetchData();
                     })
                     .catch((error) => {
-                        console.error('Error deleting store:', error);
-                        openErrorNotification('Error deleting store.');
+                        console.error('Error deleting brand:', error);
+                        openErrorNotification('Error deleting brand.');
                     });
             },
-            onCancel() {},
+            onCancel() {
+            },
         });
     };
 
     const columns = [
         {
             title: 'Image',
-            dataIndex: 'store_logo',
-            render: (store_logo) => (
-                store_logo ? <img src={store_logo.replace("/media/", "/api/static/")} alt="Brand Logo"
+            dataIndex: 'brand_logo',
+            render: (brand_logo) => (
+                brand_logo ? <img src={brand_logo.replace("/media/", "/api/static/")} alt="Brand Logo"
                                   style={{maxWidth: '100px', maxHeight: '100px'}}/> : 'No Image'
             ),
             width: '20%',
         },
         {
-            title: 'Store Name',
-            dataIndex: 'store_name',
+            title: 'Brand Name',
+            dataIndex: 'brand_name',
             sorter: true,
-            width: '30%',
+            width: '20%',
         },
         {
             title: 'Description',
-            dataIndex: 'store_description',
+            dataIndex: 'brand_description',
             sorter: false,
             width: '30%',
         },
         {
-            title: 'Rating',
-            dataIndex: 'rating',
-            sorter: true,
-            width: '10%',
-        },
-        {
-            title: 'Total Sales',
-            dataIndex: 'total_sales',
-            sorter: true,
-            width: '10%',
+            title: 'Website',
+            dataIndex: 'website',
+            sorter: false,
+            width: '20%',
+            render: (website) => (
+                <a href={website} target="_blank" rel="noreferrer">{website}</a>
+            ),
         },
         {
             title: 'Action',
@@ -145,8 +143,10 @@ const Stores = () => {
             width: '10%',
             render: (id) => (
                 <span>
-                    <Link to={`/store-detail/${id}`}><i className="fa-solid fa-pen-to-square" style={{ marginRight: '10px' }}></i></Link>
-                    <i className="fa-solid fa-trash" style={{color: 'red', cursor: 'pointer'}} onClick={() => handleDelete(id)}></i>
+                    <Link to={`/brand-detail/${id}`}><i className="fa-solid fa-pen-to-square"
+                                                        style={{marginRight: '10px'}}></i></Link>
+                    <i className="fa-solid fa-trash" style={{cursor: 'pointer', color: 'red'}}
+                       onClick={() => handleDelete(id)}></i>
                 </span>
             ),
         }
@@ -197,35 +197,37 @@ const Stores = () => {
         <div className="container-xxl flex-grow-1 container-p-y">
             <div className="card">
                 <div className="card-header"
-                     style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h4 className="card-title" style={{ color: '#696cff' }}>Stores Management</h4>
-                    <button className="btn btn-primary" onClick={() => navigate('/add-store')}>
-                        Create Store
+                     style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                    <h4 className="card-title" style={{color: '#696cff'}}>Brands Management</h4>
+                    <button className="btn btn-primary" onClick={() => navigate('/add-brand')}>
+                        Create Brand
                     </button>
                 </div>
                 <div className="card-body">
                     <div className="row mb-4">
                         {/* Search Text */}
                         <div className="col-md-4">
-                            <label htmlFor="searchText" className="form-label">Search by Store Name or Description</label>
+                            <label htmlFor="searchText" className="form-label">Search by Brand Name or
+                                Description</label>
                             <Input
                                 id="searchText"
                                 name="searchText"
                                 value={searchParams.searchText}
                                 onChange={handleInputChange}
-                                placeholder="Search by store name or description"
+                                placeholder="Search by brand name or description"
                             />
                         </div>
                     </div>
                     {/* Buttons */}
                     <div className="row mb-4">
                         <div className="col-md-6 d-flex">
-                            <Button type="default" onClick={handleResetFilters} style={{ marginRight: '10px' }}>Reset Filters</Button>
+                            <Button type="default" onClick={handleResetFilters} style={{marginRight: '10px'}}>Reset
+                                Filters</Button>
                             <Button type="primary" onClick={handleSearch}>Perform Search</Button>
                         </div>
                     </div>
                 </div>
-                <div className="table-responsive text-nowrap" style={{ padding: '0 20px 20px' }}>
+                <div className="table-responsive text-nowrap" style={{padding: '0 20px 20px'}}>
                     <Table
                         columns={columns}
                         rowKey={(record) => record.id}
@@ -233,7 +235,7 @@ const Stores = () => {
                         pagination={tableParams.pagination}
                         loading={loading}
                         onChange={handleTableChange}
-                        style={{ border: '1px solid #ebedf2' }}
+                        style={{border: '1px solid #ebedf2'}}
                     />
                 </div>
             </div>
@@ -241,4 +243,4 @@ const Stores = () => {
     );
 };
 
-export default Stores;
+export default Brands;

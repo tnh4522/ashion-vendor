@@ -25,6 +25,9 @@ import CreatePassword from "./page/Authentication/CreatePassword.jsx";
 import AddStore from "./page/Store/AddStore.jsx";
 import Stores from "./page/Store/StoreManagement.jsx";
 import StoreDetail from "./page/Store/StoreDetail.jsx";
+import AddBrand from "./page/Brand/AddBrand.jsx";
+import Brands from "./page/Brand/BrandManagement.jsx";
+import BrandDetail from "./page/Brand/BrandDetail.jsx";
 
 
 function App() {
@@ -73,6 +76,9 @@ function App() {
                                     <Route path='/stores' element={<ProtectedRoute><Stores/></ProtectedRoute>}/>
                                     <Route path='/add-store' element={<ProtectedRoute><AddStore/></ProtectedRoute>}/>
                                     <Route path='/store-detail/:id' element={<ProtectedRoute><StoreDetail/></ProtectedRoute>}/>
+                                    <Route path='/brands' element={<ProtectedRoute><Brands/></ProtectedRoute>}/>
+                                    <Route path='/add-brand' element={<ProtectedRoute><AddBrand/></ProtectedRoute>}/>
+                                    <Route path='/brand-detail/:id' element={<ProtectedRoute><BrandDetail/></ProtectedRoute>}/>
                                 </Routes>
                             </div>
                         </div>

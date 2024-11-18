@@ -80,6 +80,23 @@ function SideBar() {
             ],
         },
         {
+            key: 'brand',
+            label: 'Brand Management',
+            icon: <i className="menu-icon tf-icons fa-solid fa-tags"></i>,
+            children: [
+                {
+                    key: 'listBrand',
+                    label: <Link to="/brands">List Brand</Link>,
+                    icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>
+                },
+                {
+                    key: 'addBrand',
+                    label: <Link to="/add-brand">Add Brand</Link>,
+                    icon: <i className="menu-icon tf-icons fa-solid fa-plus"></i>
+                }
+            ],
+        },
+        {
             key: 'users',
             label: 'Collaborator Management',
             icon: <i className="menu-icon tf-icons fa-solid fa-users"></i>,
