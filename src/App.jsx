@@ -22,6 +22,7 @@ import Stocks from "./page/Stock/Stocks.jsx";
 import CreateStock from "./page/Stock/CreateStock.jsx";
 import EditStock from "./page/Stock/EditStock.jsx";
 import CreatePassword from "./page/Authentication/CreatePassword.jsx";
+import EditCategory from "./page/Category/EditCategory.jsx";
 
 
 function App() {
@@ -57,6 +58,7 @@ function App() {
                                     <Route path="/add-product" element={<ProtectedRoute><AddProduct/></ProtectedRoute>}/>
                                     <Route path="/categories" element={<ProtectedRoute><Categories/></ProtectedRoute>}/>
                                     <Route path="/add-category" element={<ProtectedRoute><AddCategory/></ProtectedRoute>}/>
+                                    <Route path="/edit-category/:id" element={<ProtectedRoute><EditCategory/></ProtectedRoute>}/>
                                     <Route path="/users" element={<ProtectedRoute><Users/></ProtectedRoute>}/>
                                     <Route path="/add-user" element={<ProtectedRoute><AddUser/></ProtectedRoute>}/>
                                     <Route path="/user-detail/:id" element={<ProtectedRoute><UserDetail/></ProtectedRoute>}/>
