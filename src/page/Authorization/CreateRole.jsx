@@ -1,13 +1,13 @@
-import { useState } from 'react';
+import {useState, useEffect} from 'react';
 import API from "../../service/service.jsx";
 import useUserContext from "../../hooks/useUserContext.jsx";
 import useNotificationContext from "../../hooks/useNotificationContext.jsx";
-import { useNavigate } from "react-router-dom";
+import {useNavigate} from "react-router-dom";
 import dataPermission from '../../constant/data-permission.js';
 
 const CreateRole = () => {
-    const { userData, logout } = useUserContext();
-    const { openSuccessNotification, openErrorNotification } = useNotificationContext();
+    const {userData, logout} = useUserContext();
+    const {openSuccessNotification, openErrorNotification} = useNotificationContext();
     const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
@@ -16,29 +16,77 @@ const CreateRole = () => {
         permissions: [],
     });
 
+    const [roles, setRoles] = useState([]);
+
+    useEffect(() => {
+        const fetchRoles = async () => {
+            try {
+                const response = await API.get('roles/', {
+                    headers: {
+                        'Authorization': `Bearer ${userData.access}`,
+                    },
+                });
+                if (response.status === 200) {
+                    setRoles(response.data.results);
+                }
+            } catch (error) {
+                console.error('There was an error fetching roles:', error);
+            }
+        };
+        fetchRoles();
+    }, [userData.access]);
+
     const handleChange = (e) => {
-        const { name, value } = e.target;
+        const {name, value} = e.target;
         setFormData({
             ...formData,
             [name]: value,
         });
     };
 
-    // New function to handle permission checkbox changes
     const handlePermissionChange = (e) => {
-        const { value, checked } = e.target;
+        const {value, checked} = e.target;
         setFormData((prevFormData) => {
-            const permissions = [...prevFormData.permissions];
+            let permissions = [...prevFormData.permissions];
             if (checked) {
-                permissions.push(value);
-            } else {
-                const index = permissions.indexOf(value);
-                if (index > -1) {
-                    permissions.splice(index, 1);
+                if (!permissions.includes(value)) {
+                    permissions.push(value);
                 }
+            } else {
+                permissions = permissions.filter((perm) => perm !== value);
             }
-            return { ...prevFormData, permissions };
+            return {...prevFormData, permissions};
         });
+    };
+
+    const handleRoleSelect = async (e) => {
+        const roleId = e.target.value;
+        if (roleId) {
+            try {
+                const response = await API.get(`roles/${roleId}/`, {
+                    headers: {
+                        'Authorization': `Bearer ${userData.access}`,
+                    },
+                });
+                if (response.status === 200) {
+                    console.log('API permissions:', response.data.permissions_display);
+
+                    const rolePermissions = response.data.permissions_display; // Now in 'model:action' format
+
+                    setFormData((prevFormData) => ({
+                        ...prevFormData,
+                        permissions: rolePermissions,
+                    }));
+                }
+            } catch (error) {
+                console.error('There was an error fetching role permissions:', error);
+            }
+        } else {
+            setFormData((prevFormData) => ({
+                ...prevFormData,
+                permissions: [],
+            }));
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -51,7 +99,7 @@ const CreateRole = () => {
             });
             if (response.status === 201) {
                 openSuccessNotification('Role created successfully');
-                navigate('/roles'); // Adjust the path as per your routes
+                navigate('/role');
             }
         } catch (error) {
             if (error.response && error.response.status === 401) {
@@ -70,7 +118,7 @@ const CreateRole = () => {
                 <div className="col-md-12">
                     <div className="card mb-4">
                         <h5 className="card-header">Create Role</h5>
-                        <hr className="my-0" />
+                        <hr className="my-0"/>
                         <div className="card-body">
                             <form id="formCreateRole" method="POST" onSubmit={handleSubmit}>
                                 <div className="row">
@@ -86,6 +134,22 @@ const CreateRole = () => {
                                             onChange={handleChange}
                                             required
                                         />
+                                    </div>
+                                    {/* Select Existing Role */}
+                                    <div className="mb-3 col-md-6">
+                                        <label htmlFor="existingRole" className="form-label">Copy Permissions From
+                                            Existing Role</label>
+                                        <select
+                                            className="form-select"
+                                            id="existingRole"
+                                            name="existingRole"
+                                            onChange={handleRoleSelect}
+                                        >
+                                            <option value="">Select a role</option>
+                                            {roles.map((role) => (
+                                                <option key={role.id} value={role.id}>{role.name}</option>
+                                            ))}
+                                        </select>
                                     </div>
                                     {/* Description */}
                                     <div className="mb-3 col-md-12">
@@ -103,29 +167,33 @@ const CreateRole = () => {
                                     {/* Permissions */}
                                     <div className="mb-3 col-md-12">
                                         <h5 className='mt-2'>Permissions</h5>
-                                        <hr />
+                                        <hr/>
                                         {dataPermission.map((modelPermission, modelIndex) => (
                                             <div key={modelIndex}>
                                                 <label className="form-label">
                                                     {modelPermission.model.charAt(0).toUpperCase() + modelPermission.model.slice(1)} Permissions
                                                 </label>
-                                                {modelPermission.action.map((actionItem, actionIndex) => (
-                                                    <div className="form-check" key={actionIndex}>
-                                                        <input
-                                                            className="form-check-input"
-                                                            type="checkbox"
-                                                            id={`${modelPermission.model}-${actionItem.name}`}
-                                                            value={`${modelPermission.model}:${actionItem.name}`}
-                                                            onChange={handlePermissionChange}
-                                                        />
-                                                        <label
-                                                            className="form-check-label"
-                                                            htmlFor={`${modelPermission.model}-${actionItem.name}`}>
-                                                            {actionItem.description}
-                                                        </label>
-                                                    </div>
-                                                ))}
-                                                <hr />
+                                                {modelPermission.action.map((actionItem, actionIndex) => {
+                                                    const permissionValue = `${modelPermission.model}:${actionItem.name}`;
+                                                    return (
+                                                        <div className="form-check" key={actionIndex}>
+                                                            <input
+                                                                className="form-check-input"
+                                                                type="checkbox"
+                                                                id={`${modelPermission.model}-${actionItem.name}`}
+                                                                value={permissionValue}
+                                                                onChange={handlePermissionChange}
+                                                                checked={formData.permissions.includes(permissionValue)}
+                                                            />
+                                                            <label
+                                                                className="form-check-label"
+                                                                htmlFor={`${modelPermission.model}-${actionItem.name}`}>
+                                                                {actionItem.description}
+                                                            </label>
+                                                        </div>
+                                                    );
+                                                })}
+                                                <hr/>
                                             </div>
                                         ))}
                                     </div>
@@ -134,7 +202,7 @@ const CreateRole = () => {
                                         <button
                                             type="button"
                                             className="btn btn-outline-secondary"
-                                            onClick={() => navigate('/roles')} // Adjust the path as per your routes
+                                            onClick={() => navigate('/roles')}
                                         >
                                             Cancel
                                         </button>
