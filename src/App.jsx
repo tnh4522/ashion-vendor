@@ -22,6 +22,9 @@ import Stocks from "./page/Stock/Stocks.jsx";
 import CreateStock from "./page/Stock/CreateStock.jsx";
 import EditStock from "./page/Stock/EditStock.jsx";
 import CreatePassword from "./page/Authentication/CreatePassword.jsx";
+import AddStore from "./page/Store/AddStore.jsx";
+import Stores from "./page/Store/StoreManagement.jsx";
+import StoreDetail from "./page/Store/StoreDetail.jsx";
 
 
 function App() {
@@ -67,6 +70,9 @@ function App() {
                                     <Route path="/stocks" element={<ProtectedRoute><Stocks/></ProtectedRoute>}/>
                                     <Route path="/add-stock" element={<ProtectedRoute><CreateStock/></ProtectedRoute>}/>
                                     <Route path="/edit-stock/:id" element={<ProtectedRoute><EditStock/></ProtectedRoute>}/>
+                                    <Route path='/stores' element={<ProtectedRoute><Stores/></ProtectedRoute>}/>
+                                    <Route path='/add-store' element={<ProtectedRoute><AddStore/></ProtectedRoute>}/>
+                                    <Route path='/store-detail/:id' element={<ProtectedRoute><StoreDetail/></ProtectedRoute>}/>
                                 </Routes>
                             </div>
                         </div>

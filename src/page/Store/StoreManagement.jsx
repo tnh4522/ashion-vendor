@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import {Table, Modal, Input, Button, Select} from 'antd';
+import {Table, Modal, Input, Button} from 'antd';
 import {ExclamationCircleFilled} from "@ant-design/icons";
 import API from '../../service/service';
 import useUserContext from '../../hooks/useUserContext';
@@ -7,20 +7,17 @@ import useNotificationContext from '../../hooks/useNotificationContext';
 import {Link, useNavigate} from "react-router-dom";
 
 const {confirm} = Modal;
-const {Option} = Select;
 
-const Users = () => {
+const Stores = () => {
     const navigate = useNavigate();
 
     const {userData, logout} = useUserContext();
     const {openSuccessNotification, openErrorNotification} = useNotificationContext();
 
     const [data, setData] = useState([]);
-    const [roleOptions, setRoleOptions] = useState([]);
     const [loading, setLoading] = useState(false);
     const [searchParams, setSearchParams] = useState({
         searchText: '',
-        role: '',
     });
     const [tableParams, setTableParams] = useState({
         pagination: {
@@ -48,11 +45,7 @@ const Users = () => {
                 params.search = searchParams.searchText;
             }
 
-            if (searchParams.role) {
-                params.role = searchParams.role;
-            }
-
-            const response = await API.get('users/', {
+            const response = await API.get('stores/', {
                 headers: {
                     'Authorization': `Bearer ${userData.access}`,
                 },
@@ -68,8 +61,8 @@ const Users = () => {
                 },
             });
         } catch (error) {
-            console.error('Error fetching users:', error);
-            openErrorNotification('Error fetching users.');
+            console.error('Error fetching stores:', error);
+            openErrorNotification('Error fetching stores.');
             if (error.response && error.response.status === 401) {
                 openErrorNotification("Unauthorized access");
                 logout();
@@ -80,90 +73,62 @@ const Users = () => {
         }
     };
 
-    const fetchRoles = async () => {
-        try {
-            const response = await API.get('roles/', {
-                headers: {
-                    'Authorization': `Bearer ${userData.access}`,
-                }
-            });
-
-            setRoleOptions(response.data.results);
-
-        } catch (error) {
-            console.error('Error fetching roles:', error);
-            openErrorNotification('Error fetching roles.');
-            if (error.response && error.response.status === 401) {
-                openErrorNotification("Unauthorized access");
-                logout();
-                return;
-            }
-        }
-    }
-
     useEffect(() => {
         if (userData.access) {
-            fetchRoles();
             fetchData();
         }
-    }, [userData.access, JSON.stringify(tableParams)]); // Thêm tableParams vào dependency để theo dõi sự thay đổi
+    }, [userData.access, JSON.stringify(tableParams)]); // Track changes in tableParams
 
     const handleDelete = (id) => {
         confirm({
-            title: 'Do you want to delete these users?',
-            icon: <ExclamationCircleFilled/>,
-            content: 'Confirm to delete these users, this action cannot be undone.',
+            title: 'Do you want to delete this store?',
+            icon: <ExclamationCircleFilled />,
+            content: 'Confirm to delete this store, this action cannot be undone.',
             okText: 'Confirm',
             okType: 'danger',
             onOk() {
-                return API.delete(`user/${id}/`, {
+                return API.delete(`stores/${id}/`, {
                     headers: {
                         'Authorization': `Bearer ${userData.access}`,
                     }
                 })
                     .then(() => {
-                        openSuccessNotification('User deleted successfully.');
-                        fetchData();
+                        openSuccessNotification('Store deleted successfully.');
+                        fetchData(); // Refresh the list after deletion
                     })
                     .catch((error) => {
-                        console.error('Error deleting user:', error);
-                        openErrorNotification('Error deleting user.');
+                        console.error('Error deleting store:', error);
+                        openErrorNotification('Error deleting store.');
                     });
             },
-            onCancel() {
-            },
+            onCancel() {},
         });
     };
 
     const columns = [
         {
-            title: 'Username',
-            dataIndex: 'username',
+            title: 'Store Name',
+            dataIndex: 'store_name',
             sorter: true,
-            width: '20%',
+            width: '30%',
         },
         {
-            title: 'First Name',
-            dataIndex: 'first_name',
-            sorter: true,
-            width: '15%',
+            title: 'Description',
+            dataIndex: 'store_description',
+            sorter: false,
+            width: '30%',
         },
         {
-            title: 'Last Name',
-            dataIndex: 'last_name',
+            title: 'Rating',
+            dataIndex: 'rating',
             sorter: true,
-            width: '15%',
+            width: '10%',
         },
         {
-            title: 'Email',
-            dataIndex: 'email',
+            title: 'Total Sales',
+            dataIndex: 'total_sales',
             sorter: true,
-            width: '25%',
-        },
-        {
-            title: 'Role',
-            dataIndex: 'role_display',
-            width: '15%',
+            width: '10%',
         },
         {
             title: 'Action',
@@ -171,10 +136,8 @@ const Users = () => {
             width: '10%',
             render: (id) => (
                 <span>
-                    <Link to={`/user-detail/${id}`}><i className="fa-solid fa-pen-to-square"
-                                                       style={{marginRight: '10px'}}></i></Link>
-                    <i className="fa-solid fa-trash" style={{color: 'red', cursor: 'pointer'}}
-                       onClick={() => handleDelete(id)}></i>
+                    <Link to={`/store-detail/${id}`}><i className="fa-solid fa-pen-to-square" style={{ marginRight: '10px' }}></i></Link>
+                    <i className="fa-solid fa-trash" style={{color: 'red', cursor: 'pointer'}} onClick={() => handleDelete(id)}></i>
                 </span>
             ),
         }
@@ -196,13 +159,6 @@ const Users = () => {
         }));
     };
 
-    const handleRoleChange = (value) => {
-        setSearchParams((prev) => ({
-            ...prev,
-            role: value,
-        }));
-    };
-
     const handleSearch = () => {
         setTableParams({
             ...tableParams,
@@ -217,7 +173,6 @@ const Users = () => {
     const handleResetFilters = () => {
         setSearchParams({
             searchText: '',
-            role: '',
         });
         setTableParams({
             ...tableParams,
@@ -229,64 +184,39 @@ const Users = () => {
         fetchData();
     };
 
-    const renderRoleOptions = () => {
-        if (roleOptions.length === 0) {
-            return null;
-        }
-
-        return roleOptions.map((role) => (
-            <Option key={role.id} value={role.id}>{role.name}</Option>
-        ));
-    }
-
     return (
         <div className="container-xxl flex-grow-1 container-p-y">
             <div className="card">
                 <div className="card-header"
-                     style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                    <h4 className="card-title" style={{color: '#696cff'}}>Users Management</h4>
-                    <button className="btn btn-primary" onClick={() => navigate('/add-user')}>
-                        Create User
+                     style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <h4 className="card-title" style={{ color: '#696cff' }}>Stores Management</h4>
+                    <button className="btn btn-primary" onClick={() => navigate('/add-store')}>
+                        Create Store
                     </button>
                 </div>
                 <div className="card-body">
                     <div className="row mb-4">
                         {/* Search Text */}
                         <div className="col-md-4">
-                            <label htmlFor="searchText" className="form-label">Search by Name or Email</label>
+                            <label htmlFor="searchText" className="form-label">Search by Store Name or Description</label>
                             <Input
                                 id="searchText"
                                 name="searchText"
                                 value={searchParams.searchText}
                                 onChange={handleInputChange}
-                                placeholder="Search by name or email"
+                                placeholder="Search by store name or description"
                             />
-                        </div>
-                        {/* Role */}
-                        <div className="col-md-4">
-                            <label htmlFor="role" className="form-label">Role</label>
-                            <Select
-                                id="role"
-                                name="role"
-                                value={searchParams.role}
-                                onChange={handleRoleChange}
-                                style={{width: '100%'}}
-                            >
-                                <Option value="">All Roles</Option>
-                                {renderRoleOptions()}
-                            </Select>
                         </div>
                     </div>
                     {/* Buttons */}
                     <div className="row mb-4">
                         <div className="col-md-6 d-flex">
-                            <Button type="default" onClick={handleResetFilters} style={{marginRight: '10px'}}>Reset
-                                Filters</Button>
+                            <Button type="default" onClick={handleResetFilters} style={{ marginRight: '10px' }}>Reset Filters</Button>
                             <Button type="primary" onClick={handleSearch}>Perform Search</Button>
                         </div>
                     </div>
                 </div>
-                <div className="table-responsive text-nowrap" style={{padding: '0 20px 20px'}}>
+                <div className="table-responsive text-nowrap" style={{ padding: '0 20px 20px' }}>
                     <Table
                         columns={columns}
                         rowKey={(record) => record.id}
@@ -294,7 +224,7 @@ const Users = () => {
                         pagination={tableParams.pagination}
                         loading={loading}
                         onChange={handleTableChange}
-                        style={{border: '1px solid #ebedf2'}}
+                        style={{ border: '1px solid #ebedf2' }}
                     />
                 </div>
             </div>
@@ -302,4 +232,4 @@ const Users = () => {
     );
 };
 
-export default Users;
+export default Stores;

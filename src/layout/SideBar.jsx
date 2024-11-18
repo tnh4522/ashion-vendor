@@ -12,6 +12,23 @@ function SideBar() {
             icon: <i className="menu-icon tf-icons bx bx-home-circle"></i>
         },
         {
+            key: 'store',
+            label: 'Store Management',
+            icon: <i className="menu-icon tf-icons fa-solid fa-store"></i>,
+            children: [
+                {
+                    key: 'stores',
+                    label: <Link to="/stores">List Store</Link>,
+                    icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>
+                },
+                {
+                    key: 'add-store',
+                    label: <Link to="/add-store">Add Store</Link>,
+                    icon: <i className="menu-icon tf-icons fa-solid fa-plus"></i>
+                }
+            ]
+        },
+        {
             key: 'category',
             label: 'Category Management',
             icon: <i className="menu-icon tf-icons fa-solid fa-layer-group"></i>,

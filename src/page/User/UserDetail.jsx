@@ -2,10 +2,9 @@ import {useEffect, useState} from "react";
 import useUserContext from "../../hooks/useUserContext.jsx";
 import API from "../../service/service.jsx";
 import useNotificationContext from "../../hooks/useNotificationContext.jsx";
-import {Tabs, Input} from 'antd';
+import {Tabs} from 'antd';
 import Permission from "../User/Permission.jsx";
 import {Link, useNavigate, useParams} from "react-router-dom";
-import {EyeInvisibleOutlined, EyeTwoTone} from "@ant-design/icons";
 
 function UserDetail() {
     const {openSuccessNotification, openErrorNotification} = useNotificationContext();
