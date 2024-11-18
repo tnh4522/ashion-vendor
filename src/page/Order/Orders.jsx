@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { Table, Tag, Modal } from 'antd';
+import { Table, Tag} from 'antd';
 import API from '../../service/service';
 import useUserContext from '../../hooks/useUserContext';
 import useNotificationContext from '../../hooks/useNotificationContext';
@@ -18,7 +18,7 @@ const Orders = () => {
     const prevTableParams = useRef();
 
     const columns = [
-        { title: 'Order Number', dataIndex: 'order_number', sorter: true },
+        { title: 'Order ID', dataIndex: 'order_number', sorter: true },
         { 
             title: 'Customer', 
             dataIndex: 'user', 
@@ -45,8 +45,11 @@ const Orders = () => {
             dataIndex: 'status', 
             filters: [
                 { text: 'Pending', value: 'PENDING' }, 
-                { text: 'Accepted', value: 'ACCEPTED' }, 
-                { text: 'Rejected', value: 'REJECTED' }
+                { text: 'Processing', value: 'PROCESSING' }, 
+                { text: 'Shipped', value: 'SHIPPED' },
+                { text: 'Delivered', value: 'DELIVERED' }, 
+                { text: 'Canceled', value: 'CANCELED' }, 
+                { text: 'Returned', value: 'RETURNED' }
             ],
             render: (status) => {
                 let color = '';
@@ -54,12 +57,12 @@ const Orders = () => {
                     case 'PENDING':
                         color = 'orange';
                         break;
-                    case 'ACCEPTED':
-                        color = 'green';
-                        break;
-                    case 'REJECTED':
-                        color = 'red';
-                        break;
+                    // case 'ACCEPTED':
+                    //     color = 'green';
+                    //     break;
+                    // case 'REJECTED':
+                    //     color = 'red';
+                    //     break;
                     default:
                         color = 'blue';
                 }
@@ -76,7 +79,7 @@ const Orders = () => {
                 page_size: tableParams.pagination.pageSize,
                 ordering: tableParams.sorter.order === 'ascend' ? tableParams.sorter.field : `-${tableParams.sorter.field}`,
             };
-            const response = await API.get('/orders', {
+            const response = await API.get('orders/', {
                 headers: { 'Authorization': `Bearer ${userData.access}` },
                 params,
             });

@@ -64,9 +64,22 @@ function SideBar() {
         },
         {
             key: 'orders',
-            label: <Link to="/orders">Orders</Link>,
-            icon: <i className="menu-icon tf-icons fa-solid fa-cart-shopping"></i>
+            label: 'Order Management',
+            icon: <i className="menu-icon tf-icons fa-solid fa-cart-shopping"></i>,
+            children: [
+                {
+                    key: 'orders',
+                    label: <Link to="/orders">Orders</Link>,
+                    icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>
+                },
+                {
+                    key: 'add-order',
+                    label: <Link to="/add-order">Add Order</Link>,
+                    icon: <i className="menu-icon tf-icons fa-solid fa-plus"></i>
+                }
+            ],
         },
+        
         {
             key: 'users',
             label: 'Collaborator Management',

@@ -23,6 +23,7 @@ import CreateStock from "./page/Stock/CreateStock.jsx";
 import EditStock from "./page/Stock/EditStock.jsx";
 import CreatePassword from "./page/Authentication/CreatePassword.jsx";
 import Orders from './page/Order/Orders';
+import CreateOrder from "./page/Order/CreateOrder.jsx";
 
 
 function App() {
@@ -69,6 +70,7 @@ function App() {
                                     <Route path="/add-stock" element={<ProtectedRoute><CreateStock/></ProtectedRoute>}/>
                                     <Route path="/edit-stock/:id" element={<ProtectedRoute><EditStock/></ProtectedRoute>}/>
                                     <Route path="/orders" element={<ProtectedRoute><Orders/></ProtectedRoute>}/>
+                                    <Route path="/add-order" element={<ProtectedRoute><CreateOrder/></ProtectedRoute>}/>
                                 </Routes>
                             </div>
                         </div>
