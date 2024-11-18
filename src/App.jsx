@@ -21,12 +21,13 @@ import PermissionsManagement from "./page/Authorization/PermissionsManagement.js
 import Stocks from "./page/Stock/Stocks.jsx";
 import CreateStock from "./page/Stock/CreateStock.jsx";
 import EditStock from "./page/Stock/EditStock.jsx";
+import CreatePassword from "./page/Authentication/CreatePassword.jsx";
 
 
 function App() {
     const location = useLocation();
 
-    const isAuthRoute = location.pathname.includes('login') || location.pathname.includes('register');
+    const isAuthRoute = location.pathname.includes('login') || location.pathname.includes('register') || location.pathname.includes('create-password');
 
     return (
         <UserContextProvider>
@@ -37,6 +38,7 @@ function App() {
                             <Routes>
                                 <Route path="/login" element={<Login/>}/>
                                 <Route path="/register" element={<Register/>}/>
+                                <Route path="/create-password/:username/:token" element={<CreatePassword/>}/>
                             </Routes>
                         </div>
                     </div>

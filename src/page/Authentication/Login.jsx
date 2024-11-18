@@ -26,7 +26,7 @@ function Login() {
         try {
             const response = await API.post('/login', data, CONFIG_HEADER);
             if (response.status === 200) {
-                if(response.data.role === 'SELLER' || response.data.role === 'ADMIN') {
+                if(response.data.role) {
                     setUserData(response.data);
                     localStorage.setItem('data', JSON.stringify(response.data));
                     navigate('/');
@@ -44,7 +44,7 @@ function Login() {
         <div className="card">
             <div className="card-body">
                 <LogoAdmin />
-                <h4 className="mb-2">Welcome to Sneat! 👋</h4>
+                <h4 className="mb-2">Welcome to Ashion Admin! 👋</h4>
                 <p className="mb-4">Please sign-in to your account and start the adventure</p>
                 {error && <p style={{ color: 'red' }}>{error}</p>}
                 <form id="formAuthentication" className="mb-3" onSubmit={handleSubmit}>

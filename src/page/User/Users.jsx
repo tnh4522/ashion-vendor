@@ -25,7 +25,7 @@ const Users = () => {
     const [tableParams, setTableParams] = useState({
         pagination: {
             current: 1,
-            pageSize: 10,
+            pageSize: 5,
         },
         filters: {},
         sorter: {},
@@ -70,7 +70,7 @@ const Users = () => {
         } catch (error) {
             console.error('Error fetching users:', error);
             openErrorNotification('Error fetching users.');
-            if (error.status === 401) {
+            if (error.response && error.response.status === 401) {
                 openErrorNotification("Unauthorized access");
                 logout();
                 return;
@@ -93,7 +93,7 @@ const Users = () => {
         } catch (error) {
             console.error('Error fetching roles:', error);
             openErrorNotification('Error fetching roles.');
-            if (error.status === 401) {
+            if (error.response && error.response.status === 401) {
                 openErrorNotification("Unauthorized access");
                 logout();
                 return;
@@ -106,7 +106,7 @@ const Users = () => {
             fetchRoles();
             fetchData();
         }
-    }, [userData.access]);
+    }, [userData.access, JSON.stringify(tableParams)]); // Thêm tableParams vào dependency để theo dõi sự thay đổi
 
     const handleDelete = (id) => {
         confirm({
@@ -208,7 +208,7 @@ const Users = () => {
             ...tableParams,
             pagination: {
                 ...tableParams.pagination,
-                current: 1, // Reset to first page when searching
+                current: 1,
             },
         });
         fetchData();
@@ -230,7 +230,7 @@ const Users = () => {
     };
 
     const renderRoleOptions = () => {
-        if(roleOptions.length === 0) {
+        if (roleOptions.length === 0) {
             return null;
         }
 
@@ -244,7 +244,7 @@ const Users = () => {
             <div className="card">
                 <div className="card-header"
                      style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                    <h4 className="card-title" style={{ color: '#696cff' }}>Users Management</h4>
+                    <h4 className="card-title" style={{color: '#696cff'}}>Users Management</h4>
                     <button className="btn btn-primary" onClick={() => navigate('/add-user')}>
                         Create User
                     </button>

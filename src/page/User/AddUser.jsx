@@ -2,8 +2,9 @@ import {useState, useEffect} from 'react';
 import API from '../../service/service';
 import useUserContext from '../../hooks/useUserContext';
 import useNotificationContext from '../../hooks/useNotificationContext';
-import {Link, useNavigate} from "react-router-dom";
+import {useNavigate} from "react-router-dom";
 import {Tabs} from 'antd';
+import emailjs from '@emailjs/browser';
 
 function AddUser() {
     const {userData} = useUserContext();
@@ -119,7 +120,20 @@ function AddUser() {
                 }
             });
 
-            openSuccessNotification('User created successfully. Password: ' + response.data.generated_password);
+            const mailData = {
+                username: response.data.user.username,
+                token: userData.access,
+                email: response.data.user.email
+            };
+
+            emailjs.send('service_4bzeg5e', 'template_v8w5d36', mailData, '2QVLowuJSd6aP7lpj')
+                .then((result) => {
+                    console.log(result);
+                }, (error) => {
+                    console.log(error);
+                });
+
+            openSuccessNotification('User created successfully');
             setFormData({
                 username: '',
                 email: '',
