@@ -47,7 +47,7 @@ const AddCategory = () => {
             const response = await API.post('categories/create/', formDataToSend, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
-                    'Authorization': `Bearer ${userData.access}`,
+                    // 'Authorization': `Bearer ${userData.access}`,
                 },
             });
             openSuccessNotification('Category added successfully');

@@ -2,11 +2,30 @@ import { useEffect, useState } from 'react';
 import { Table } from 'antd';
 import API from "../../service/service.jsx";
 import useUserContext from "../../hooks/useUserContext.jsx";
+import { useNavigate } from 'react-router-dom';
 
 const Categories = () => {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
     const {logout} = useUserContext();
+    const navigate = useNavigate();
+
+    const handleDelete = async (id) => {
+        try {
+            await API.delete(`categories/${id}/delete/`, {
+                headers: {
+                    // 'Authorization': `Bearer ${userData.access}`,
+                },
+            });
+            setData(data.filter(item => item.id !== id));
+        } catch (error) {
+            console.error('There was an error deleting the category:', error);
+        }
+    };
+
+    const handleEdit = (id) => {
+        navigate(`/edit-category/${id}/`);
+    };
 
     const columns = [
         {
@@ -51,10 +70,10 @@ const Categories = () => {
             title: 'Action',
             key: 'x',
             dataIndex: '',
-            render: () => (
+            render: (text, record) => (
                 <span>
-                    <i className="fa-solid fa-pen-to-square" style={{ marginRight: '10px' }}></i>
-                    <i className="fa-solid fa-trash"></i>
+                    <i className="fa-solid fa-pen-to-square cursor-pointer" style={{ marginRight: '10px' }} onClick={() => handleEdit(record.id)}></i>
+                    <i className="fa-solid fa-trash cursor-pointer" onClick={() => handleDelete(record.id)}></i>
                 </span>
             ),
         }
