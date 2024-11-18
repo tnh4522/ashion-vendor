@@ -12,6 +12,7 @@
   "dependencies": {
     "@ant-design/icons": "^5.5.1",
     "@ant-design/pro-components": "^2.7.19",
+    "@emailjs/browser": "^4.4.1",
     "antd": "^5.20.6",
     "axios": "^1.7.7",
     "bootstrap": "^5.3.3",

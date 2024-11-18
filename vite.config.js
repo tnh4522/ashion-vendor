@@ -5,12 +5,13 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   build: {
-    outDir: 'static/dist/',
+    outDir: 'D:\\ashionEcommerceApi\\static',
     manifest: "manifest.json",
     rollupOptions: {
       input: [
-        'src/App.jsx',
+        'src/main.jsx',
       ]
     }
   }
 })
+

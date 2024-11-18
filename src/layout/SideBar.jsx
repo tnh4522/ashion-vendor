@@ -13,7 +13,7 @@ function SideBar() {
         },
         {
             key: 'category',
-            label: 'Category',
+            label: 'Category Management',
             icon: <i className="menu-icon tf-icons fa-solid fa-layer-group"></i>,
             children: [
                 {
@@ -30,8 +30,8 @@ function SideBar() {
         },
         {
             key: 'sub2',
-            label: 'Products',
-            icon: <i className="menu-icon tf-icons fa-solid fa-boxes-stacked"></i>,
+            label: 'Product Management',
+            icon: <i className="menu-icon tf-icons fa-solid fa-bag-shopping"></i>,
             children: [
                 {
                     key: 'layout1',
@@ -46,13 +46,30 @@ function SideBar() {
             ],
         },
         {
+            key: 'stock',
+            label: 'Stock Management',
+            icon: <i className="menu-icon tf-icons fa-solid fa-boxes-stacked"></i>,
+            children: [
+                {
+                    key: 'stocks',
+                    label: <Link to="/stocks">List Stock</Link>,
+                    icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>
+                },
+                {
+                    key: 'add-stock',
+                    label: <Link to="/add-stock">Add Stock</Link>,
+                    icon: <i className="menu-icon tf-icons fa-solid fa-plus"></i>
+                }
+            ],
+        },
+        {
             key: 'orders',
             label: <Link to="/orders">Orders</Link>,
             icon: <i className="menu-icon tf-icons fa-solid fa-cart-shopping"></i>
         },
         {
             key: 'users',
-            label: 'Users',
+            label: 'Collaborator Management',
             icon: <i className="menu-icon tf-icons fa-solid fa-users"></i>,
             children: [
                 {
@@ -69,7 +86,7 @@ function SideBar() {
         },
         {
             key: 'customers',
-            label: 'Customers',
+            label: 'Customer Management',
             icon: <i className="menu-icon tf-icons fa-solid fa-address-book"></i>,
             children: [
                 {

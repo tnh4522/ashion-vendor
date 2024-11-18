@@ -18,13 +18,17 @@ import RoleManagement from "./page/Authorization/RoleManagement.jsx";
 import CreateRole from "./page/Authorization/CreateRole.jsx";
 import ViewRole from "./page/Authorization/ViewRole.jsx";
 import PermissionsManagement from "./page/Authorization/PermissionsManagement.jsx";
+import Stocks from "./page/Stock/Stocks.jsx";
+import CreateStock from "./page/Stock/CreateStock.jsx";
+import EditStock from "./page/Stock/EditStock.jsx";
+import CreatePassword from "./page/Authentication/CreatePassword.jsx";
 import Orders from './page/Order/Orders';
 
 
 function App() {
     const location = useLocation();
 
-    const isAuthRoute = location.pathname.includes('login') || location.pathname.includes('register');
+    const isAuthRoute = location.pathname.includes('login') || location.pathname.includes('register') || location.pathname.includes('create-password');
 
     return (
         <UserContextProvider>
@@ -35,6 +39,7 @@ function App() {
                             <Routes>
                                 <Route path="/login" element={<Login/>}/>
                                 <Route path="/register" element={<Register/>}/>
+                                <Route path="/create-password/:username/:token" element={<CreatePassword/>}/>
                             </Routes>
                         </div>
                     </div>
@@ -59,7 +64,10 @@ function App() {
                                     <Route path="/role" element={<ProtectedRoute><RoleManagement/></ProtectedRoute>}/>
                                     <Route path="/create-role" element={<ProtectedRoute><CreateRole/></ProtectedRoute>}/>
                                     <Route path="/view-role/:id" element={<ProtectedRoute><ViewRole/></ProtectedRoute>}/>
-                                    <Route path='permissions' element={<ProtectedRoute><PermissionsManagement/></ProtectedRoute>}/>
+                                    <Route path='/permissions' element={<ProtectedRoute><PermissionsManagement/></ProtectedRoute>}/>
+                                    <Route path="/stocks" element={<ProtectedRoute><Stocks/></ProtectedRoute>}/>
+                                    <Route path="/add-stock" element={<ProtectedRoute><CreateStock/></ProtectedRoute>}/>
+                                    <Route path="/edit-stock/:id" element={<ProtectedRoute><EditStock/></ProtectedRoute>}/>
                                     <Route path="/orders" element={<ProtectedRoute><Orders/></ProtectedRoute>}/>
                                 </Routes>
                             </div>
