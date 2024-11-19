@@ -12,6 +12,23 @@ function SideBar() {
             icon: <i className="menu-icon tf-icons bx bx-home-circle"></i>
         },
         {
+            key: 'store',
+            label: 'Store Management',
+            icon: <i className="menu-icon tf-icons fa-solid fa-store"></i>,
+            children: [
+                {
+                    key: 'stores',
+                    label: <Link to="/stores">List Store</Link>,
+                    icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>
+                },
+                {
+                    key: 'add-store',
+                    label: <Link to="/add-store">Add Store</Link>,
+                    icon: <i className="menu-icon tf-icons fa-solid fa-plus"></i>
+                }
+            ]
+        },
+        {
             key: 'category',
             label: 'Category Management',
             icon: <i className="menu-icon tf-icons fa-solid fa-layer-group"></i>,
@@ -63,6 +80,23 @@ function SideBar() {
             ],
         },
         {
+            key: 'brand',
+            label: 'Brand Management',
+            icon: <i className="menu-icon tf-icons fa-solid fa-tags"></i>,
+            children: [
+                {
+                    key: 'listBrand',
+                    label: <Link to="/brands">List Brand</Link>,
+                    icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>
+                },
+                {
+                    key: 'addBrand',
+                    label: <Link to="/add-brand">Add Brand</Link>,
+                    icon: <i className="menu-icon tf-icons fa-solid fa-plus"></i>
+                }
+            ],
+        },
+        {
             key: 'orders',
             label: 'Order Management',
             icon: <i className="menu-icon tf-icons fa-solid fa-cart-shopping"></i>,
@@ -79,7 +113,6 @@ function SideBar() {
                 }
             ],
         },
-        
         {
             key: 'users',
             label: 'Collaborator Management',
