@@ -30,6 +30,8 @@ import AddBrand from "./page/Brand/AddBrand.jsx";
 import Brands from "./page/Brand/BrandManagement.jsx";
 import BrandDetail from "./page/Brand/BrandDetail.jsx";
 import RoleDetail from "./page/Authorization/RoleDetail.jsx";
+import AddCustomer from "./page/Customer/AddCustomer.jsx";
+import CustomerDetail from "./page/Customer/CustomerDetail.jsx";
 
 
 function App() {
@@ -62,6 +64,8 @@ function App() {
                                     <Route path="/account" element={<ProtectedRoute><Account/></ProtectedRoute>}/>
                                     <Route path="/products" element={<ProtectedRoute><Products/></ProtectedRoute>}/>
                                     <Route path="/customers" element={<ProtectedRoute><Customers/></ProtectedRoute>}/>
+                                    <Route path="/add-customer" element={<ProtectedRoute><AddCustomer/></ProtectedRoute>}/>
+                                    <Route path="/customer/:id" element={<ProtectedRoute><CustomerDetail/></ProtectedRoute>}/>
                                     <Route path="/add-product" element={<ProtectedRoute><AddProduct/></ProtectedRoute>}/>
                                     <Route path="/categories" element={<ProtectedRoute><Categories/></ProtectedRoute>}/>
                                     <Route path="/add-category" element={<ProtectedRoute><AddCategory/></ProtectedRoute>}/>
