@@ -29,6 +29,7 @@ import StoreDetail from "./page/Store/StoreDetail.jsx";
 import AddBrand from "./page/Brand/AddBrand.jsx";
 import Brands from "./page/Brand/BrandManagement.jsx";
 import BrandDetail from "./page/Brand/BrandDetail.jsx";
+import RoleDetail from "./page/Authorization/RoleDetail.jsx";
 
 
 function App() {
@@ -68,9 +69,9 @@ function App() {
                                     <Route path="/users" element={<ProtectedRoute><Users/></ProtectedRoute>}/>
                                     <Route path="/add-user" element={<ProtectedRoute><AddUser/></ProtectedRoute>}/>
                                     <Route path="/user-detail/:id" element={<ProtectedRoute><UserDetail/></ProtectedRoute>}/>
-                                    <Route path="/role" element={<ProtectedRoute><RoleManagement/></ProtectedRoute>}/>
+                                    <Route path="/roles" element={<ProtectedRoute><RoleManagement/></ProtectedRoute>}/>
                                     <Route path="/create-role" element={<ProtectedRoute><CreateRole/></ProtectedRoute>}/>
-                                    <Route path="/view-role/:id" element={<ProtectedRoute><ViewRole/></ProtectedRoute>}/>
+                                    <Route path="/edit-role/:id" element={<ProtectedRoute><RoleDetail/></ProtectedRoute>}/>
                                     <Route path='/permissions' element={<ProtectedRoute><PermissionsManagement/></ProtectedRoute>}/>
                                     <Route path="/stocks" element={<ProtectedRoute><Stocks/></ProtectedRoute>}/>
                                     <Route path="/add-stock" element={<ProtectedRoute><CreateStock/></ProtectedRoute>}/>

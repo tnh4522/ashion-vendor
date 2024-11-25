@@ -80,21 +80,7 @@ const PermissionsManagement = () => {
         {
             title: 'Operations',
             key: 'action',
-            width: '10%',
-            render: (text, record) => (
-                <span>
-                    <i
-                        className="fa-solid fa-pen-to-square"
-                        style={{ marginRight: '10px', cursor: 'pointer' }}
-                        onClick={() => handleEdit(record)}
-                    ></i>
-                    <i
-                        className="fa-solid fa-trash"
-                        style={{ cursor: 'pointer' }}
-                        onClick={() => handleDelete(record)}
-                    ></i>
-                </span>
-            ),
+            width: '10%'
         },
     ];
 
@@ -119,7 +105,6 @@ const PermissionsManagement = () => {
 
     const handleEdit = (permission) => {
         console.log('Edit permission:', permission);
-        // Implement edit functionality as needed
         navigator(`/edit-permission/${permission.id}`);
     };
 

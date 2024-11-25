@@ -131,18 +131,13 @@ function SideBar() {
             ],
         },
         {
-            key: 'sub3',
-            label: <Link to="/account">Account Settings</Link>,
-            icon: <i className="menu-icon tf-icons fa-solid fa-address-card"></i>,
-        },
-        {
             key: 'sub4',
             label: 'Authorization',
             icon: <i className="menu-icon tf-icons bx bx-lock-open-alt"></i>,
             children: [
                 {
                     key: 'roleManagement',
-                    label: <Link to="/role">Role Management</Link>,
+                    label: <Link to="/roles">Role Management</Link>,
                     icon: <i className="menu-icon fa-solid fa-user-tie"></i>
                 },
                 {
@@ -151,6 +146,11 @@ function SideBar() {
                     icon: <i className="menu-icon fa-solid fa-briefcase"></i>
                 }
             ]
+        },
+        {
+            key: 'sub3',
+            label: <Link to="/account">Account Settings</Link>,
+            icon: <i className="menu-icon tf-icons fa-solid fa-address-card"></i>,
         },
         {
             key: 'support',

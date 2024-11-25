@@ -379,7 +379,6 @@ function AddUser() {
                                             </div>
                                         </div>
                                     </Tabs.TabPane>
-                                    <Tabs.TabPane tab="Permissions" key="6"></Tabs.TabPane>
                                 </Tabs>
 
                                 <div className="mt-2 text-end">

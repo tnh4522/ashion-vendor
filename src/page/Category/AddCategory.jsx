@@ -63,7 +63,6 @@ const AddCategory = () => {
             <div className="row">
                 <div className="col-md-12">
                     <div className="card mb-4">
-                        <h5 className="card-header">Add Category</h5>
                         <hr className="my-0"/>
                         <div className="card-body">
                             <form id="formAddCategory" method="POST" onSubmit={handleSubmit}>
