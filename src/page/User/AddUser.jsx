@@ -5,6 +5,8 @@ import useNotificationContext from '../../hooks/useNotificationContext';
 import {useNavigate} from "react-router-dom";
 import {Tabs} from 'antd';
 import emailjs from '@emailjs/browser';
+import AddressForm from './AddressForm';
+import Addresses from '../Address/Addresses';
 
 function AddUser() {
     const {userData} = useUserContext();
@@ -299,12 +301,7 @@ function AddUser() {
                                         </div>
                                     </Tabs.TabPane>
                                     <Tabs.TabPane tab="Address" key="3">
-                                        <div className="row">
-                                            {/* Address */}
-                                            <div className="mb-3 col-md-12">
-                                                <label htmlFor="address" className="form-label">Address</label>
-                                            </div>
-                                        </div>
+                                        <Addresses userId={formData.id} />
                                     </Tabs.TabPane>
                                     <Tabs.TabPane tab="Social Links" key="4">
                                         <div className="row">

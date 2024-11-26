@@ -31,6 +31,8 @@ import StoreDetail from "./page/Store/StoreDetail.jsx";
 import AddBrand from "./page/Brand/AddBrand.jsx";
 import Brands from "./page/Brand/BrandManagement.jsx";
 import BrandDetail from "./page/Brand/BrandDetail.jsx";
+import Addresses from "./page/Address/Addresses.jsx";
+import CreateAddress from "./page/Address/CreateAddress.jsx";
 
 
 function App() {
@@ -85,6 +87,9 @@ function App() {
                                     <Route path='/brands' element={<ProtectedRoute><Brands/></ProtectedRoute>}/>
                                     <Route path='/add-brand' element={<ProtectedRoute><AddBrand/></ProtectedRoute>}/>
                                     <Route path='/brand-detail/:id' element={<ProtectedRoute><BrandDetail/></ProtectedRoute>}/>
+                                    <Route path="/addresses" element={<Addresses />} />
+                                    <Route path="/create-address" element={<CreateAddress />} />
+                                    <Route path="/edit-address/:id" element={<CreateAddress />} />
                                 </Routes>
                             </div>
                         </div>

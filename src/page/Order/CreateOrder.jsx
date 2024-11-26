@@ -3,8 +3,10 @@ import API from "../../service/service.jsx";
 import useUserContext from "../../hooks/useUserContext.jsx";
 import useNotificationContext from "../../hooks/useNotificationContext.jsx";
 import { useNavigate } from "react-router-dom";
-import { Modal, Button, Input } from 'antd';
+import { Modal, Button, Input, Select, Table } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
+
+const { Option } = Select;
 
 const CreateOrder = () => {
     const { userData, logout } = useUserContext();
@@ -14,6 +16,7 @@ const CreateOrder = () => {
     const [customers, setCustomers] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCustomer, setSelectedCustomer] = useState(null);
+    const [products, setProducts] = useState([]);
 
     const [orderData, setOrderData] = useState({
         customer: '',
@@ -45,6 +48,20 @@ const CreateOrder = () => {
         calculateTotals();
     }, [orderData.items]);
 
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                const response = await API.get('products/', {
+                    headers: { 'Authorization': `Bearer ${userData.access}` }
+                });
+                setProducts(response.data.results);
+            } catch {
+                openErrorNotification('Error loading products');
+            }
+        };
+        fetchProducts();
+    }, []);
+
     const calculateTotals = () => {
         const subtotal = orderData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         const tax = subtotal * 0.1; // Assuming 10% tax
@@ -61,13 +78,21 @@ const CreateOrder = () => {
 
     const showModal = async () => {
         try {
-            // const response = await API.get('customers/', 
             const response = await API.get('users/', { 
                 headers: { 'Authorization': `Bearer ${userData.access}` },
+                params: {
+                page_size: 1000 
+            }
             });
-            setCustomers(response.data);
+
+            const filteredUsers = response.data.results.filter(user => 
+                user.role === null || user.role === 5
+            );
+            
+            setCustomers(filteredUsers);
             setIsModalVisible(true);
         } catch (error) {
+            console.error('Error:', error); 
             openErrorNotification('Error loading customers');
         }
     };
@@ -104,7 +129,32 @@ const CreateOrder = () => {
         setOrderData({ ...orderData, items: updatedItems });
     };
 
-    // ... (previous addItem and removeItem functions remain the same)
+    const handleProductSelect = (index, productId) => {
+        const product = products.find(p => p.id === productId);
+        if (product) {
+            const updatedItems = [...orderData.items];
+            updatedItems[index] = {
+                ...updatedItems[index],
+                product: productId,
+                price: product.price,
+                total_price: product.price * updatedItems[index].quantity
+            };
+            setOrderData({ ...orderData, items: updatedItems });
+        }
+    };
+
+    const paymentMethods = [
+        { value: 'COD', label: 'Cash on Delivery' },
+        { value: 'BANK_TRANSFER', label: 'Bank Transfer' },
+        { value: 'CREDIT_CARD', label: 'Credit Card' },
+        { value: 'PAYPAL', label: 'PayPal' }
+    ];
+
+    const shippingMethods = [
+        { value: 'STANDARD', label: 'Standard Shipping' },
+        { value: 'EXPRESS', label: 'Express Shipping' }
+    ];
+
     const addItem = () => {
         setOrderData({
             ...orderData,
@@ -157,10 +207,10 @@ const CreateOrder = () => {
                                         </div>
                                         {selectedCustomer && (
                                             <div className="selected-customer-info mt-2 p-2 border rounded">
-                                                <p className="mb-1">Name: {selectedCustomer.name}</p>
+                                                <p className="mb-1">Name: {selectedCustomer.username}</p>
                                                 <p className="mb-1">Email: {selectedCustomer.email}</p>
-                                                <p className="mb-0">Phone: {selectedCustomer.phone}</p>
-                                            </div>
+                                                <p className="mb-0">Phone: {selectedCustomer.phone_number}</p>
+                                            </div>  
                                         )}
                                     </div>
 
@@ -192,33 +242,36 @@ const CreateOrder = () => {
                                     {/* Shipping and Payment */}
                                     <div className="mb-3 col-md-6">
                                         <label className="form-label">Shipping Method</label>
-                                        <select
-                                            className="form-select"
-                                            name="shipping_method"
+                                        <Select
+                                            className="w-100"
+                                            placeholder="Select shipping method"
                                             value={orderData.shipping_method}
-                                            onChange={handleOrderChange}
+                                            onChange={(value) => handleOrderChange({ target: { name: 'shipping_method', value }})}
                                             required
                                         >
-                                            <option value="">Select shipping method</option>
-                                            <option value="standard">Standard Shipping</option>
-                                            <option value="express">Express Shipping</option>
-                                        </select>
+                                            {shippingMethods.map(method => (
+                                                <Option key={method.value} value={method.value}>
+                                                    {method.label}
+                                                </Option>
+                                            ))}
+                                        </Select>
                                     </div>
 
                                     <div className="mb-3 col-md-6">
                                         <label className="form-label">Payment Method</label>
-                                        <select
-                                            className="form-select"
-                                            name="payment_method"
+                                        <Select
+                                            className="w-100"
+                                            placeholder="Select payment method"
                                             value={orderData.payment_method}
-                                            onChange={handleOrderChange}
+                                            onChange={(value) => handleOrderChange({ target: { name: 'payment_method', value }})}
                                             required
                                         >
-                                            <option value="">Select payment method</option>
-                                            <option value="cod">Cash on Delivery</option>
-                                            <option value="bank_transfer">Bank Transfer</option>
-                                            <option value="credit_card">Credit Card</option>
-                                        </select>
+                                            {paymentMethods.map(method => (
+                                                <Option key={method.value} value={method.value}>
+                                                    {method.label}
+                                                </Option>
+                                            ))}
+                                        </Select>
                                     </div>
 
                                     {/* Order Items */}
@@ -228,14 +281,19 @@ const CreateOrder = () => {
                                             <div key={index} className="row mb-3 align-items-end">
                                                 <div className="col-md-3">
                                                     <label className="form-label">Product</label>
-                                                    <input
-                                                        className="form-control"
-                                                        type="text"
-                                                        name="product"
-                                                        value={item.product}
-                                                        onChange={(e) => handleItemChange(index, e)}
+                                                    <Select
+                                                        className="w-100"
+                                                        placeholder="Select product"
+                                                        value={item.product || undefined}
+                                                        onChange={(value) => handleProductSelect(index, value)}
                                                         required
-                                                    />
+                                                    >
+                                                        {products.map(product => (
+                                                            <Option key={product.id} value={product.id}>
+                                                                {product.name}
+                                                            </Option>
+                                                        ))}
+                                                    </Select>
                                                 </div>
                                                 <div className="col-md-2">
                                                     <label className="form-label">Size</label>
@@ -283,9 +341,19 @@ const CreateOrder = () => {
                                                         value={item.price}
                                                         onChange={(e) => handleItemChange(index, e)}
                                                         required
+                                                        readOnly
                                                     />
                                                 </div>
                                                 <div className="col-md-2">
+                                                    <label className="form-label">Total</label>
+                                                    <input
+                                                        className="form-control"
+                                                        type="number"
+                                                        value={item.total_price}
+                                                        readOnly
+                                                    />
+                                                </div>
+                                                <div className="col-md-2 mt-3">
                                                     <button
                                                         type="button"
                                                         className="btn btn-danger btn-sm"
@@ -396,16 +464,21 @@ const CreateOrder = () => {
                         </thead>
                         <tbody>
                             {customers
-                                .filter(customer => 
-                                    customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                    customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                    customer.phone.includes(searchTerm)
-                                )
+                                .filter(customer => {
+                                    const username = customer.username || '';
+                                    const email = customer.email || '';
+                                    const phone = customer.phone_number || '';
+                                    const search = searchTerm.toLowerCase();
+                                    
+                                    return username.toLowerCase().includes(search) ||
+                                        email.toLowerCase().includes(search) ||
+                                        phone.includes(searchTerm);
+                                })
                                 .map(customer => (
                                     <tr key={customer.id}>
-                                        <td>{customer.name}</td>
+                                        <td>{customer.username}</td>
                                         <td>{customer.email}</td>
-                                        <td>{customer.phone}</td>
+                                        <td>{customer.phone_number}</td>
                                         <td>
                                             <Button 
                                                 type="primary" 
