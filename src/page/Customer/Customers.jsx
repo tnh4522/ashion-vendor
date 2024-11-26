@@ -87,7 +87,7 @@ const Customers = () => {
             okText: 'Confirm',
             okType: 'danger',
             onOk() {
-                return API.delete(`customers/${id}/`, {
+                return API.delete(`customer/${id}/`, {
                     headers: {
                         'Authorization': `Bearer ${userData.access}`,
                     }
