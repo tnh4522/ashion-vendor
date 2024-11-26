@@ -1,22 +1,17 @@
 import { useEffect, useState } from 'react';
-import { Table, Modal, Input, Button, Select } from 'antd';
-import qs from 'qs';
+import { Table, Modal, Button } from 'antd';
 import API from "../../service/service.jsx";
 import useUserContext from "../../hooks/useUserContext.jsx";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import useNotificationContext from "../../hooks/useNotificationContext.jsx";
 
 const { confirm } = Modal;
-const { Option } = Select;
 
-const Addresses = ({ userId }) => {
+const Addresses = () => {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
-    const [searchParams, setSearchParams] = useState({
-        searchText: '',
-        addressType: '',
-    });
+    const { userId } = useParams(); // Get userId from URL parameter
 
     const [tableParams, setTableParams] = useState({
         pagination: {
@@ -28,46 +23,40 @@ const Addresses = ({ userId }) => {
     const { userData } = useUserContext();
     const { openSuccessNotification, openErrorNotification } = useNotificationContext();
 
-    const fetchData = () => {
+    const fetchData = async () => {
         setLoading(true);
-        let url = 'address/';
-        if (userId) {
-            url = `address/user/${userId}/`;
-        }
-
-        const params = {
-            page: tableParams.pagination.current,
-            page_size: tableParams.pagination.pageSize,
-            search: searchParams.searchText,
-            address_type: searchParams.addressType,
-        };
-
-        API.get(url + '?' + qs.stringify(params), {
-            headers: {
-                'Authorization': `Bearer ${userData.access}`,
-            },
-        })
-            .then((response) => {
-                setData(response.data.results);
-                setTableParams({
-                    ...tableParams,
-                    pagination: {
-                        ...tableParams.pagination,
-                        total: response.data.count,
-                    },
-                });
-                setLoading(false);
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-                openErrorNotification('Error fetching addresses');
-                setLoading(false);
+        try {
+            const response = await API.get(`address/${userId}/`, {
+                headers: {
+                    'Authorization': `Bearer ${userData.access}`,
+                },
+                params: {
+                    page: tableParams.pagination.current,
+                    page_size: tableParams.pagination.pageSize,
+                }
             });
+            
+            setData(response.data.results);
+            setTableParams({
+                ...tableParams,
+                pagination: {
+                    ...tableParams.pagination,
+                    total: response.data.count,
+                }
+            });
+        } catch (error) {
+            console.error('Error fetching addresses:', error);
+            openErrorNotification('Error fetching addresses');
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => {
-        fetchData();
-    }, [JSON.stringify(tableParams), userId]);
+        if (userId) {
+            fetchData();
+        }
+    }, [userId, tableParams.pagination.current, tableParams.pagination.pageSize]);
 
     const handleDelete = (id) => {
         confirm({
@@ -135,51 +124,18 @@ const Addresses = ({ userId }) => {
     ];
 
     return (
-        <div className={!userId ? "container-xxl flex-grow-1 container-p-y" : ""}>
+        <div className="container-xxl flex-grow-1 container-p-y">
             <div className="card">
                 <div className="card-header d-flex justify-content-between align-items-center">
-                    <h5 className="mb-0">Addresses</h5>
+                    <h5 className="mb-0">User Addresses</h5>
                     <Button 
                         type="primary"
                         onClick={() => navigate('/create-address')}
                     >
-                        Add New Address
+                        Create New Address
                     </Button>
                 </div>
                 <div className="card-body">
-                    <div className="row mb-3">
-                        <div className="col-md-4">
-                            <Input
-                                placeholder="Search addresses..."
-                                value={searchParams.searchText}
-                                onChange={(e) => setSearchParams({
-                                    ...searchParams,
-                                    searchText: e.target.value
-                                })}
-                            />
-                        </div>
-                        <div className="col-md-4">
-                            <Select
-                                style={{ width: '100%' }}
-                                placeholder="Select address type"
-                                value={searchParams.addressType}
-                                onChange={(value) => setSearchParams({
-                                    ...searchParams,
-                                    addressType: value
-                                })}
-                            >
-                                <Option value="">All</Option>
-                                <Option value="SHIPPING">Shipping</Option>
-                                <Option value="BILLING">Billing</Option>
-                            </Select>
-                        </div>
-                        <div className="col-md-4">
-                            <Button onClick={fetchData} type="primary">
-                                Search
-                            </Button>
-                        </div>
-                    </div>
-
                     <Table
                         columns={columns}
                         dataSource={data}
@@ -193,4 +149,4 @@ const Addresses = ({ userId }) => {
     );
 };
 
-export default Addresses; 
+export default Addresses;

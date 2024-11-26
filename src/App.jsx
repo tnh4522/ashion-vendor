@@ -92,9 +92,8 @@ function App() {
                                     <Route path='/brands' element={<ProtectedRoute><Brands/></ProtectedRoute>}/>
                                     <Route path='/add-brand' element={<ProtectedRoute><AddBrand/></ProtectedRoute>}/>
                                     <Route path='/brand-detail/:id' element={<ProtectedRoute><BrandDetail/></ProtectedRoute>}/>
-                                    <Route path="/addresses" element={<Addresses />} />
-                                    <Route path="/create-address" element={<CreateAddress />} />
-                                    <Route path="/edit-address/:id" element={<CreateAddress />} />
+                                    <Route path="/address" element={<ProtectedRoute><Addresses /></ProtectedRoute>}/>
+                                    <Route path="/create-address" element={<ProtectedRoute><CreateAddress/></ProtectedRoute>} />
                                 </Routes>
                             </div>
                         </div>

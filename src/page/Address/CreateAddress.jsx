@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Form, Input, Select, Switch, Button } from 'antd';
 import API from "../../service/service.jsx";
 import useUserContext from "../../hooks/useUserContext.jsx";
@@ -25,7 +24,7 @@ const CreateAddress = () => {
 
             if (response.status === 201) {
                 openSuccessNotification('Address created successfully');
-                navigate('/addresses');
+                navigate('/users');
             }
         } catch (error) {
             console.error('Error creating address:', error);
@@ -124,10 +123,9 @@ const CreateAddress = () => {
                         <Button type="primary" onClick={handleSubmit} className="me-2">
                             Save Address
                         </Button>
-                        <Button onClick={() => navigate('/addresses')}> 
+                        <Button onClick={() => navigate('/users')}> 
                             Cancel
                         </Button> 
-                        {/* xem lại cancel */}
                     </div>
                 </div>
             </div>

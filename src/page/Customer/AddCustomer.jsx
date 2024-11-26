@@ -46,42 +46,49 @@ function AddCustomer() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-         try {
-            // Tạo customer trước
+        try {
+            // Create customer
             const customerData = {
                 first_name: formData.first_name,
                 last_name: formData.last_name,
                 email: formData.email,
                 phone_number: formData.phone_number
             };
-             console.log('Sending customer data:', customerData);
+            
             const customerResponse = await API.post('customer/create/', customerData, {
                 headers: {
                     'Authorization': `Bearer ${userData.access}`,
                     'Content-Type': 'application/json',
                 }
             });
-             // Log toàn bộ response để debug
-            console.log('Full Customer Response:', customerResponse);
-             // Kiểm tra response.data
-            if (!customerResponse.data || !customerResponse.data.customer) {
-                throw new Error('Invalid response format from server');
+             // Log the customer response to check its structure
+            console.log('Customer Response:', customerResponse.data);
+             // Get customer ID directly from response data
+            const customerId = customerResponse.data.id;
+            
+            if (!customerId) {
+                throw new Error('Customer ID not received from server');
             }
-             // Lấy customer ID từ response.data.customer
-            const customer_id = customerResponse.data.customer.id;
-            console.log('Customer ID:', customer_id);
-             // Tạo address với customer ID
+             // Create address with the correct customer ID
             const addressDataWithCustomer = {
-                ...addressData,
-                customer: customer_id  
+                full_name: addressData.full_name,
+                phone_number: addressData.phone_number,
+                street_address: addressData.street_address,
+                city: addressData.city,
+                province: addressData.province,
+                postal_code: addressData.postal_code,
+                country: addressData.country,
+                customer: customerId  // Try using 'customer' instead of 'customer_id'
             };
              console.log('Sending address data:', addressDataWithCustomer);
-            await API.post('address/create/', addressDataWithCustomer, {
+            
+            const addressResponse = await API.post('address/create/', addressDataWithCustomer, {
                 headers: {
                     'Authorization': `Bearer ${userData.access}`,
                     'Content-Type': 'application/json',
                 }
             });
+             console.log('Address Response:', addressResponse.data);
              openSuccessNotification('Customer and address created successfully');
             navigator('/customers');
         } catch (error) {

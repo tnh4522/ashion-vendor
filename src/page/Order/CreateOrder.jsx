@@ -3,10 +3,10 @@ import API from "../../service/service.jsx";
 import useUserContext from "../../hooks/useUserContext.jsx";
 import useNotificationContext from "../../hooks/useNotificationContext.jsx";
 import { useNavigate } from "react-router-dom";
-import { Modal, Button, Input, Select, Table } from 'antd';
-import { SearchOutlined } from '@ant-design/icons';
-
-const { Option } = Select;
+import CustomerSelection from './CustomerSlection.jsx';
+import OrderItems from './OrderItem.jsx';
+import OrderSummary from './OrderSummary';
+import { Select} from 'antd';
 
 const CreateOrder = () => {
     const { userData, logout } = useUserContext();
@@ -44,9 +44,22 @@ const CreateOrder = () => {
     });
 
     useEffect(() => {
-        // Calculate totals whenever items change
+        const calculateTotals = () => {
+            const subtotal = orderData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const tax = subtotal * 0;
+            const shipping = orderData.shipping_cost || 0;
+            const discount = orderData.discount_amount || 0;
+
+            setOrderData(prev => ({
+                ...prev,
+                subtotal_price: subtotal,
+                tax_amount: tax,
+                total_price: subtotal + tax + shipping - discount
+            }));
+        };
+
         calculateTotals();
-    }, [orderData.items]);
+    }, [orderData.items, orderData.shipping_cost, orderData.discount_amount]);
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -60,21 +73,7 @@ const CreateOrder = () => {
             }
         };
         fetchProducts();
-    }, []);
-
-    const calculateTotals = () => {
-        const subtotal = orderData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        const tax = subtotal * 0.1; // Assuming 10% tax
-        const shipping = orderData.shipping_cost || 0;
-        const discount = orderData.discount_amount || 0;
-
-        setOrderData(prev => ({
-            ...prev,
-            subtotal_price: subtotal,
-            tax_amount: tax,
-            total_price: subtotal + tax + shipping - discount
-        }));
-    };
+    }, [userData.access, openErrorNotification]);
 
     const showModal = async () => {
         try {
@@ -86,7 +85,7 @@ const CreateOrder = () => {
             });
 
             const filteredUsers = response.data.results.filter(user => 
-                user.role === null || user.role === 5
+                user.role === null 
             );
             
             setCustomers(filteredUsers);
@@ -190,57 +189,24 @@ const CreateOrder = () => {
     };
     return (
         <div className="container-xxl flex-grow-1 container-p-y">
-            <div className="row">
-                <div className="col-md-12">
-                    <div className="card mb-4">
-                        <h5 className="card-header">Create Order</h5>
-                        <div className="card-body">
-                            <form id="formCreateOrder" method="POST" onSubmit={handleOrderSubmit}>
-                                <div className="row">
-                                    {/* Customer Selection */}
-                                    <div className="mb-3 col-md-12">
-                                        <div className="d-flex justify-content-between align-items-center">
-                                            <label className="form-label">Customer</label>
-                                            <Button type="button" onClick={showModal} icon={<SearchOutlined />}>
-                                                Select Customer
-                                            </Button>
-                                        </div>
-                                        {selectedCustomer && (
-                                            <div className="selected-customer-info mt-2 p-2 border rounded">
-                                                <p className="mb-1">Name: {selectedCustomer.username}</p>
-                                                <p className="mb-1">Email: {selectedCustomer.email}</p>
-                                                <p className="mb-0">Phone: {selectedCustomer.phone_number}</p>
-                                            </div>  
-                                        )}
-                                    </div>
+            <div className="card mb-4">
+                <h5 className="card-header">Create Order</h5>
+                <div className="card-body">
+                    <form onSubmit={handleOrderSubmit}>
+                        <div className="row">
+                            <CustomerSelection 
+                                selectedCustomer={selectedCustomer}
+                                showModal={showModal}
+                                isModalVisible={isModalVisible}
+                                setIsModalVisible={setIsModalVisible}
+                                searchTerm={searchTerm}
+                                setSearchTerm={setSearchTerm}
+                                customers={customers}
+                                handleCustomerSelect={handleCustomerSelect}
+                            />
 
-                                    {/* Addresses */}
-                                    <div className="mb-3 col-md-6">
-                                        <label className="form-label">Shipping Address</label>
-                                        <textarea
-                                            className="form-control"
-                                            name="shipping_address"
-                                            value={orderData.shipping_address}
-                                            onChange={handleOrderChange}
-                                            rows="3"
-                                            required
-                                        />
-                                    </div>
-
-                                    <div className="mb-3 col-md-6">
-                                        <label className="form-label">Billing Address</label>
-                                        <textarea
-                                            className="form-control"
-                                            name="billing_address"
-                                            value={orderData.billing_address}
-                                            onChange={handleOrderChange}
-                                            rows="3"
-                                            required
-                                        />
-                                    </div>
-
-                                    {/* Shipping and Payment */}
-                                    <div className="mb-3 col-md-6">
+                            {/* Shipping and Payment */}
+                            <div className="mb-3 col-md-6">
                                         <label className="form-label">Shipping Method</label>
                                         <Select
                                             className="w-100"
@@ -250,9 +216,9 @@ const CreateOrder = () => {
                                             required
                                         >
                                             {shippingMethods.map(method => (
-                                                <Option key={method.value} value={method.value}>
+                                                <Select.Option key={method.value} value={method.value}>
                                                     {method.label}
-                                                </Option>
+                                                </Select.Option>
                                             ))}
                                         </Select>
                                     </div>
@@ -267,234 +233,39 @@ const CreateOrder = () => {
                                             required
                                         >
                                             {paymentMethods.map(method => (
-                                                <Option key={method.value} value={method.value}>
+                                                <Select.Option key={method.value} value={method.value}>
                                                     {method.label}
-                                                </Option>
+                                                </Select.Option>
                                             ))}
                                         </Select>
                                     </div>
 
-                                    {/* Order Items */}
-                                    <div className="mb-3 col-md-12">
-                                        <label className="form-label">Order Items</label>
-                                        {orderData.items.map((item, index) => (
-                                            <div key={index} className="row mb-3 align-items-end">
-                                                <div className="col-md-3">
-                                                    <label className="form-label">Product</label>
-                                                    <Select
-                                                        className="w-100"
-                                                        placeholder="Select product"
-                                                        value={item.product || undefined}
-                                                        onChange={(value) => handleProductSelect(index, value)}
-                                                        required
-                                                    >
-                                                        {products.map(product => (
-                                                            <Option key={product.id} value={product.id}>
-                                                                {product.name}
-                                                            </Option>
-                                                        ))}
-                                                    </Select>
-                                                </div>
-                                                <div className="col-md-2">
-                                                    <label className="form-label">Size</label>
-                                                    <select
-                                                        className="form-select"
-                                                        name="size"
-                                                        value={item.size}
-                                                        onChange={(e) => handleItemChange(index, e)}
-                                                    >
-                                                        <option value="">Select size</option>
-                                                        <option value="S">S</option>
-                                                        <option value="M">M</option>
-                                                        <option value="L">L</option>
-                                                        <option value="XL">XL</option>
-                                                    </select>
-                                                </div>
-                                                <div className="col-md-2">
-                                                    <label className="form-label">Color</label>
-                                                    <input
-                                                        className="form-control"
-                                                        type="text"
-                                                        name="color"
-                                                        value={item.color}
-                                                        onChange={(e) => handleItemChange(index, e)}
-                                                    />
-                                                </div>
-                                                <div className="col-md-1">
-                                                    <label className="form-label">Qty</label>
-                                                    <input
-                                                        className="form-control"
-                                                        type="number"
-                                                        name="quantity"
-                                                        value={item.quantity}
-                                                        onChange={(e) => handleItemChange(index, e)}
-                                                        min="1"
-                                                        required
-                                                    />
-                                                </div>
-                                                <div className="col-md-2">
-                                                    <label className="form-label">Price</label>
-                                                    <input
-                                                        className="form-control"
-                                                        type="number"
-                                                        name="price"
-                                                        value={item.price}
-                                                        onChange={(e) => handleItemChange(index, e)}
-                                                        required
-                                                        readOnly
-                                                    />
-                                                </div>
-                                                <div className="col-md-2">
-                                                    <label className="form-label">Total</label>
-                                                    <input
-                                                        className="form-control"
-                                                        type="number"
-                                                        value={item.total_price}
-                                                        readOnly
-                                                    />
-                                                </div>
-                                                <div className="col-md-2 mt-3">
-                                                    <button
-                                                        type="button"
-                                                        className="btn btn-danger btn-sm"
-                                                        onClick={() => removeItem(index)}
-                                                    >
-                                                        Remove
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ))}
-                                        <button 
-                                            type="button" 
-                                            className="btn btn-secondary btn-sm"
-                                            onClick={addItem}
-                                        >
-                                            + Add Item
-                                        </button>
-                                    </div>
+                            <OrderItems 
+                                orderData={orderData}
+                                products={products}
+                                handleProductSelect={handleProductSelect}
+                                handleItemChange={handleItemChange}
+                                removeItem={removeItem}
+                                addItem={addItem}
+                            />
 
-                                    {/* Order Summary */}
-                                    <div className="col-md-12">
-                                        <div className="row justify-content-end">
-                                            <div className="col-md-6">
-                                                <div className="card">
-                                                    <div className="card-body">
-                                                        <h6 className="card-title">Order Summary</h6>
-                                                        <div className="d-flex justify-content-between mb-1">
-                                                            <span>Subtotal:</span>
-                                                            <span>${orderData.subtotal_price}</span>
-                                                        </div>
-                                                        <div className="d-flex justify-content-between mb-1">
-                                                            <span>Shipping:</span>
-                                                            <span>${orderData.shipping_cost}</span>
-                                                        </div>
-                                                        <div className="d-flex justify-content-between mb-1">
-                                                            <span>Tax:</span>
-                                                            <span>${orderData.tax_amount}</span>
-                                                        </div>
-                                                        <div className="d-flex justify-content-between mb-1">
-                                                            <span>Discount:</span>
-                                                            <span>${orderData.discount_amount}</span>
-                                                        </div>
-                                                        <hr />
-                                                        <div className="d-flex justify-content-between">
-                                                            <strong>Total:</strong>
-                                                            <strong>${orderData.total_price}</strong>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                            <OrderSummary orderData={orderData} />
 
-                                    {/* Note */}
-                                    <div className="mb-3 col-md-12">
-                                        <label className="form-label">Order Note</label>
-                                        <textarea
-                                            className="form-control"
-                                            name="note"
-                                            value={orderData.note}
-                                            onChange={handleOrderChange}
-                                            rows="3"
-                                        />
-                                    </div>
-
-                                    {/* Action Buttons */}
-                                    <div className="mt-4">
-                                        <button type="submit" className="btn btn-primary me-2">Create Order</button>
-                                        <button
-                                            type="button"
-                                            className="btn btn-outline-secondary"
-                                            onClick={() => navigate('/orders')}
-                                        >
-                                            Cancel
-                                        </button>
-                                    </div>
-                                </div>
-                            </form>
+                            {/* Action Buttons - Thêm class d-flex và justify-content-end */}
+                            <div className="mt-4 d-flex justify-content-end">
+                                <button type="submit" className="btn btn-primary me-2">Create Order</button>
+                                <button
+                                    type="button"
+                                    className="btn btn-outline-secondary"
+                                    onClick={() => navigate('/orders')}
+                                >
+                                    Cancel
+                                </button>
+                            </div>
                         </div>
-                    </div>
+                    </form>
                 </div>
             </div>
-
-            {/* Customer Selection Modal */}
-            <Modal
-                title="Select Customer"
-                visible={isModalVisible}
-                onCancel={() => setIsModalVisible(false)}
-                footer={null}
-                width={800}
-            >
-                <Input
-                    placeholder="Search customers..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    prefix={<SearchOutlined />}
-                    className="mb-3"
-                />
-                <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                    <table className="table">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Phone</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {customers
-                                .filter(customer => {
-                                    const username = customer.username || '';
-                                    const email = customer.email || '';
-                                    const phone = customer.phone_number || '';
-                                    const search = searchTerm.toLowerCase();
-                                    
-                                    return username.toLowerCase().includes(search) ||
-                                        email.toLowerCase().includes(search) ||
-                                        phone.includes(searchTerm);
-                                })
-                                .map(customer => (
-                                    <tr key={customer.id}>
-                                        <td>{customer.username}</td>
-                                        <td>{customer.email}</td>
-                                        <td>{customer.phone_number}</td>
-                                        <td>
-                                            <Button 
-                                                type="primary" 
-                                                size="small"
-                                                onClick={() => handleCustomerSelect(customer)}
-                                            >
-                                                Select
-                                            </Button>
-                                        </td>
-                                    </tr>
-                                ))
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            </Modal>
         </div>
     );
 };
