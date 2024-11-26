@@ -28,7 +28,6 @@ function AddCustomer() {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        console.log('Input changed:', name, value);
         setFormData(prevState => ({
             ...prevState,
             [name]: value
@@ -66,44 +65,32 @@ function AddCustomer() {
                 first_name: formData.first_name,
                 last_name: formData.last_name,
                 email: formData.email,
-                phone_number: formData.phone_number
-            };
-            
+                phone_number: formData.phone_number,
+                address: addressId,
+            }
             const customerResponse = await API.post('customer/create/', customerData, {
                 headers: {
                     'Authorization': `Bearer ${userData.access}`,
                     'Content-Type': 'application/json',
                 }
             });
-             // Log the customer response to check its structure
-            console.log('Customer Response:', customerResponse.data);
-             // Get customer ID directly from response data
-            const customerId = customerResponse.data.id;
-            
-            if (!customerId) {
-                throw new Error('Customer ID not received from server');
-            }
-             // Create address with the correct customer ID
-            const addressDataWithCustomer = {
-                full_name: addressData.full_name,
-                phone_number: addressData.phone_number,
-                street_address: addressData.street_address,
-                city: addressData.city,
-                province: addressData.province,
-                postal_code: addressData.postal_code,
-                country: addressData.country,
-                customer: customerId  // Try using 'customer' instead of 'customer_id'
-            };
-             console.log('Sending address data:', addressDataWithCustomer);
-            
-            const addressResponse = await API.post('address/create/', addressDataWithCustomer, {
-                headers: {
-                    'Authorization': `Bearer ${userData.access}`,
-                    'Content-Type': 'application/json',
-                }
+
+            openSuccessNotification('Customer created successfully');
+            setFormData({
+                first_name: '',
+                last_name: '',
+                email: '',
+                phone_number: '',
             });
-             console.log('Address Response:', addressResponse.data);
-             openSuccessNotification('Customer and address created successfully');
+            setAddressData({
+                full_name: '',
+                phone_number: '',
+                street_address: '',
+                city: '',
+                province: '',
+                postal_code: '',
+                country: 'Vietnam',
+            });
             navigator('/customers');
         } catch (error) {
             console.error('Error creating customer:', error);

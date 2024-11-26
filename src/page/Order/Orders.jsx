@@ -21,8 +21,8 @@ const Orders = () => {
         { title: 'Order ID', dataIndex: 'order_number', sorter: true },
         { 
             title: 'Customer', 
-            dataIndex: 'user', 
-            render: (user) => user?.username || 'N/A', 
+            dataIndex: 'customer', 
+            render: (customer) => customer?.first_name || 'N/A', 
             sorter: true 
         },
         { 
