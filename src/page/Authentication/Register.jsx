@@ -40,7 +40,7 @@ function Register() {
             email: email,
             password: password,
             password2: confirmPassword,
-            role: "SELLER"
+            role: 2
         };
         try {
             const response = await API.post("/register", data, CONFIG_HEADER);

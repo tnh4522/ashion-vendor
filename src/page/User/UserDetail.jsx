@@ -5,6 +5,7 @@ import useNotificationContext from "../../hooks/useNotificationContext.jsx";
 import {Tabs} from 'antd';
 import Permission from "../User/Permission.jsx";
 import {Link, useNavigate, useParams} from "react-router-dom";
+import Addresses from '../Address/Addresses';
 
 function UserDetail() {
     const {openSuccessNotification, openErrorNotification} = useNotificationContext();
@@ -106,7 +107,7 @@ function UserDetail() {
             formDataToSend.append("username", formData.username);
             formDataToSend.append("profile_picture", e.target.files[0]);
 
-            const response = await API.put("/me/", formDataToSend, {
+            const response = await API.put("/user/" + user_id + "/", formDataToSend, {
                 headers: {
                     Authorization: `Bearer ${userData.access}`,
                     "Content-Type": "multipart/form-data",
@@ -154,7 +155,7 @@ function UserDetail() {
                 formDataToSend.append("profile_picture", profilePictureFile);
             }
 
-            const response = await API.put("/me/", formDataToSend, {
+            const response = await API.put("/user/" + user_id + "/", formDataToSend, {
                 headers: {
                     Authorization: `Bearer ${userData.access}`,
                     "Content-Type": "multipart/form-data",
@@ -335,7 +336,9 @@ function UserDetail() {
                                     </form>
                                 </div>
                             </Tabs.TabPane>
-                            <Tabs.TabPane tab="Address" key="3"></Tabs.TabPane>
+                            <Tabs.TabPane tab="Address" key="3">
+                                <Addresses userId={user_id} />
+                            </Tabs.TabPane>
                             <Tabs.TabPane tab="Social Links" key="4">
                                 <div className="card-body">
                                     <form id="formAccountSettings" method="POST" onSubmit={handleSubmit}>

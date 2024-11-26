@@ -23,6 +23,8 @@ import Stocks from "./page/Stock/Stocks.jsx";
 import CreateStock from "./page/Stock/CreateStock.jsx";
 import EditStock from "./page/Stock/EditStock.jsx";
 import CreatePassword from "./page/Authentication/CreatePassword.jsx";
+import Orders from './page/Order/Orders';
+import CreateOrder from "./page/Order/CreateOrder.jsx";
 import EditCategory from "./page/Category/EditCategory.jsx";
 import AddStore from "./page/Store/AddStore.jsx";
 import Stores from "./page/Store/StoreManagement.jsx";
@@ -33,6 +35,8 @@ import BrandDetail from "./page/Brand/BrandDetail.jsx";
 import RoleDetail from "./page/Authorization/RoleDetail.jsx";
 import AddCustomer from "./page/Customer/AddCustomer.jsx";
 import CustomerDetail from "./page/Customer/CustomerDetail.jsx";
+import Addresses from "./page/Address/Addresses.jsx";
+import CreateAddress from "./page/Address/CreateAddress.jsx";
 
 
 function App() {
@@ -82,12 +86,16 @@ function App() {
                                     <Route path="/stocks" element={<ProtectedRoute><Stocks/></ProtectedRoute>}/>
                                     <Route path="/add-stock" element={<ProtectedRoute><CreateStock/></ProtectedRoute>}/>
                                     <Route path="/edit-stock/:id" element={<ProtectedRoute><EditStock/></ProtectedRoute>}/>
+                                    <Route path="/orders" element={<ProtectedRoute><Orders/></ProtectedRoute>}/>
+                                    <Route path="/add-order" element={<ProtectedRoute><CreateOrder/></ProtectedRoute>}/>
                                     <Route path='/stores' element={<ProtectedRoute><Stores/></ProtectedRoute>}/>
                                     <Route path='/add-store' element={<ProtectedRoute><AddStore/></ProtectedRoute>}/>
                                     <Route path='/store-detail/:id' element={<ProtectedRoute><StoreDetail/></ProtectedRoute>}/>
                                     <Route path='/brands' element={<ProtectedRoute><Brands/></ProtectedRoute>}/>
                                     <Route path='/add-brand' element={<ProtectedRoute><AddBrand/></ProtectedRoute>}/>
                                     <Route path='/brand-detail/:id' element={<ProtectedRoute><BrandDetail/></ProtectedRoute>}/>
+                                    <Route path="/address" element={<ProtectedRoute><Addresses /></ProtectedRoute>}/>
+                                    <Route path="/create-address" element={<ProtectedRoute><CreateAddress/></ProtectedRoute>} />
                                 </Routes>
                             </div>
                         </div>

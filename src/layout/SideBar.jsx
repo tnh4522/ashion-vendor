@@ -9,7 +9,7 @@ function SideBar() {
         {
             key: 'sub1',
             label: <Link to="/">Dashboard</Link>,
-            icon: <i className="menu-icon tf-icons bx bx-home-circle"></i>
+            icon: <i className="menu-icon fa-solid fa-house"></i>
         },
         {
             key: 'store',
@@ -97,6 +97,23 @@ function SideBar() {
             ],
         },
         {
+            key: 'orders',
+            label: 'Order Management',
+            icon: <i className="menu-icon tf-icons fa-solid fa-cart-shopping"></i>,
+            children: [
+                {
+                    key: 'orders',
+                    label: <Link to="/orders">List Orders</Link>,
+                    icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>
+                },
+                {
+                    key: 'add-order',
+                    label: <Link to="/add-order">Add Order</Link>,
+                    icon: <i className="menu-icon tf-icons fa-solid fa-plus"></i>
+                }
+            ],
+        },
+        {
             key: 'users',
             label: 'Collaborator Management',
             icon: <i className="menu-icon tf-icons fa-solid fa-users"></i>,
@@ -133,7 +150,7 @@ function SideBar() {
         {
             key: 'sub4',
             label: 'Authorization',
-            icon: <i className="menu-icon tf-icons bx bx-lock-open-alt"></i>,
+            icon: <i className="menu-icon tf-icons fa-solid fa-lock-open"></i>,
             children: [
                 {
                     key: 'roleManagement',
@@ -156,18 +173,18 @@ function SideBar() {
             key: 'support',
             label: <Link to="https://github.com/themeselection/sneat-html-admin-template-free/issues"
                          target="_blank">Support</Link>,
-            icon: <i className="menu-icon tf-icons bx bx-support"></i>,
+            icon: <i className="menu-icon tf-icons fa-solid fa-headset"></i>,
         },
         {
             key: 'documentation',
             label: <Link to="https://themeselection.com/demo/sneat-bootstrap-html-admin-template/documentation/"
                          target="_blank">Documentation</Link>,
-            icon: <i className="menu-icon tf-icons bx bx-file"></i>,
+            icon: <i className="menu-icon tf-icons fa-solid fa-file-invoice"></i>,
         },
         {
             key: 'logout',
             label: <Link to="#" onClick={logout}>Log Out</Link>,
-            icon: <i className="menu-icon bx bx-power-off me-2"></i>,
+            icon: <i className="menu-icon fa-solid fa-power-off"></i>,
         }
     ];
     return (

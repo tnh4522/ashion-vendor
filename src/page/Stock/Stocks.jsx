@@ -190,7 +190,7 @@ const Stocks = () => {
             <div className="card">
                 <div className="card-header"
                      style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                    <h5>Stock Management</h5>
+                    <h4 style={{ color: '#696cff' }}>Stock Management</h4>
                     <button className="btn btn-primary" onClick={() => navigate('/add-stock')}>
                         Create New Stock
                     </button>
