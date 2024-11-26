@@ -4,6 +4,7 @@ import useUserContext from "../../hooks/useUserContext.jsx";
 import useNotificationContext from "../../hooks/useNotificationContext.jsx";
 import {useNavigate} from "react-router-dom";
 import dataPermission from '../../constant/data-permission.js';
+import dataPermissionMin from '../../constant/data-permission-min.js'; // Import quyền tối thiểu
 
 const CreateRole = () => {
     const {userData, logout} = useUserContext();
@@ -17,6 +18,17 @@ const CreateRole = () => {
     });
 
     const [roles, setRoles] = useState([]);
+
+    // Tự động điền các quyền tối thiểu
+    useEffect(() => {
+        const defaultPermissions = dataPermissionMin.flatMap((modelPermission) =>
+            modelPermission.action.map((actionItem) => `${modelPermission.model}:${actionItem.name}`)
+        );
+        setFormData((prevFormData) => ({
+            ...prevFormData,
+            permissions: defaultPermissions,
+        }));
+    }, []);
 
     useEffect(() => {
         const fetchRoles = async () => {
@@ -69,10 +81,7 @@ const CreateRole = () => {
                     },
                 });
                 if (response.status === 200) {
-                    console.log('API permissions:', response.data.permissions_display);
-
-                    const rolePermissions = response.data.permissions_display; // Now in 'model:action' format
-
+                    const rolePermissions = response.data.permissions_display; // Format 'model:action'
                     setFormData((prevFormData) => ({
                         ...prevFormData,
                         permissions: rolePermissions,
@@ -117,11 +126,19 @@ const CreateRole = () => {
             <div className="row">
                 <div className="col-md-12">
                     <div className="card mb-4">
-                        <h5 className="card-header">Create Role</h5>
-                        <hr className="my-0"/>
                         <div className="card-body">
                             <form id="formCreateRole" method="POST" onSubmit={handleSubmit}>
                                 <div className="row">
+                                    <div className="mt-2" style={{textAlign: "end"}}>
+                                        <button type="submit" className="btn btn-primary me-2">Create Role</button>
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline-secondary"
+                                            onClick={() => navigate('/roles')}
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
                                     {/* Role Name */}
                                     <div className="mb-3 col-md-6">
                                         <label htmlFor="name" className="form-label">Role Name</label>
@@ -151,53 +168,45 @@ const CreateRole = () => {
                                             ))}
                                         </select>
                                     </div>
-                                    {/* Description */}
-                                    <div className="mb-3 col-md-12">
-                                        <label htmlFor="description" className="form-label">Description</label>
-                                        <textarea
-                                            className="form-control"
-                                            id="description"
-                                            name="description"
-                                            rows="3"
-                                            value={formData.description}
-                                            onChange={handleChange}
-                                            required
-                                        ></textarea>
-                                    </div>
                                     {/* Permissions */}
                                     <div className="mb-3 col-md-12">
-                                        <h5 className='mt-2'>Permissions</h5>
-                                        <hr/>
                                         {dataPermission.map((modelPermission, modelIndex) => (
                                             <div key={modelIndex}>
-                                                <label className="form-label">
-                                                    {modelPermission.model.charAt(0).toUpperCase() + modelPermission.model.slice(1)} Permissions
-                                                </label>
-                                                {modelPermission.action.map((actionItem, actionIndex) => {
-                                                    const permissionValue = `${modelPermission.model}:${actionItem.name}`;
-                                                    return (
-                                                        <div className="form-check" key={actionIndex}>
-                                                            <input
-                                                                className="form-check-input"
-                                                                type="checkbox"
-                                                                id={`${modelPermission.model}-${actionItem.name}`}
-                                                                value={permissionValue}
-                                                                onChange={handlePermissionChange}
-                                                                checked={formData.permissions.includes(permissionValue)}
-                                                            />
-                                                            <label
-                                                                className="form-check-label"
-                                                                htmlFor={`${modelPermission.model}-${actionItem.name}`}>
-                                                                {actionItem.description}
-                                                            </label>
-                                                        </div>
-                                                    );
-                                                })}
+                                                <h5>{modelPermission.model.charAt(0).toUpperCase() + modelPermission.model.slice(1)} Permissions</h5>
+                                                <table className="table table-bordered table-hover">
+                                                    <thead>
+                                                    <tr>
+                                                        <th scope="col">Permission Description</th>
+                                                        <th scope="col"
+                                                            style={{width: "100px", textAlign: "center"}}>Allow
+                                                        </th>
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    {modelPermission.action.map((actionItem, actionIndex) => {
+                                                        const permissionValue = `${modelPermission.model}:${actionItem.name}`;
+                                                        return (
+                                                            <tr key={actionIndex}>
+                                                                <td>{actionItem.description}</td>
+                                                                <td style={{textAlign: "center", width: "100px"}}>
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        id={`${modelPermission.model}-${actionItem.name}`}
+                                                                        value={permissionValue}
+                                                                        onChange={handlePermissionChange}
+                                                                        checked={formData.permissions.includes(permissionValue)}
+                                                                    />
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })}
+                                                    </tbody>
+                                                </table>
                                                 <hr/>
                                             </div>
                                         ))}
                                     </div>
-                                    <div className="mt-2">
+                                    <div className="mt-2" style={{textAlign: "end"}}>
                                         <button type="submit" className="btn btn-primary me-2">Create Role</button>
                                         <button
                                             type="button"

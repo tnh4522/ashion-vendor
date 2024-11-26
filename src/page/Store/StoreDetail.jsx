@@ -141,7 +141,7 @@ function StoreDetail() {
                             size="large"
                             style={{margin: '1.5rem 1rem'}}
                         >
-                            <Tabs.TabPane tab="Store Details" key="1">
+                            <Tabs.TabPane tab="Details" key="1">
                                 <div className="card-body">
                                     <form id="formStoreSettings" method="POST" onSubmit={handleSubmit}>
                                         <div className="row">
@@ -158,31 +158,15 @@ function StoreDetail() {
                                                     required
                                                 />
                                             </div>
-                                            {/* Store Description */}
-                                            <div className="mb-3 col-md-12">
-                                                <label htmlFor="store_description" className="form-label">Store Description</label>
-                                                <textarea
-                                                    className="form-control"
-                                                    id="store_description"
-                                                    name="store_description"
-                                                    rows="3"
-                                                    value={formData.store_description}
-                                                    onChange={handleInputChange}
-                                                ></textarea>
-                                            </div>
-                                            {/* Address */}
-                                            <div className="mb-3 col-md-12">
-                                                <label htmlFor="address" className="form-label">Address</label>
-                                                <textarea
-                                                    className="form-control"
-                                                    id="address"
-                                                    name="address"
-                                                    rows="3"
-                                                    value={formData.address}
-                                                    onChange={handleInputChange}
-                                                ></textarea>
-                                            </div>
                                             {/* Store Logo */}
+                                            <div className="mb-3 col-md-6 text-center">
+                                                {storeLogoPreview && (
+                                                    <div className="mt-3">
+                                                        <img src={storeLogoPreview} alt="Store Logo"
+                                                             style={{maxWidth: "200px", maxHeight: "200px"}}/>
+                                                    </div>
+                                                )}
+                                            </div>
                                             <div className="mb-3 col-md-6">
                                                 <label htmlFor="store_logo" className="form-label">Store Logo</label>
                                                 <input
@@ -192,11 +176,19 @@ function StoreDetail() {
                                                     name="store_logo"
                                                     onChange={handleFileChange}
                                                 />
-                                                {storeLogoPreview && (
-                                                    <div className="mt-3">
-                                                        <img src={storeLogoPreview} alt="Store Logo" style={{maxWidth: "200px"}} />
-                                                    </div>
-                                                )}
+                                            </div>
+                                            {/* Store Description */}
+                                            <div className="mb-3 col-md-12">
+                                                <label htmlFor="store_description" className="form-label">Store
+                                                    Description</label>
+                                                <textarea
+                                                    className="form-control"
+                                                    id="store_description"
+                                                    name="store_description"
+                                                    rows="3"
+                                                    value={formData.store_description}
+                                                    onChange={handleInputChange}
+                                                ></textarea>
                                             </div>
                                             {/* Rating */}
                                             <div className="mb-3 col-md-6">
@@ -210,6 +202,120 @@ function StoreDetail() {
                                                     readOnly
                                                 />
                                             </div>
+                                        </div>
+                                        <div className="mt-2 text-end">
+                                            <button type="reset" className="btn btn-outline-secondary me-2">Cancel
+                                            </button>
+                                            <button type="submit" className="btn btn-primary">Save changes</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </Tabs.TabPane>
+                            <Tabs.TabPane tab="Address" key="2">
+                                <div className="card-body">
+                                    <form id="formStoreSettings" method="POST" onSubmit={handleSubmit}>
+                                        <div className="row">
+                                            {/* Address */}
+                                            <div className="mb-3 col-md-6">
+                                                <label htmlFor="city" className="form-label">City</label>
+                                                <input
+                                                    className="form-control"
+                                                    type="text"
+                                                    id="city"
+                                                    name="city"
+                                                />
+                                            </div>
+                                            <div className="mb-3 col-md-6">
+                                                <label htmlFor="state" className="form-label">State</label>
+                                                <input
+                                                    className="form-control"
+                                                    type="text"
+                                                    id="state"
+                                                    name="state"
+                                                />
+                                            </div>
+                                            <div className="mb-3 col-md-6">
+                                                <label htmlFor="country" className="form-label">Country</label>
+                                                <input
+                                                    className="form-control"
+                                                    type="text"
+                                                    id="country"
+                                                    name="country"
+                                                />
+                                            </div>
+                                            <div className="mb-3 col-md-6">
+                                                <label htmlFor="zip_code" className="form-label">Zip Code</label>
+                                                <input
+                                                    className="form-control"
+                                                    type="text"
+                                                    id="zip_code"
+                                                    name="zip_code"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="mt-2 text-end">
+                                            <button type="reset" className="btn btn-outline-secondary me-2">Cancel
+                                            </button>
+                                            <button type="submit" className="btn btn-primary">Save changes</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </Tabs.TabPane>
+                            <Tabs.TabPane tab="Policies" key="3">
+                                <div className="card-body">
+                                    <form id="formStoreSettings" method="POST" onSubmit={handleSubmit}>
+                                        <div className="row">
+                                            {/* Policies */}
+                                            <div className="mb-3 col-md-12">
+                                                <label htmlFor="policies" className="form-label">Policies</label>
+                                                <textarea
+                                                    className="form-control"
+                                                    id="policies"
+                                                    name="policies"
+                                                    rows="3"
+                                                    value={formData.policies}
+                                                    onChange={handleInputChange}
+                                                ></textarea>
+                                            </div>
+                                            {/* Return Policy */}
+                                            <div className="mb-3 col-md-12">
+                                                <label htmlFor="return_policy" className="form-label">Return
+                                                    Policy</label>
+                                                <textarea
+                                                    className="form-control"
+                                                    id="return_policy"
+                                                    name="return_policy"
+                                                    rows="3"
+                                                    value={formData.return_policy}
+                                                    onChange={handleInputChange}
+                                                ></textarea>
+                                            </div>
+                                            {/* Shipping Policy */}
+                                            <div className="mb-3 col-md-12">
+                                                <label htmlFor="shipping_policy" className="form-label">Shipping
+                                                    Policy</label>
+                                                <textarea
+                                                    className="form-control"
+                                                    id="shipping_policy"
+                                                    name="shipping_policy"
+                                                    rows="3"
+                                                    value={formData.shipping_policy}
+                                                    onChange={handleInputChange}
+                                                ></textarea>
+                                            </div>
+                                        </div>
+                                        <div className="mt-2 text-end">
+                                            <button type="reset" className="btn btn-outline-secondary me-2">Cancel
+                                            </button>
+                                            <button type="submit" className="btn btn-primary">Save changes</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </Tabs.TabPane>
+                            <Tabs.TabPane tab="Sales" key="4">
+                                <div className="card-body">
+                                    <form id="formStoreSettings" method="POST" onSubmit={handleSubmit}>
+                                        <div className="row">
                                             {/* Total Sales */}
                                             <div className="mb-3 col-md-6">
                                                 <label htmlFor="total_sales" className="form-label">Total Sales</label>
@@ -248,7 +354,8 @@ function StoreDetail() {
                                             </div>
                                             {/* Seller Rating */}
                                             <div className="mb-3 col-md-6">
-                                                <label htmlFor="seller_rating" className="form-label">Seller Rating</label>
+                                                <label htmlFor="seller_rating" className="form-label">Seller
+                                                    Rating</label>
                                                 <input
                                                     className="form-control"
                                                     type="text"
@@ -260,55 +367,8 @@ function StoreDetail() {
                                             </div>
                                         </div>
                                         <div className="mt-2 text-end">
-                                            <button type="reset" className="btn btn-outline-secondary me-2">Cancel</button>
-                                            <button type="submit" className="btn btn-primary">Save changes</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </Tabs.TabPane>
-                            <Tabs.TabPane tab="Policies" key="2">
-                                <div className="card-body">
-                                    <form id="formStoreSettings" method="POST" onSubmit={handleSubmit}>
-                                        <div className="row">
-                                            {/* Policies */}
-                                            <div className="mb-3 col-md-12">
-                                                <label htmlFor="policies" className="form-label">Policies</label>
-                                                <textarea
-                                                    className="form-control"
-                                                    id="policies"
-                                                    name="policies"
-                                                    rows="3"
-                                                    value={formData.policies}
-                                                    onChange={handleInputChange}
-                                                ></textarea>
-                                            </div>
-                                            {/* Return Policy */}
-                                            <div className="mb-3 col-md-12">
-                                                <label htmlFor="return_policy" className="form-label">Return Policy</label>
-                                                <textarea
-                                                    className="form-control"
-                                                    id="return_policy"
-                                                    name="return_policy"
-                                                    rows="3"
-                                                    value={formData.return_policy}
-                                                    onChange={handleInputChange}
-                                                ></textarea>
-                                            </div>
-                                            {/* Shipping Policy */}
-                                            <div className="mb-3 col-md-12">
-                                                <label htmlFor="shipping_policy" className="form-label">Shipping Policy</label>
-                                                <textarea
-                                                    className="form-control"
-                                                    id="shipping_policy"
-                                                    name="shipping_policy"
-                                                    rows="3"
-                                                    value={formData.shipping_policy}
-                                                    onChange={handleInputChange}
-                                                ></textarea>
-                                            </div>
-                                        </div>
-                                        <div className="mt-2 text-end">
-                                            <button type="reset" className="btn btn-outline-secondary me-2">Cancel</button>
+                                            <button type="reset" className="btn btn-outline-secondary me-2">Cancel
+                                            </button>
                                             <button type="submit" className="btn btn-primary">Save changes</button>
                                         </div>
                                     </form>

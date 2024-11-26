@@ -52,8 +52,6 @@ const CreateStock = () => {
             <div className="row">
                 <div className="col-md-12">
                     <div className="card mb-4">
-                        <h5 className="card-header">Create Stock</h5>
-                        <hr className="my-0"/>
                         <div className="card-body">
                             <form id="formCreateStock" method="POST" onSubmit={handleStockSubmit}>
                                 <div className="row">
