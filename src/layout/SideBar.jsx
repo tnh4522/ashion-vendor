@@ -9,7 +9,7 @@ function SideBar() {
         {
             key: 'sub1',
             label: <Link to="/">Dashboard</Link>,
-            icon: <i className="menu-icon tf-icons bx bx-home-circle"></i>
+            icon: <i className="menu-icon fa-solid fa-house"></i>
         },
         {
             key: 'store',
@@ -103,7 +103,7 @@ function SideBar() {
             children: [
                 {
                     key: 'orders',
-                    label: <Link to="/orders">Orders</Link>,
+                    label: <Link to="/orders">List Orders</Link>,
                     icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>
                 },
                 {
@@ -155,7 +155,7 @@ function SideBar() {
         {
             key: 'sub4',
             label: 'Authorization',
-            icon: <i className="menu-icon tf-icons bx bx-lock-open-alt"></i>,
+            icon: <i className="menu-icon tf-icons fa-solid fa-lock-open"></i>,
             children: [
                 {
                     key: 'roleManagement',
@@ -170,33 +170,21 @@ function SideBar() {
             ]
         },
         {
-            key: 'customers',
-            label: 'Customers',
-            icon: <i className="menu-icon tf-icons far fa-user-circle"></i>,
-            children: [
-                {
-                    key: 'listCustomers',
-                    label: <Link to="/customers">List Customers</Link>,
-                    icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>
-                }
-            ],
-        },
-        {
             key: 'support',
             label: <Link to="https://github.com/themeselection/sneat-html-admin-template-free/issues"
                          target="_blank">Support</Link>,
-            icon: <i className="menu-icon tf-icons bx bx-support"></i>,
+            icon: <i className="menu-icon tf-icons fa-solid fa-headset"></i>,
         },
         {
             key: 'documentation',
             label: <Link to="https://themeselection.com/demo/sneat-bootstrap-html-admin-template/documentation/"
                          target="_blank">Documentation</Link>,
-            icon: <i className="menu-icon tf-icons bx bx-file"></i>,
+            icon: <i className="menu-icon tf-icons fa-solid fa-file-invoice"></i>,
         },
         {
             key: 'logout',
             label: <Link to="#" onClick={logout}>Log Out</Link>,
-            icon: <i className="menu-icon bx bx-power-off me-2"></i>,
+            icon: <i className="menu-icon fa-solid fa-power-off"></i>,
         }
     ];
     return (
