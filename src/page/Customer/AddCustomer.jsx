@@ -46,8 +46,22 @@ function AddCustomer() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
+
+        if (formData.first_name === '' || formData.last_name === '' || formData.email === '') {
+            openErrorNotification('First name, last name, and email are required.');
+            setLoading(false);
+            return;
+        }
+
         try {
-            // Create customer
+            const addressResponse = await API.post('address/create/', addressData, {
+                headers: {
+                    'Authorization': `Bearer ${userData.access}`,
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            const addressId = addressResponse.data.id;
             const customerData = {
                 first_name: formData.first_name,
                 last_name: formData.last_name,

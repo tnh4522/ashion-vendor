@@ -8,6 +8,7 @@ import Login from "./page/Authentication/Login.jsx";
 import Register from "./page/Authentication/Register.jsx";
 import Products from "./page/Product/Products.jsx";
 import AddProduct from "./page/Product/AddProduct.jsx";
+import EditProduct from "./page/Product/EditProduct.jsx";
 import Categories from "./page/Category/Categories.jsx";
 import AddCategory from "./page/Category/AddCategory.jsx";
 import Customers from "./page/Customer/Customers.jsx";
@@ -71,6 +72,7 @@ function App() {
                                     <Route path="/add-customer" element={<ProtectedRoute><AddCustomer/></ProtectedRoute>}/>
                                     <Route path="/customer/:id" element={<ProtectedRoute><CustomerDetail/></ProtectedRoute>}/>
                                     <Route path="/add-product" element={<ProtectedRoute><AddProduct/></ProtectedRoute>}/>
+                                    <Route path="/edit-product/:id" element={<ProtectedRoute><EditProduct/></ProtectedRoute>}/>
                                     <Route path="/categories" element={<ProtectedRoute><Categories/></ProtectedRoute>}/>
                                     <Route path="/add-category" element={<ProtectedRoute><AddCategory/></ProtectedRoute>}/>
                                     <Route path="/edit-category/:id" element={<ProtectedRoute><EditCategory/></ProtectedRoute>}/>
