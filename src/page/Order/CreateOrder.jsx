@@ -17,7 +17,6 @@ const CreateOrder = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCustomer, setSelectedCustomer] = useState(null);
     const [products, setProducts] = useState([]);
-    const [customerAddresses, setCustomerAddresses] = useState([]);
 
     const [orderData, setOrderData] = useState({
         customer: '',
@@ -33,13 +32,13 @@ const CreateOrder = () => {
         payment_method: '',
         note: '',
         items: [
-            { 
-                product: '', 
-                quantity: 1, 
+            {
+                product: '',
+                quantity: 1,
                 price: 0,
                 total_price: 0,
                 size: '',
-                color: '' 
+                color: ''
             }
         ],
     });
@@ -77,19 +76,19 @@ const CreateOrder = () => {
         }));
     };
 
-    const showModal = async () => {
+    const showCustomerModal = async () => {
         try {
-            const response = await API.get('customers/', { 
+            const response = await API.get('customers/', {
                 headers: { 'Authorization': `Bearer ${userData.access}` },
                 params: {
-                    page_size: 1000 
+                    page_size: 1000
                 }
             });
-            
+
             setCustomers(response.data.results);
             setIsModalVisible(true);
         } catch (error) {
-            console.error('Error:', error); 
+            console.error('Error:', error);
             openErrorNotification('Error loading customers');
         }
     };
@@ -99,8 +98,8 @@ const CreateOrder = () => {
         setOrderData(prev => ({
             ...prev,
             customer: customer.id,
-            shipping_address: customer.default_shipping_address,
-            billing_address: customer.default_billing_address,
+            shipping_address: customer.address,
+            billing_address: customer.address,
         }));
         setIsModalVisible(false);
     };
@@ -198,42 +197,60 @@ const CreateOrder = () => {
                                     <div className="mb-3 col-md-12">
                                         <div className="d-flex justify-content-between align-items-center">
                                             <label className="form-label">Customer</label>
-                                            <Button type="button" onClick={showModal} icon={<SearchOutlined />}>
+                                            <Button type="button" onClick={showCustomerModal} icon={<SearchOutlined />}>
                                                 Select Customer
                                             </Button>
                                         </div>
                                         {selectedCustomer && (
                                             <div className="selected-customer-info mt-2 p-2 border rounded">
-                                                <p className="mb-1">Name: {selectedCustomer.first_name + ' ' + selectedCustomer.last_name }</p>
-                                                <p className="mb-1">Email: {selectedCustomer.email}</p>
-                                                <p className="mb-0">Phone: {selectedCustomer.phone_number}</p>
-                                            </div>  
+                                                <p className="mb-1"><strong>Name:</strong> {selectedCustomer.first_name + ' ' + selectedCustomer.last_name }</p>
+                                                <p className="mb-1"><strong>Email:</strong> {selectedCustomer.email}</p>
+                                                <p className="mb-0"><strong>Phone:</strong> {selectedCustomer.phone_number}</p>
+                                            </div>
                                         )}
                                     </div>
 
                                     {/* Addresses */}
                                     <div className="mb-3 col-md-6">
                                         <label className="form-label">Shipping Address</label>
-                                        <textarea
-                                            className="form-control"
-                                            name="shipping_address"
-                                            value={orderData.shipping_address}
-                                            onChange={handleOrderChange}
-                                            rows="3"
-                                            required
-                                        />
+                                        {selectedCustomer ? (
+                                            <div className="selected-customer-info mt-2 p-2 border rounded">
+                                                <p className="mb-1"><strong>City:</strong> {selectedCustomer.address.city}</p>
+                                                <p className="mb-1"><strong>Country:</strong> {selectedCustomer.address.country}</p>
+                                                <p className="mb-0"><strong>Zip Code:</strong> {selectedCustomer.address.postal_code}</p>
+                                                <p className="mb-0"><strong>Address:</strong> {selectedCustomer.address.street_address}</p>
+                                            </div>
+                                        ): (
+                                            <textarea
+                                                className="form-control"
+                                                name="shipping_address"
+                                                value={orderData.shipping_address}
+                                                onChange={handleOrderChange}
+                                                rows="3"
+                                                required
+                                            />
+                                        )}
                                     </div>
 
                                     <div className="mb-3 col-md-6">
                                         <label className="form-label">Billing Address</label>
-                                        <textarea
-                                            className="form-control"
-                                            name="billing_address"
-                                            value={orderData.billing_address}
-                                            onChange={handleOrderChange}
-                                            rows="3"
-                                            required
-                                        />
+                                        {selectedCustomer ? (
+                                            <div className="selected-customer-info mt-2 p-2 border rounded">
+                                                <p className="mb-1"><strong>City:</strong> {selectedCustomer.address.city}</p>
+                                                <p className="mb-1"><strong>Country:</strong> {selectedCustomer.address.country}</p>
+                                                <p className="mb-0"><strong>Zip Code:</strong> {selectedCustomer.address.postal_code}</p>
+                                                <p className="mb-0"><strong>Address:</strong> {selectedCustomer.address.street_address}</p>
+                                            </div>
+                                        ): (
+                                            <textarea
+                                                className="form-control"
+                                                name="billing_address"
+                                                value={orderData.billing_address}
+                                                onChange={handleOrderChange}
+                                                rows="3"
+                                                required
+                                            />
+                                        )}
                                     </div>
 
                                     {/* Shipping and Payment */}
@@ -276,8 +293,7 @@ const CreateOrder = () => {
                                         <label className="form-label">Order Items</label>
                                         {orderData.items.map((item, index) => (
                                             <div key={index} className="row mb-3 align-items-end">
-                                                <div className="col-md-3">
-                                                    <label className="form-label">Product</label>
+                                                <div className="col-md-5">
                                                     <Select
                                                         className="w-100"
                                                         placeholder="Select product"
@@ -291,31 +307,6 @@ const CreateOrder = () => {
                                                             </Option>
                                                         ))}
                                                     </Select>
-                                                </div>
-                                                <div className="col-md-2">
-                                                    <label className="form-label">Size</label>
-                                                    <select
-                                                        className="form-select"
-                                                        name="size"
-                                                        value={item.size}
-                                                        onChange={(e) => handleItemChange(index, e)}
-                                                    >
-                                                        <option value="">Select size</option>
-                                                        <option value="S">S</option>
-                                                        <option value="M">M</option>
-                                                        <option value="L">L</option>
-                                                        <option value="XL">XL</option>
-                                                    </select>
-                                                </div>
-                                                <div className="col-md-2">
-                                                    <label className="form-label">Color</label>
-                                                    <input
-                                                        className="form-control"
-                                                        type="text"
-                                                        name="color"
-                                                        value={item.color}
-                                                        onChange={(e) => handleItemChange(index, e)}
-                                                    />
                                                 </div>
                                                 <div className="col-md-1">
                                                     <label className="form-label">Qty</label>
@@ -361,8 +352,8 @@ const CreateOrder = () => {
                                                 </div>
                                             </div>
                                         ))}
-                                        <button 
-                                            type="button" 
+                                        <button
+                                            type="button"
                                             className="btn btn-secondary btn-sm"
                                             onClick={addItem}
                                         >
@@ -466,7 +457,7 @@ const CreateOrder = () => {
                                     const email = customer.email || '';
                                     const phone = customer.phone_number || '';
                                     const search = searchTerm.toLowerCase();
-                                    
+
                                     return username.toLowerCase().includes(search) ||
                                         email.toLowerCase().includes(search) ||
                                         phone.includes(searchTerm);
@@ -477,8 +468,8 @@ const CreateOrder = () => {
                                         <td>{customer.email}</td>
                                         <td>{customer.phone_number}</td>
                                         <td>
-                                            <Button 
-                                                type="primary" 
+                                            <Button
+                                                type="primary"
                                                 size="small"
                                                 onClick={() => handleCustomerSelect(customer)}
                                             >
