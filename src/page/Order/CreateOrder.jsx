@@ -12,11 +12,13 @@ const CreateOrder = () => {
     const { userData, logout } = useUserContext();
     const { openSuccessNotification, openErrorNotification } = useNotificationContext();
     const navigate = useNavigate();
-    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [isCustomerModalVisible, setIsCustomerModalVisible] = useState(false);
+    const [isProductModalVisible, setIsProductModalVisible] = useState(false);
     const [customers, setCustomers] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCustomer, setSelectedCustomer] = useState(null);
     const [products, setProducts] = useState([]);
+    const [selectedProductIndex, setSelectedProductIndex] = useState(null);
 
     const [orderData, setOrderData] = useState({
         customer: '',
@@ -44,7 +46,6 @@ const CreateOrder = () => {
     });
 
     useEffect(() => {
-        // Calculate totals whenever items change
         calculateTotals();
     }, [orderData.items]);
 
@@ -64,7 +65,7 @@ const CreateOrder = () => {
 
     const calculateTotals = () => {
         const subtotal = orderData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        const tax = subtotal * 0.1; // Assuming 10% tax
+        const tax = subtotal * 0.1;
         const shipping = orderData.shipping_cost || 0;
         const discount = orderData.discount_amount || 0;
 
@@ -86,12 +87,17 @@ const CreateOrder = () => {
             });
 
             setCustomers(response.data.results);
-            setIsModalVisible(true);
+            setIsCustomerModalVisible(true);
         } catch (error) {
             console.error('Error:', error);
             openErrorNotification('Error loading customers');
         }
     };
+
+    const showProductModal = async (index) => {
+        setSelectedProductIndex(index);
+        setIsProductModalVisible(true);
+    }
 
     const handleCustomerSelect = (customer) => {
         setSelectedCustomer(customer);
@@ -101,7 +107,23 @@ const CreateOrder = () => {
             shipping_address: customer.address,
             billing_address: customer.address,
         }));
-        setIsModalVisible(false);
+        setIsCustomerModalVisible(false);
+    };
+
+    const handleProductSelect = (productId) => {
+        const product = products.find(p => p.id === productId);
+        if (product) {
+            const updatedItems = [...orderData.items];
+            updatedItems[selectedProductIndex] = {
+                ...updatedItems[selectedProductIndex],
+                product: productId,
+                productName: product.name,
+                price: product.price,
+                total_price: product.price * updatedItems[selectedProductIndex].quantity
+            };
+            setOrderData({ ...orderData, items: updatedItems });
+        }
+        setIsProductModalVisible(false);
     };
 
     const handleOrderChange = (e) => {
@@ -117,26 +139,11 @@ const CreateOrder = () => {
         const updatedItems = [...orderData.items];
         updatedItems[index][name] = value;
 
-        // Calculate item total
         if (name === 'quantity' || name === 'price') {
             updatedItems[index].total_price = updatedItems[index].quantity * updatedItems[index].price;
         }
 
         setOrderData({ ...orderData, items: updatedItems });
-    };
-
-    const handleProductSelect = (index, productId) => {
-        const product = products.find(p => p.id === productId);
-        if (product) {
-            const updatedItems = [...orderData.items];
-            updatedItems[index] = {
-                ...updatedItems[index],
-                product: productId,
-                price: product.price,
-                total_price: product.price * updatedItems[index].quantity
-            };
-            setOrderData({ ...orderData, items: updatedItems });
-        }
     };
 
     const paymentMethods = [
@@ -157,6 +164,7 @@ const CreateOrder = () => {
             items: [...orderData.items, { product: '', quantity: 1, price: '' }]
         });
     };
+
     const handleOrderSubmit = async (e) => {
         e.preventDefault();
         try {
@@ -179,11 +187,13 @@ const CreateOrder = () => {
             openErrorNotification('There was an error creating the order');
         }
     };
+
     const removeItem = (index) => {
         const updatedItems = [...orderData.items];
         updatedItems.splice(index, 1);
         setOrderData({ ...orderData, items: updatedItems });
     };
+
     return (
         <div className="container-xxl flex-grow-1 container-p-y">
             <div className="row">
@@ -294,19 +304,9 @@ const CreateOrder = () => {
                                         {orderData.items.map((item, index) => (
                                             <div key={index} className="row mb-3 align-items-end">
                                                 <div className="col-md-5">
-                                                    <Select
-                                                        className="w-100"
-                                                        placeholder="Select product"
-                                                        value={item.product || undefined}
-                                                        onChange={(value) => handleProductSelect(index, value)}
-                                                        required
-                                                    >
-                                                        {products.map(product => (
-                                                            <Option key={product.id} value={product.id}>
-                                                                {product.name}
-                                                            </Option>
-                                                        ))}
-                                                    </Select>
+                                                    <Button type="button" onClick={() => showProductModal(index)}>
+                                                        {item.productName ? item.productName : 'Select Product from your store'}
+                                                    </Button>
                                                 </div>
                                                 <div className="col-md-1">
                                                     <label className="form-label">Qty</label>
@@ -384,7 +384,7 @@ const CreateOrder = () => {
                                                             <span>Discount:</span>
                                                             <span>${orderData.discount_amount}</span>
                                                         </div>
-                                                        <hr />
+                                                        <hr/>
                                                         <div className="d-flex justify-content-between">
                                                             <strong>Total:</strong>
                                                             <strong>${orderData.total_price}</strong>
@@ -428,8 +428,8 @@ const CreateOrder = () => {
             {/* Customer Selection Modal */}
             <Modal
                 title="Select Customer"
-                visible={isModalVisible}
-                onCancel={() => setIsModalVisible(false)}
+                visible={isCustomerModalVisible}
+                onCancel={() => setIsCustomerModalVisible(false)}
                 footer={null}
                 width={800}
             >
@@ -479,6 +479,58 @@ const CreateOrder = () => {
                                     </tr>
                                 ))
                             }
+                        </tbody>
+                    </table>
+                </div>
+            </Modal>
+
+            <Modal
+                title="Select Product"
+                visible={isProductModalVisible}
+                onCancel={() => setIsProductModalVisible(false)}
+                footer={null}
+                width={800}
+            >
+                <Input
+                    placeholder="Search products..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    prefix={<SearchOutlined />}
+                    className="mb-3"
+                />
+                <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                    <table className="table">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Price</th>
+                            <th>Action</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {products
+                            .filter(product => {
+                                const name = product.name || '';
+                                const search = searchTerm.toLowerCase();
+
+                                return name.toLowerCase().includes(search);
+                            })
+                            .map(product => (
+                                <tr key={product.id}>
+                                    <td>{product.name}</td>
+                                    <td>${product.price}</td>
+                                    <td>
+                                        <Button
+                                            type="primary"
+                                            size="small"
+                                            onClick={() => handleProductSelect(product.id)}
+                                        >
+                                            Select
+                                        </Button>
+                                    </td>
+                                </tr>
+                            ))
+                        }
                         </tbody>
                     </table>
                 </div>
