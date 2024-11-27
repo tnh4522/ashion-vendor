@@ -19,6 +19,8 @@ const CreateOrder = () => {
     const [selectedCustomer, setSelectedCustomer] = useState(null);
     const [products, setProducts] = useState([]);
     const [selectedProductIndex, setSelectedProductIndex] = useState(null);
+    const [shippingAddress, setShippingAddress] = useState('');
+    const [billingAddress, setBillingAddress] = useState('');
 
     const [orderData, setOrderData] = useState({
         customer: '',
@@ -99,14 +101,22 @@ const CreateOrder = () => {
         setIsProductModalVisible(true);
     }
 
-    const handleCustomerSelect = (customer) => {
+    const handleCustomerSelect = async (customer) => {
         setSelectedCustomer(customer);
         setOrderData(prev => ({
             ...prev,
             customer: customer.id,
-            shipping_address: customer.address,
-            billing_address: customer.address,
         }));
+        try {
+            const response = await API.get(`address/${customer.address}/`, {
+                headers: { 'Authorization': `Bearer ${userData.access}` }
+            });
+            setShippingAddress(response.data);
+            setBillingAddress(response.data);
+        } catch (error) {
+            console.error('Error:', error);
+            openErrorNotification('Error loading addresses');
+        }
         setIsCustomerModalVisible(false);
     };
 
@@ -223,12 +233,12 @@ const CreateOrder = () => {
                                     {/* Addresses */}
                                     <div className="mb-3 col-md-6">
                                         <label className="form-label">Shipping Address</label>
-                                        {selectedCustomer ? (
+                                        {shippingAddress ? (
                                             <div className="selected-customer-info mt-2 p-2 border rounded">
-                                                <p className="mb-1"><strong>City:</strong> {selectedCustomer.address.city}</p>
-                                                <p className="mb-1"><strong>Country:</strong> {selectedCustomer.address.country}</p>
-                                                <p className="mb-0"><strong>Zip Code:</strong> {selectedCustomer.address.postal_code}</p>
-                                                <p className="mb-0"><strong>Address:</strong> {selectedCustomer.address.street_address}</p>
+                                                <p className="mb-1"><strong>City:</strong> {shippingAddress.city}</p>
+                                                <p className="mb-1"><strong>Country:</strong> {shippingAddress.country}</p>
+                                                <p className="mb-0"><strong>Zip Code:</strong> {shippingAddress.postal_code}</p>
+                                                <p className="mb-0"><strong>Address:</strong> {shippingAddress.street_address}</p>
                                             </div>
                                         ): (
                                             <textarea
@@ -244,12 +254,12 @@ const CreateOrder = () => {
 
                                     <div className="mb-3 col-md-6">
                                         <label className="form-label">Billing Address</label>
-                                        {selectedCustomer ? (
+                                        {billingAddress ? (
                                             <div className="selected-customer-info mt-2 p-2 border rounded">
-                                                <p className="mb-1"><strong>City:</strong> {selectedCustomer.address.city}</p>
-                                                <p className="mb-1"><strong>Country:</strong> {selectedCustomer.address.country}</p>
-                                                <p className="mb-0"><strong>Zip Code:</strong> {selectedCustomer.address.postal_code}</p>
-                                                <p className="mb-0"><strong>Address:</strong> {selectedCustomer.address.street_address}</p>
+                                                <p className="mb-1"><strong>City:</strong> {billingAddress.city}</p>
+                                                <p className="mb-1"><strong>Country:</strong> {billingAddress.country}</p>
+                                                <p className="mb-0"><strong>Zip Code:</strong> {billingAddress.postal_code}</p>
+                                                <p className="mb-0"><strong>Address:</strong> {billingAddress.street_address}</p>
                                             </div>
                                         ): (
                                             <textarea

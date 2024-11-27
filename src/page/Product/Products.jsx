@@ -155,7 +155,6 @@ const Products = () => {
                         icon={<i className="fa-solid fa-pen-to-square"></i>}
                         onClick={() => handleEdit(record.id)}
                     >
-                        Edit
                     </Button>
                     <Button
                         type="link"
@@ -163,7 +162,6 @@ const Products = () => {
                         icon={<i className="fa-solid fa-trash"></i>}
                         onClick={() => handleDelete(record.id)}
                     >
-                        Delete
                     </Button>
                 </span>
             ),
