@@ -19,8 +19,6 @@ const CreateOrder = () => {
     const [selectedCustomer, setSelectedCustomer] = useState(null);
     const [products, setProducts] = useState([]);
     const [selectedProductIndex, setSelectedProductIndex] = useState(null);
-    const [shippingAddress, setShippingAddress] = useState('');
-    const [billingAddress, setBillingAddress] = useState('');
 
     const [orderData, setOrderData] = useState({
         customer: '',
@@ -106,17 +104,18 @@ const CreateOrder = () => {
         setOrderData(prev => ({
             ...prev,
             customer: customer.id,
+            shipping_address: customer.address.id,
+            billing_address: customer.address.id
         }));
-        try {
-            const response = await API.get(`address/${customer.address}/`, {
-                headers: { 'Authorization': `Bearer ${userData.access}` }
-            });
-            setShippingAddress(response.data);
-            setBillingAddress(response.data);
-        } catch (error) {
-            console.error('Error:', error);
-            openErrorNotification('Error loading addresses');
-        }
+        // try {
+        //     const response = await API.get(`address/${customer.address.id}/`, {
+        //         headers: { 'Authorization': `Bearer ${userData.access}` }
+        //     });
+        //     setCustomers(response.data);
+        // } catch (error) {
+        //     console.error('Error:', error);
+        //     openErrorNotification('Error loading addresses');
+        // }
         setIsCustomerModalVisible(false);
     };
 
@@ -216,10 +215,12 @@ const CreateOrder = () => {
                                     {/* Customer Selection */}
                                     <div className="mb-3 col-md-12">
                                         <div className="d-flex justify-content-between align-items-center">
-                                            <label className="form-label">Customer</label>
-                                            <Button type="button" onClick={showCustomerModal} icon={<SearchOutlined />}>
-                                                Select Customer
-                                            </Button>
+                                            <div className="d-flex align-items-center">
+                                                <label className="form-label">Customer</label>
+                                                <Button type="button" onClick={showCustomerModal} icon={<SearchOutlined />} className="ml-2">
+                                                    Select Customer
+                                                </Button>
+                                            </div>
                                         </div>
                                         {selectedCustomer && (
                                             <div className="selected-customer-info mt-2 p-2 border rounded">
@@ -233,12 +234,12 @@ const CreateOrder = () => {
                                     {/* Addresses */}
                                     <div className="mb-3 col-md-6">
                                         <label className="form-label">Shipping Address</label>
-                                        {shippingAddress ? (
+                                        {selectedCustomer ? (
                                             <div className="selected-customer-info mt-2 p-2 border rounded">
-                                                <p className="mb-1"><strong>City:</strong> {shippingAddress.city}</p>
-                                                <p className="mb-1"><strong>Country:</strong> {shippingAddress.country}</p>
-                                                <p className="mb-0"><strong>Zip Code:</strong> {shippingAddress.postal_code}</p>
-                                                <p className="mb-0"><strong>Address:</strong> {shippingAddress.street_address}</p>
+                                            <p className="mb-1"><strong>City:</strong> {selectedCustomer.address.city}</p>
+                                                <p className="mb-1"><strong>Country:</strong> {selectedCustomer.address.country}</p>
+                                                <p className="mb-0"><strong>Zip Code:</strong> {selectedCustomer.address.postal_code}</p>
+                                                <p className="mb-0"><strong>Address:</strong> {selectedCustomer.address.street_address}</p>
                                             </div>
                                         ): (
                                             <textarea
@@ -254,12 +255,12 @@ const CreateOrder = () => {
 
                                     <div className="mb-3 col-md-6">
                                         <label className="form-label">Billing Address</label>
-                                        {billingAddress ? (
+                                        {selectedCustomer ? (
                                             <div className="selected-customer-info mt-2 p-2 border rounded">
-                                                <p className="mb-1"><strong>City:</strong> {billingAddress.city}</p>
-                                                <p className="mb-1"><strong>Country:</strong> {billingAddress.country}</p>
-                                                <p className="mb-0"><strong>Zip Code:</strong> {billingAddress.postal_code}</p>
-                                                <p className="mb-0"><strong>Address:</strong> {billingAddress.street_address}</p>
+                                            <p className="mb-1"><strong>City:</strong> {selectedCustomer.address.city}</p>
+                                                <p className="mb-1"><strong>Country:</strong> {selectedCustomer.address.country}</p>
+                                                <p className="mb-0"><strong>Zip Code:</strong> {selectedCustomer.address.postal_code}</p>
+                                                <p className="mb-0"><strong>Address:</strong> {selectedCustomer.address.street_address}</p>
                                             </div>
                                         ): (
                                             <textarea
@@ -461,38 +462,41 @@ const CreateOrder = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {customers
-                                .filter(customer => {
-                                    const username = customer.first_name || '';
-                                    const email = customer.email || '';
-                                    const phone = customer.phone_number || '';
-                                    const search = searchTerm.toLowerCase();
+                            {customers && customers.length > 0
+                                ? customers
+                                    .filter(customer => {
+                                        const username = customer.first_name || '';
+                                        const email = customer.email || '';
+                                        const phone = customer.phone_number || '';
+                                        const search = searchTerm.toLowerCase();
 
-                                    return username.toLowerCase().includes(search) ||
-                                        email.toLowerCase().includes(search) ||
-                                        phone.includes(searchTerm);
-                                })
-                                .map(customer => (
-                                    <tr key={customer.id}>
-                                        <td>{customer.first_name}</td>
-                                        <td>{customer.email}</td>
-                                        <td>{customer.phone_number}</td>
-                                        <td>
-                                            <Button
-                                                type="primary"
-                                                size="small"
-                                                onClick={() => handleCustomerSelect(customer)}
-                                            >
-                                                Select
-                                            </Button>
-                                        </td>
-                                    </tr>
-                                ))
+                                        return username.toLowerCase().includes(search) ||
+                                            email.toLowerCase().includes(search) ||
+                                            phone.includes(searchTerm);
+                                    })
+                                    .map(customer => (
+                                        <tr key={customer.id}>
+                                            <td>{customer.first_name}</td>
+                                            <td>{customer.email}</td>
+                                            <td>{customer.phone_number}</td>
+                                            <td>
+                                                <Button
+                                                    type="primary"
+                                                    size="small"
+                                                    onClick={() => handleCustomerSelect(customer)}
+                                                >
+                                                    Select
+                                                </Button>
+                                            </td>
+                                        </tr>
+                                    ))
+                                : <tr><td colSpan="4">No customers found</td></tr>
                             }
                         </tbody>
                     </table>
                 </div>
             </Modal>
+
 
             <Modal
                 title="Select Product"

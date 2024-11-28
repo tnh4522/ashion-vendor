@@ -81,7 +81,7 @@ const Orders = () => {
             render: (id) => (
                 <span>
                     <Link to={`/order-detail/${id}`} style={{ marginRight: '10px' }}>
-                        <i className="fa-solid fa-eye" style={{ color: 'blue' }}></i>
+                        <i className="fa-solid fa-edit" style={{ color: 'blue' }}></i>
                     </Link>
                     <i className="fa-solid fa-trash" style={{ color: 'red', cursor: 'pointer' }} onClick={() => handleDelete(id)}></i>
                 </span>

@@ -2,8 +2,17 @@ import { useEffect, useState } from "react";
 import useUserContext from "../../hooks/useUserContext.jsx";
 import API from "../../service/service.jsx";
 import useNotificationContext from "../../hooks/useNotificationContext.jsx";
-import { Tabs, Select } from 'antd';
+import { Tabs } from 'antd';
 import { Link, useNavigate, useParams } from "react-router-dom";
+
+const STATUS = {
+    PENDING: 'PENDING',
+    PROCESSING: 'PROCESSING',
+    SHIPPED: 'SHIPPED',
+    DELIVERED: 'DELIVERED',
+    CANCELED: 'CANCELED',
+    RETURNED: 'RETURNED'
+};
 
 function OrderDetail() {
     const { openSuccessNotification, openErrorNotification } = useNotificationContext();
@@ -64,76 +73,47 @@ function OrderDetail() {
                     shipping_address: response.data.shipping_address || "",
                     billing_address: response.data.billing_address || "",
                 });
-
-                await fetchCustomerData(response.data.shipping_address);
-                await fetchAddressData(response.data.shipping_address);
-                await fetchProductData(response.data.items);
-            } catch (error) {
-                console.error("Error fetching order data:", error);
-                if (error.status === 401) {
-                    openErrorNotification("Unauthorized access");
-                    logout();
-                    return;
-                }
-            }
-        };
-
-        const fetchCustomerData = async (addressId) => {
-            try {
-                const response = await API.get(`/customers/`, {
+                
+                const customerResponse = await API.get(`/customers/`, {
                     headers: {
                         Authorization: `Bearer ${userData.access}`,
                     },
                 });
-                const customer = response.data.results.find(customer => customer.address === addressId);
+                const customer = customerResponse.data.results.find(customer => customer.address.id === response.data.shipping_address);
                 if (customer) {
                     setCustomer(customer);
                 } else {
-                    console.error("Customer not found for addressId:", addressId);
+                    console.error("Customer not found for addressId:", response.data.shipping_address);
                     openErrorNotification("Customer not found.");
                 }
-            } catch (error) {
-                console.error("Error fetching customer data:", error);
-                openErrorNotification("Failed to fetch customer data.");
-            }
-        };
 
-        const fetchAddressData = async (addressId) => {
-            try {
-                const response = await API.get(`/address/${addressId}`, {
+                const addressResponse = await API.get(`/address/${response.data.shipping_address}`, {
                     headers: {
                         Authorization: `Bearer ${userData.access}`,
                     },
                 });
-                if (response.data) {
-                    setAddress(response.data);
+                if (addressResponse.data) {
+                    setAddress(addressResponse.data);
                     setFormData(prevState => ({
                         ...prevState,
-                        shipping_address: response.data.id || "",
-                        billing_address: response.data.id || "",
+                        shipping_address: addressResponse.data.id || "",
+                        billing_address: addressResponse.data.id || "",
                     }));
                 } else {
-                    console.error("Address not found for addressId:", addressId);
+                    console.error("Address not found for addressId:", response.data.shipping_address);
                     openErrorNotification("Address not found.");
                 }
-            } catch (error) {
-                console.error("Error fetching address data:", error);
-                openErrorNotification("Failed to fetch address data.");
-            }
-        };
 
-        const fetchProductData = async (items) => {
-            try {
-                const response = await API.get(`/products/`, {
+                const productResponse = await API.get(`/products/`, {
                     headers: {
                         Authorization: `Bearer ${userData.access}`,
                     },
                 });
-                setProducts(response.data);
+                setProducts(productResponse.data);
                 setFormData(prevState => ({
                     ...prevState,
-                    items: items.map(item => {
-                        const product = response.data.results.find(product => product.id === item.product);
+                    items: response.data.items.map(item => {
+                        const product = productResponse.data.results.find(product => product.id === item.product);
                         return {
                             ...item,
                             product_name: product ? product.name : '',
@@ -141,8 +121,12 @@ function OrderDetail() {
                     }),
                 }));
             } catch (error) {
-                console.error("Error fetching product data:", error);
-                openErrorNotification("Failed to fetch product data.");
+                console.error("Error fetching order data:", error);
+                if (error.status === 401) {
+                    openErrorNotification("Unauthorized access");
+                    logout();
+                    return;
+                }
             }
         };
 
@@ -208,8 +192,7 @@ function OrderDetail() {
                                     <form id="formOrderSettings" method="POST" onSubmit={handleSubmit}>
                                         <div className="row">
                                             {/* Order Number (Read Only) */}
-                                            <div className="mb-3 col-md-6">
-                                                <label htmlFor="order_number" className="form-label">Order Number</label>
+                                            <div className="mb-3 col-md-6">                                                <label htmlFor="order_number" className="form-label">Order Number</label>
                                                 <input
                                                     className="form-control"
                                                     type="text"
@@ -229,9 +212,9 @@ function OrderDetail() {
                                                 <label className="form-label">Customer Information</label>
                                                 {customer ? (
                                                     <div className="selected-customer-info p-2 border rounded">
-                                                        <p><strong>Name:</strong> {customer.first_name} {customer.last_name}</p>
-                                                        <p><strong>Email:</strong> {customer.email}</p>
-                                                        <p><strong>Phone:</strong> {customer.phone_number}</p>
+                                                        <p className="mb-1"><strong style={{ color: '#68798c' }}>Name:</strong> {customer.first_name} {customer.last_name}</p>
+                                                        <p className="mb-1"><strong style={{ color: '#68798c' }}>Email:</strong> {customer.email}</p>
+                                                        <p><strong style={{ color: '#68798c' }}>Phone:</strong> {customer.phone_number}</p>
                                                     </div>
                                                 ) : (
                                                     <p>Loading customer information...</p>
@@ -242,10 +225,10 @@ function OrderDetail() {
                                                 <label className="form-label">Address</label>
                                                 {address ? (
                                                     <div className="selected-customer-info p-2 border rounded">
-                                                        <p className="mb-1"><strong>City:</strong> {address.city}</p>
-                                                        <p className="mb-1"><strong>Country:</strong> {address.country}</p>
-                                                        <p className="mb-0"><strong>Zip Code:</strong> {address.postal_code}</p>
-                                                        <p className="mb-0"><strong>Address:</strong> {address.street_address}</p>
+                                                        <p className="mb-1"><strong style={{ color: '#68798c' }}>City:</strong> {address.city}</p>
+                                                        <p className="mb-1"><strong style={{ color: '#68798c' }}>Country:</strong> {address.country}</p>
+                                                        <p className="mb-0"><strong style={{ color: '#68798c' }}>Zip Code:</strong> {address.postal_code}</p>
+                                                        <p className="mb-0"><strong style={{ color: '#68798c' }}>Address:</strong> {address.street_address}</p>
                                                     </div>
                                                 ) : (
                                                     <p>Loading address information...</p>
@@ -343,15 +326,21 @@ function OrderDetail() {
                                             {/* Order Status */}
                                             <div className="mb-3 col-md-6">
                                                 <label htmlFor="status" className="form-label">Order Status</label>
-                                                <input
+                                                <select
                                                     className="form-control"
-                                                    type="text"
                                                     id="status"
                                                     name="status"
                                                     value={formData.status}
                                                     onChange={handleInputChange}
                                                     required
-                                                />
+                                                >
+                                                    <option value="">Select Status</option>
+                                                    {Object.entries(STATUS).map(([key, value]) => (
+                                                        <option key={key} value={value}>
+                                                            {key.charAt(0) + key.slice(1).toLowerCase()}
+                                                        </option>
+                                                    ))}
+                                                </select>
                                             </div>
                                             {/* Note */}
                                             <div className="mb-3 col-md-12">
