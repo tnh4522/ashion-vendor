@@ -1,25 +1,22 @@
-import { useState, useEffect } from 'react';
+import {useState, useEffect} from 'react';
 import API from "../../service/service.jsx";
 import useUserContext from "../../hooks/useUserContext.jsx";
 import useNotificationContext from "../../hooks/useNotificationContext.jsx";
-import { useNavigate } from "react-router-dom";
-import { Modal, Button, Input, Select} from 'antd';
-import { SearchOutlined } from '@ant-design/icons';
+import {useNavigate} from "react-router-dom";
+import {Modal, Button, Select} from 'antd';
+import {SearchOutlined} from '@ant-design/icons';
 import SelectProduct from "./SelectProduct.jsx";
 import SelectCustomer from "./SelectCustomer.jsx";
 
-const { Option } = Select;
+const {Option} = Select;
 
 const CreateOrder = () => {
-    const { userData, logout } = useUserContext();
-    const { openSuccessNotification, openErrorNotification } = useNotificationContext();
+    const {userData, logout} = useUserContext();
+    const {openSuccessNotification, openErrorNotification} = useNotificationContext();
     const navigate = useNavigate();
     const [isCustomerModalVisible, setIsCustomerModalVisible] = useState(false);
     const [isProductModalVisible, setIsProductModalVisible] = useState(false);
-    const [customers, setCustomers] = useState([]);
-    const [searchTerm, setSearchTerm] = useState('');
     const [selectedCustomer, setSelectedCustomer] = useState(null);
-    const [products, setProducts] = useState([]);
     const [selectedProductIndex, setSelectedProductIndex] = useState(null);
     const [shippingAddress, setShippingAddress] = useState('');
     const [billingAddress, setBillingAddress] = useState('');
@@ -53,19 +50,6 @@ const CreateOrder = () => {
         calculateTotals();
     }, [orderData.items]);
 
-    useEffect(() => {
-        const fetchProducts = async () => {
-            try {
-                const response = await API.get('products/', {
-                    headers: { 'Authorization': `Bearer ${userData.access}` }
-                });
-                setProducts(response.data.results);
-            } catch {
-                openErrorNotification('Error loading products');
-            }
-        };
-        fetchProducts();
-    }, []);
 
     const calculateTotals = () => {
         const subtotal = orderData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -82,20 +66,7 @@ const CreateOrder = () => {
     };
 
     const showCustomerModal = async () => {
-        try {
-            const response = await API.get('customers/', {
-                headers: { 'Authorization': `Bearer ${userData.access}` },
-                params: {
-                    page_size: 1000
-                }
-            });
-
-            setCustomers(response.data.results);
-            setIsCustomerModalVisible(true);
-        } catch (error) {
-            console.error('Error:', error);
-            openErrorNotification('Error loading customers');
-        }
+        setIsCustomerModalVisible(true);
     };
 
     const showProductModal = async (index) => {
@@ -116,24 +87,23 @@ const CreateOrder = () => {
         setIsCustomerModalVisible(false);
     };
 
-    const handleProductSelect = (productId) => {
-        const product = products.find(p => p.id === productId);
+    const handleProductSelect = (product) => {
         if (product) {
             const updatedItems = [...orderData.items];
             updatedItems[selectedProductIndex] = {
                 ...updatedItems[selectedProductIndex],
-                product: productId,
+                product: product.id,
                 productName: product.name,
                 price: product.price,
                 total_price: product.price * updatedItems[selectedProductIndex].quantity
             };
-            setOrderData({ ...orderData, items: updatedItems });
+            setOrderData({...orderData, items: updatedItems});
         }
         setIsProductModalVisible(false);
     };
 
     const handleOrderChange = (e) => {
-        const { name, value } = e.target;
+        const {name, value} = e.target;
         setOrderData({
             ...orderData,
             [name]: value,
@@ -141,7 +111,7 @@ const CreateOrder = () => {
     };
 
     const handleItemChange = (index, e) => {
-        const { name, value } = e.target;
+        const {name, value} = e.target;
         const updatedItems = [...orderData.items];
         updatedItems[index][name] = value;
 
@@ -149,25 +119,25 @@ const CreateOrder = () => {
             updatedItems[index].total_price = updatedItems[index].quantity * updatedItems[index].price;
         }
 
-        setOrderData({ ...orderData, items: updatedItems });
+        setOrderData({...orderData, items: updatedItems});
     };
 
     const paymentMethods = [
-        { value: 'COD', label: 'Cash on Delivery' },
-        { value: 'BANK_TRANSFER', label: 'Bank Transfer' },
-        { value: 'CREDIT_CARD', label: 'Credit Card' },
-        { value: 'PAYPAL', label: 'PayPal' }
+        {value: 'COD', label: 'Cash on Delivery'},
+        {value: 'BANK_TRANSFER', label: 'Bank Transfer'},
+        {value: 'CREDIT_CARD', label: 'Credit Card'},
+        {value: 'PAYPAL', label: 'PayPal'}
     ];
 
     const shippingMethods = [
-        { value: 'STANDARD', label: 'Standard Shipping' },
-        { value: 'EXPRESS', label: 'Express Shipping' }
+        {value: 'STANDARD', label: 'Standard Shipping'},
+        {value: 'EXPRESS', label: 'Express Shipping'}
     ];
 
     const addItem = () => {
         setOrderData({
             ...orderData,
-            items: [...orderData.items, { product: '', quantity: 1, price: '' }]
+            items: [...orderData.items, {product: '', quantity: 1, price: ''}]
         });
     };
 
@@ -197,7 +167,7 @@ const CreateOrder = () => {
     const removeItem = (index) => {
         const updatedItems = [...orderData.items];
         updatedItems.splice(index, 1);
-        setOrderData({ ...orderData, items: updatedItems });
+        setOrderData({...orderData, items: updatedItems});
     };
 
     return (
@@ -213,15 +183,19 @@ const CreateOrder = () => {
                                     <div className="mb-3 col-md-12">
                                         <div className="d-flex justify-content-between align-items-center">
                                             <label className="form-label">Customer</label>
-                                            <Button type="button" onClick={showCustomerModal} icon={<SearchOutlined />}>
+                                            <Button type="button" className="btn-link"
+                                                    onClick={showCustomerModal} icon={<SearchOutlined/>}>
                                                 Select Customer
                                             </Button>
                                         </div>
                                         {selectedCustomer && (
                                             <div className="selected-customer-info mt-2 p-2 border rounded">
-                                                <p className="mb-1"><strong>Name:</strong> {selectedCustomer.first_name + ' ' + selectedCustomer.last_name }</p>
+                                                <p className="mb-1">
+                                                    <strong>Name:</strong> {selectedCustomer.first_name + ' ' + selectedCustomer.last_name}
+                                                </p>
                                                 <p className="mb-1"><strong>Email:</strong> {selectedCustomer.email}</p>
-                                                <p className="mb-0"><strong>Phone:</strong> {selectedCustomer.phone_number}</p>
+                                                <p className="mb-0">
+                                                    <strong>Phone:</strong> {selectedCustomer.phone_number}</p>
                                             </div>
                                         )}
                                     </div>
@@ -232,11 +206,14 @@ const CreateOrder = () => {
                                         {shippingAddress ? (
                                             <div className="selected-customer-info mt-2 p-2 border rounded">
                                                 <p className="mb-1"><strong>City:</strong> {shippingAddress.city}</p>
-                                                <p className="mb-1"><strong>Country:</strong> {shippingAddress.country}</p>
-                                                <p className="mb-0"><strong>Zip Code:</strong> {shippingAddress.postal_code}</p>
-                                                <p className="mb-0"><strong>Address:</strong> {shippingAddress.street_address}</p>
+                                                <p className="mb-1"><strong>Country:</strong> {shippingAddress.country}
+                                                </p>
+                                                <p className="mb-0"><strong>Zip
+                                                    Code:</strong> {shippingAddress.postal_code}</p>
+                                                <p className="mb-0">
+                                                    <strong>Address:</strong> {shippingAddress.street_address}</p>
                                             </div>
-                                        ): (
+                                        ) : (
                                             <textarea
                                                 className="form-control"
                                                 name="shipping_address"
@@ -253,11 +230,14 @@ const CreateOrder = () => {
                                         {billingAddress ? (
                                             <div className="selected-customer-info mt-2 p-2 border rounded">
                                                 <p className="mb-1"><strong>City:</strong> {billingAddress.city}</p>
-                                                <p className="mb-1"><strong>Country:</strong> {billingAddress.country}</p>
-                                                <p className="mb-0"><strong>Zip Code:</strong> {billingAddress.postal_code}</p>
-                                                <p className="mb-0"><strong>Address:</strong> {billingAddress.street_address}</p>
+                                                <p className="mb-1"><strong>Country:</strong> {billingAddress.country}
+                                                </p>
+                                                <p className="mb-0"><strong>Zip
+                                                    Code:</strong> {billingAddress.postal_code}</p>
+                                                <p className="mb-0">
+                                                    <strong>Address:</strong> {billingAddress.street_address}</p>
                                             </div>
-                                        ): (
+                                        ) : (
                                             <textarea
                                                 className="form-control"
                                                 name="billing_address"
@@ -276,7 +256,12 @@ const CreateOrder = () => {
                                             className="w-100"
                                             placeholder="Select shipping method"
                                             value={orderData.shipping_method}
-                                            onChange={(value) => handleOrderChange({ target: { name: 'shipping_method', value }})}
+                                            onChange={(value) => handleOrderChange({
+                                                target: {
+                                                    name: 'shipping_method',
+                                                    value
+                                                }
+                                            })}
                                             required
                                         >
                                             {shippingMethods.map(method => (
@@ -293,7 +278,12 @@ const CreateOrder = () => {
                                             className="w-100"
                                             placeholder="Select payment method"
                                             value={orderData.payment_method}
-                                            onChange={(value) => handleOrderChange({ target: { name: 'payment_method', value }})}
+                                            onChange={(value) => handleOrderChange({
+                                                target: {
+                                                    name: 'payment_method',
+                                                    value
+                                                }
+                                            })}
                                             required
                                         >
                                             {paymentMethods.map(method => (
@@ -310,9 +300,19 @@ const CreateOrder = () => {
                                         {orderData.items.map((item, index) => (
                                             <div key={index} className="row mb-3 align-items-end">
                                                 <div className="col-md-4">
-                                                    <Button type="button" onClick={() => showProductModal(index)}>
-                                                        {item.productName ? item.productName : 'Select Product from your store'}
-                                                    </Button>
+                                                    {item.productName ?
+                                                        <input
+                                                            className="form-control"
+                                                            type="text"
+                                                            value={item.productName}
+                                                            readOnly
+                                                        /> :
+                                                        <Button icon={<SearchOutlined/>} type="button"
+                                                                className="btn-link"
+                                                                onClick={() => showProductModal(index)}>
+                                                            Select Product From Inventory
+                                                        </Button>
+                                                    }
                                                 </div>
                                                 <div className="col-md-1">
                                                     <label className="form-label">Size</label>
@@ -443,15 +443,15 @@ const CreateOrder = () => {
                                     </div>
 
                                     {/* Action Buttons */}
-                                    <div className="mt-4">
-                                        <button type="submit" className="btn btn-primary me-2">Create Order</button>
+                                    <div className="mt-4 text-end">
                                         <button
                                             type="button"
-                                            className="btn btn-outline-secondary"
+                                            className="btn btn-outline-secondary me-2"
                                             onClick={() => navigate('/orders')}
                                         >
                                             Cancel
                                         </button>
+                                        <button type="submit" className="btn btn-primary">Create Order</button>
                                     </div>
                                 </div>
                             </form>
@@ -465,17 +465,9 @@ const CreateOrder = () => {
                 visible={isCustomerModalVisible}
                 onCancel={() => setIsCustomerModalVisible(false)}
                 footer={null}
-                width={800}
+                width={1000}
             >
-                <Input
-                    placeholder="Search customers..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    prefix={<SearchOutlined />}
-                    className="mb-3"
-                />
                 <SelectCustomer
-                    searchTerm={searchTerm}
                     onCustomerSelect={handleCustomerSelect}
                 />
             </Modal>
@@ -485,10 +477,9 @@ const CreateOrder = () => {
                 visible={isProductModalVisible}
                 onCancel={() => setIsProductModalVisible(false)}
                 footer={null}
-                width={800}
+                width={1000}
             >
                 <SelectProduct
-                    searchTerm={searchTerm}
                     onProductSelect={handleProductSelect}
                 />
             </Modal>

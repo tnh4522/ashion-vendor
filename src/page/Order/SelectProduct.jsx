@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Table, Button, Input } from 'antd';
-import { SearchOutlined } from '@ant-design/icons';
 import qs from 'qs';
 import API from "../../service/service";
 import useUserContext from "../../hooks/useUserContext";
 import useNotificationContext from "../../hooks/useNotificationContext";
 
 // eslint-disable-next-line react/prop-types
-const Products = ({ searchTerm, onProductSelect }) => {
+const Products = ({ onProductSelect }) => {
     const [categories, setCategories] = useState([]);
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -20,7 +19,9 @@ const Products = ({ searchTerm, onProductSelect }) => {
         sortOrder: null,
         sortField: null,
     });
-
+    const [searchParams, setSearchParams] = useState({
+        searchText: '',
+    })
     const { userData, logout } = useUserContext();
     const { openErrorNotification } = useNotificationContext();
 
@@ -125,7 +126,7 @@ const Products = ({ searchTerm, onProductSelect }) => {
                     <Button
                         type="primary"
                         size="small"
-                        onClick={() => onProductSelect(record.id)}
+                        onClick={() => onProductSelect(record)}
                     >
                         Select
                     </Button>
@@ -142,7 +143,9 @@ const Products = ({ searchTerm, onProductSelect }) => {
         page_size: params.pagination?.pageSize,
         page: params.pagination?.current,
         ordering: params.sortField ? `${params.sortOrder === 'descend' ? '-' : ''}${params.sortField}` : undefined,
+        search: searchParams.searchText,
     });
+
 
     const handleTableChange = (pagination, filters, sorter) => {
         setTableParams({
@@ -157,20 +160,59 @@ const Products = ({ searchTerm, onProductSelect }) => {
         }
     };
 
+    const handleInputChange = (e) => {
+        const {name, value} = e.target;
+        setSearchParams((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+    };
+
+    const handleResetFilters = () => {
+        setSearchParams({
+            searchText: '',
+        });
+        setTableParams({
+            ...tableParams,
+            pagination: {
+                ...tableParams.pagination,
+                current: 1,
+            },
+        });
+        fetchData();
+    };
+
+    const handleSearch = () => {
+        setTableParams({
+            ...tableParams,
+            pagination: {
+                ...tableParams.pagination,
+                current: 1,
+            },
+        });
+        fetchData();
+    };
+
     return (
-        <div className="container-xxl flex-grow-1 container-p-y">
-            <div className="table-responsive text-nowrap" style={{padding: '20px'}}>
+        <div className="row m-3">
+            <div className="col-md-6">
                 <Input
-                    placeholder="Search products..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    prefix={<SearchOutlined/>}
-                    className="mb-3"
+                    id="searchText"
+                    name="searchText"
+                    value={searchParams.searchText}
+                    onChange={handleInputChange}
+                    placeholder="Search by first name, last name or email"
                 />
+            </div>
+            <div className="col-md-6">
+                <Button type="default" onClick={handleResetFilters} style={{marginRight: '10px'}}>Reset Filters</Button>
+                <Button type="primary" onClick={handleSearch}>Perform Search</Button>
+            </div>
+            <div className="table-responsive text-nowrap mt-4">
                 <Table
                     columns={columns}
                     rowKey={(record) => record.id}
-                    dataSource={data.filter(product => product.name.toLowerCase().includes(searchTerm.toLowerCase()))}
+                    dataSource={data}
                     pagination={tableParams.pagination}
                     loading={loading}
                     onChange={handleTableChange}
