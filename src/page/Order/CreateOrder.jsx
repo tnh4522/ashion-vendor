@@ -5,6 +5,8 @@ import useNotificationContext from "../../hooks/useNotificationContext.jsx";
 import { useNavigate } from "react-router-dom";
 import { Modal, Button, Input, Select} from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
+import SelectProduct from "./SelectProduct.jsx";
+import SelectCustomer from "./SelectCustomer.jsx";
 
 const { Option } = Select;
 
@@ -107,16 +109,10 @@ const CreateOrder = () => {
             ...prev,
             customer: customer.id,
         }));
-        try {
-            const response = await API.get(`address/${customer.address}/`, {
-                headers: { 'Authorization': `Bearer ${userData.access}` }
-            });
-            setShippingAddress(response.data);
-            setBillingAddress(response.data);
-        } catch (error) {
-            console.error('Error:', error);
-            openErrorNotification('Error loading addresses');
-        }
+
+        setShippingAddress(customer.address);
+        setBillingAddress(customer.address);
+
         setIsCustomerModalVisible(false);
     };
 
@@ -313,10 +309,39 @@ const CreateOrder = () => {
                                         <label className="form-label">Order Items</label>
                                         {orderData.items.map((item, index) => (
                                             <div key={index} className="row mb-3 align-items-end">
-                                                <div className="col-md-5">
+                                                <div className="col-md-4">
                                                     <Button type="button" onClick={() => showProductModal(index)}>
                                                         {item.productName ? item.productName : 'Select Product from your store'}
                                                     </Button>
+                                                </div>
+                                                <div className="col-md-1">
+                                                    <label className="form-label">Size</label>
+                                                    <select
+                                                        className="form-select"
+                                                        name="size"
+                                                        value={item.size}
+                                                        onChange={(e) => handleItemChange(index, e)}
+                                                    >
+                                                        <option value="S">S</option>
+                                                        <option value="M">M</option>
+                                                        <option value="L">L</option>
+                                                        <option value="XL">XL</option>
+                                                    </select>
+                                                </div>
+                                                <div className="col-md-1">
+                                                    <label className="form-label">Color</label>
+                                                    <select
+                                                        className="form-select"
+                                                        name="color"
+                                                        value={item.color}
+                                                        onChange={(e) => handleItemChange(index, e)}
+                                                    >
+                                                        <option style={{color: 'red'}} value="Red">Red</option>
+                                                        <option style={{color: 'blue'}} value="Blue">Blue</option>
+                                                        <option style={{color: 'green'}} value="Green">Green</option>
+                                                        <option style={{color: 'black'}} value="Black">Black</option>
+                                                        <option style={{color: 'yellow'}} value="Yellow">Yellow</option>
+                                                    </select>
                                                 </div>
                                                 <div className="col-md-1">
                                                     <label className="form-label">Qty</label>
@@ -351,13 +376,13 @@ const CreateOrder = () => {
                                                         readOnly
                                                     />
                                                 </div>
-                                                <div className="col-md-2 mt-3">
+                                                <div className="col-md-1">
                                                     <button
                                                         type="button"
                                                         className="btn btn-danger btn-sm"
                                                         onClick={() => removeItem(index)}
                                                     >
-                                                        Remove
+                                                        <i className="fa-solid fa-xmark"></i>
                                                     </button>
                                                 </div>
                                             </div>
@@ -435,7 +460,6 @@ const CreateOrder = () => {
                 </div>
             </div>
 
-            {/* Customer Selection Modal */}
             <Modal
                 title="Select Customer"
                 visible={isCustomerModalVisible}
@@ -450,48 +474,10 @@ const CreateOrder = () => {
                     prefix={<SearchOutlined />}
                     className="mb-3"
                 />
-                <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                    <table className="table">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Phone</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {customers
-                                .filter(customer => {
-                                    const username = customer.first_name || '';
-                                    const email = customer.email || '';
-                                    const phone = customer.phone_number || '';
-                                    const search = searchTerm.toLowerCase();
-
-                                    return username.toLowerCase().includes(search) ||
-                                        email.toLowerCase().includes(search) ||
-                                        phone.includes(searchTerm);
-                                })
-                                .map(customer => (
-                                    <tr key={customer.id}>
-                                        <td>{customer.first_name}</td>
-                                        <td>{customer.email}</td>
-                                        <td>{customer.phone_number}</td>
-                                        <td>
-                                            <Button
-                                                type="primary"
-                                                size="small"
-                                                onClick={() => handleCustomerSelect(customer)}
-                                            >
-                                                Select
-                                            </Button>
-                                        </td>
-                                    </tr>
-                                ))
-                            }
-                        </tbody>
-                    </table>
-                </div>
+                <SelectCustomer
+                    searchTerm={searchTerm}
+                    onCustomerSelect={handleCustomerSelect}
+                />
             </Modal>
 
             <Modal
@@ -501,49 +487,10 @@ const CreateOrder = () => {
                 footer={null}
                 width={800}
             >
-                <Input
-                    placeholder="Search products..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    prefix={<SearchOutlined />}
-                    className="mb-3"
+                <SelectProduct
+                    searchTerm={searchTerm}
+                    onProductSelect={handleProductSelect}
                 />
-                <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                    <table className="table">
-                        <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Price</th>
-                            <th>Action</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {products
-                            .filter(product => {
-                                const name = product.name || '';
-                                const search = searchTerm.toLowerCase();
-
-                                return name.toLowerCase().includes(search);
-                            })
-                            .map(product => (
-                                <tr key={product.id}>
-                                    <td>{product.name}</td>
-                                    <td>${product.price}</td>
-                                    <td>
-                                        <Button
-                                            type="primary"
-                                            size="small"
-                                            onClick={() => handleProductSelect(product.id)}
-                                        >
-                                            Select
-                                        </Button>
-                                    </td>
-                                </tr>
-                            ))
-                        }
-                        </tbody>
-                    </table>
-                </div>
             </Modal>
         </div>
     );
