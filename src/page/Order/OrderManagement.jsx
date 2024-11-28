@@ -5,6 +5,7 @@ import useUserContext from '../../hooks/useUserContext';
 import useNotificationContext from '../../hooks/useNotificationContext';
 import { Link } from 'react-router-dom';
 import { ExclamationCircleFilled } from '@ant-design/icons';
+import { orderStatus } from '../../utils/Constant';
 
 const Orders = () => {
     const { userData, logout } = useUserContext();
@@ -24,8 +25,8 @@ const Orders = () => {
         { title: 'Order ID', dataIndex: 'order_number', sorter: true },
         { 
             title: 'Customer', 
-            dataIndex: 'customer', 
-            render: (customer) => customer?.first_name || 'N/A', 
+            dataIndex: 'shipping_address', 
+            render: (customer) => customer.first_name || 'N/A', 
             sorter: true 
         },
         { 
@@ -46,28 +47,24 @@ const Orders = () => {
         { 
             title: 'Status', 
             dataIndex: 'status', 
-            filters: [
-                { text: 'Pending', value: 'PENDING' }, 
-                { text: 'Processing', value: 'PROCESSING' }, 
-                { text: 'Shipped', value: 'SHIPPED' },
-                { text: 'Delivered', value: 'DELIVERED' }, 
-                { text: 'Canceled', value: 'CANCELED' }, 
-                { text: 'Returned', value: 'RETURNED' }
-            ],
+            filters: Object.values(orderStatus).map(status => ({ text: status, value: status })), 
             render: (status) => {
                 let color = '';
                 switch (status) {
-                    case 'PENDING':
+                    case orderStatus.PENDING:
                         color = 'orange';
                         break;
-                    case 'PROCESSING':
+                    case orderStatus.PROCESSING:
                         color = 'yellow';
                         break;
-                    case 'CANCELED':
+                    case orderStatus.CANCELED:
                         color = 'red';
                         break;
-                    case 'SHIPPED':
+                    case orderStatus.SHIPPED:
                         color = 'green';
+                        break;
+                    case orderStatus.RETURNED:
+                        color = 'violet';
                         break;
                     default:
                         color = 'blue';
