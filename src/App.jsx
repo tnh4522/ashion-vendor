@@ -17,7 +17,6 @@ import AddUser from "./page/User/AddUser.jsx";
 import UserDetail from "./page/User/UserDetail.jsx";
 import RoleManagement from "./page/Authorization/RoleManagement.jsx";
 import CreateRole from "./page/Authorization/CreateRole.jsx";
-import ViewRole from "./page/Authorization/ViewRole.jsx";
 import PermissionsManagement from "./page/Authorization/PermissionsManagement.jsx";
 import Stocks from "./page/Stock/Stocks.jsx";
 import CreateStock from "./page/Stock/CreateStock.jsx";

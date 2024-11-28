@@ -3,7 +3,7 @@ import API from "../../service/service";
 import useUserContext from "../../hooks/useUserContext";
 import useNotificationContext from "../../hooks/useNotificationContext";
 import { useNavigate } from "react-router-dom";
-import { Steps, Button, message, Table, InputNumber } from 'antd';
+import { Steps, Button, Table, InputNumber } from 'antd';
 
 const { Step } = Steps;
 
@@ -33,8 +33,8 @@ const AddProduct = () => {
         stock: 0,
         weight: '',
         dimensions: '',
-        sizes: '',
-        colors: '',
+        sizes: 'S,M,L,XL',
+        colors: 'Red,Blue,Green,Black,White',
         status: 'ACTIVE',
         is_featured: false,
         is_new_arrival: false,
