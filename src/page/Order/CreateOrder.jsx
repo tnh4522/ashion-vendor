@@ -7,6 +7,7 @@ import {Modal, Button, Select} from 'antd';
 import {SearchOutlined} from '@ant-design/icons';
 import SelectProduct from "./SelectProduct.jsx";
 import SelectCustomer from "./SelectCustomer.jsx";
+import {paymentMethods, shippingMethods, sizes } from '../../utils/Constant';
 
 const {Option} = Select;
 
@@ -18,8 +19,8 @@ const CreateOrder = () => {
     const [isProductModalVisible, setIsProductModalVisible] = useState(false);
     const [selectedCustomer, setSelectedCustomer] = useState(null);
     const [selectedProductIndex, setSelectedProductIndex] = useState(null);
-    const [shippingAddress, setShippingAddress] = useState('');
-    const [billingAddress, setBillingAddress] = useState('');
+    const [shippingAddress, setShippingAddress] = useState(null);
+    const [billingAddress, setBillingAddress] = useState(null);
 
     const [orderData, setOrderData] = useState({
         customer: '',
@@ -31,8 +32,8 @@ const CreateOrder = () => {
         total_weight: 0,
         shipping_address: '',
         billing_address: '',
-        shipping_method: '',
-        payment_method: '',
+        shipping_method: 'EXPRESS',
+        payment_method: 'BANK_TRANSFER',
         note: '',
         items: [
             {
@@ -79,6 +80,8 @@ const CreateOrder = () => {
         setOrderData(prev => ({
             ...prev,
             customer: customer.id,
+            shipping_address: customer.address.id,
+            billing_address: customer.address.id
         }));
 
         setShippingAddress(customer.address);
@@ -122,18 +125,6 @@ const CreateOrder = () => {
         setOrderData({...orderData, items: updatedItems});
     };
 
-    const paymentMethods = [
-        {value: 'COD', label: 'Cash on Delivery'},
-        {value: 'BANK_TRANSFER', label: 'Bank Transfer'},
-        {value: 'CREDIT_CARD', label: 'Credit Card'},
-        {value: 'PAYPAL', label: 'PayPal'}
-    ];
-
-    const shippingMethods = [
-        {value: 'STANDARD', label: 'Standard Shipping'},
-        {value: 'EXPRESS', label: 'Express Shipping'}
-    ];
-
     const addItem = () => {
         setOrderData({
             ...orderData,
@@ -175,7 +166,7 @@ const CreateOrder = () => {
             <div className="row">
                 <div className="col-md-12">
                     <div className="card mb-4">
-                        <h5 className="card-header">Create Order</h5>
+                        <h4 className="card-header" style={{ color: '#696cff' }}>New Order</h4>
                         <div className="card-body">
                             <form id="formCreateOrder" method="POST" onSubmit={handleOrderSubmit}>
                                 <div className="row">
@@ -203,7 +194,7 @@ const CreateOrder = () => {
                                     {/* Addresses */}
                                     <div className="mb-3 col-md-6">
                                         <label className="form-label">Shipping Address</label>
-                                        {shippingAddress ? (
+                                        {selectedCustomer ? (
                                             <div className="selected-customer-info mt-2 p-2 border rounded">
                                                 <p className="mb-1"><strong>City:</strong> {shippingAddress.city}</p>
                                                 <p className="mb-1"><strong>Country:</strong> {shippingAddress.country}
@@ -227,7 +218,7 @@ const CreateOrder = () => {
 
                                     <div className="mb-3 col-md-6">
                                         <label className="form-label">Billing Address</label>
-                                        {billingAddress ? (
+                                        {selectedCustomer ? (
                                             <div className="selected-customer-info mt-2 p-2 border rounded">
                                                 <p className="mb-1"><strong>City:</strong> {billingAddress.city}</p>
                                                 <p className="mb-1"><strong>Country:</strong> {billingAddress.country}
@@ -254,7 +245,7 @@ const CreateOrder = () => {
                                         <label className="form-label">Shipping Method</label>
                                         <Select
                                             className="w-100"
-                                            placeholder="Select shipping method"
+                                            name="shipping_method"
                                             value={orderData.shipping_method}
                                             onChange={(value) => handleOrderChange({
                                                 target: {
@@ -276,7 +267,7 @@ const CreateOrder = () => {
                                         <label className="form-label">Payment Method</label>
                                         <Select
                                             className="w-100"
-                                            placeholder="Select payment method"
+                                            name = 'payment_method'
                                             value={orderData.payment_method}
                                             onChange={(value) => handleOrderChange({
                                                 target: {
@@ -321,11 +312,14 @@ const CreateOrder = () => {
                                                         name="size"
                                                         value={item.size}
                                                         onChange={(e) => handleItemChange(index, e)}
+                                                        required
                                                     >
-                                                        <option value="S">S</option>
-                                                        <option value="M">M</option>
-                                                        <option value="L">L</option>
-                                                        <option value="XL">XL</option>
+                                                        <option value="">Select Size</option>
+                                                        {sizes.map(size => (
+                                                        <option key={size.value} value={size.value}>
+                                                            {size.label}
+                                                        </option>
+                                                    ))}
                                                     </select>
                                                 </div>
                                                 <div className="col-md-1">
@@ -335,7 +329,9 @@ const CreateOrder = () => {
                                                         name="color"
                                                         value={item.color}
                                                         onChange={(e) => handleItemChange(index, e)}
+                                                        required
                                                     >
+                                                        <option value="">Select Size</option>
                                                         <option style={{color: 'red'}} value="Red">Red</option>
                                                         <option style={{color: 'blue'}} value="Blue">Blue</option>
                                                         <option style={{color: 'green'}} value="Green">Green</option>
@@ -471,6 +467,7 @@ const CreateOrder = () => {
                     onCustomerSelect={handleCustomerSelect}
                 />
             </Modal>
+
 
             <Modal
                 title="Select Product"
