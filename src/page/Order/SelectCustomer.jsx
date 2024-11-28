@@ -1,14 +1,13 @@
 import { useEffect, useState } from 'react';
-import {Table, Button} from 'antd';
+import { Table, Button, Input } from 'antd';
 import API from '../../service/service';
 import useUserContext from '../../hooks/useUserContext';
 import useNotificationContext from '../../hooks/useNotificationContext';
 
-
 // eslint-disable-next-line react/prop-types
 const Customers = ({ searchTerm, onCustomerSelect }) => {
     const { userData, logout } = useUserContext();
-    const { openSuccessNotification, openErrorNotification } = useNotificationContext();
+    const { openErrorNotification } = useNotificationContext();
 
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -20,6 +19,10 @@ const Customers = ({ searchTerm, onCustomerSelect }) => {
         filters: {},
         sorter: {},
     });
+    const [searchParams, setSearchParams] = useState({
+        searchText: searchTerm || '',
+    });
+
 
     const fetchData = async () => {
         setLoading(true);
@@ -33,8 +36,8 @@ const Customers = ({ searchTerm, onCustomerSelect }) => {
                 params.ordering = tableParams.sorter.order === 'ascend' ? tableParams.sorter.field : `-${tableParams.sorter.field}`;
             }
 
-            if (searchTerm) {
-                params.search = searchTerm;
+            if (searchParams.searchText) {
+                params.search = searchParams.searchText;
             }
 
             const response = await API.get('customers/', {
@@ -68,8 +71,7 @@ const Customers = ({ searchTerm, onCustomerSelect }) => {
         if (userData.access) {
             fetchData();
         }
-    }, [userData.access, searchTerm, JSON.stringify(tableParams)]);
-
+    }, [userData.access, JSON.stringify(tableParams)]);
 
     const columns = [
         {
@@ -122,17 +124,68 @@ const Customers = ({ searchTerm, onCustomerSelect }) => {
         });
     };
 
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setSearchParams((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+    };
+
+    const handleResetFilters = () => {
+        setSearchParams({
+            searchText: '',
+        });
+        setTableParams({
+            ...tableParams,
+            pagination: {
+                ...tableParams.pagination,
+                current: 1,
+            },
+        });
+        fetchData();
+    };
+
+    const handleSearch = () => {
+        setTableParams({
+            ...tableParams,
+            pagination: {
+                ...tableParams.pagination,
+                current: 1,
+            },
+        });
+        fetchData();
+    };
+
     return (
-        <div className="table-responsive text-nowrap" style={{padding: '20px'}}>
-        <Table
-                columns={columns}
-                rowKey={(record) => record.id}
-                dataSource={data}
-                pagination={tableParams.pagination}
-                loading={loading}
-                onChange={handleTableChange}
-                style={{ border: '1px solid #ebedf2' }}
-            />
+        <div className="row m-3">
+            <div className="col-md-6">
+                <Input
+                    id="searchText"
+                    name="searchText"
+                    value={searchParams.searchText}
+                    onChange={handleInputChange}
+                    placeholder="Search by first name, last name or email"
+                />
+            </div>
+            <div className="col-md-6">
+                <Button type="default" onClick={handleResetFilters} style={{ marginRight: '10px' }}>
+                    Reset Filters
+                </Button>
+                <Button type="primary" onClick={handleSearch}>
+                    Perform Search
+                </Button>
+            </div>
+            <div className="table-responsive text-nowrap mt-4">
+                <Table
+                    columns={columns}
+                    rowKey={(record) => record.id}
+                    dataSource={data}
+                    pagination={tableParams.pagination}
+                    loading={loading}
+                    onChange={handleTableChange}
+                />
+            </div>
         </div>
     );
 };
