@@ -6,7 +6,7 @@ import { Select } from 'antd';
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { orderStatus, paymentStatus } from '../../utils/Constant';
 
-const { Option } = Select; 
+const { Option } = Select;
 
 function OrderDetail() {
     const { openSuccessNotification, openErrorNotification } = useNotificationContext();
@@ -37,51 +37,53 @@ function OrderDetail() {
 
     useEffect(() => {
         const fetchOrderData = async () => {
+            const response = await API.get(`/orders/${order_id}/`, {
+                headers: {
+                    Authorization: `Bearer ${userData.access}`,
+                },
+            });
+
+            if (response.status === 401 || response.code === 'token_not_valid') {
+                openErrorNotification("Unauthorized access");
+                logout();
+                return;
+            }
+
+            setOrder(response.data);
+            setFormData({
+                order_number: response.data.order_number || "",
+                subtotal_price: response.data.subtotal_price || "",
+                shipping_cost: response.data.shipping_cost || "",
+                discount_amount: response.data.discount_amount || "",
+                tax_amount: response.data.tax_amount || "",
+                total_price: response.data.total_price || "",
+                shipping_method: response.data.shipping_method || "",
+                payment_method: response.data.payment_method || "",
+                payment_status: response.data.payment_status || "",
+                status: response.data.status || "",
+                note: response.data.note || "",
+                items: response.data.items || [],
+                shipping_address: response.data.shipping_address || "",
+                billing_address: response.data.billing_address || "",
+            });
+
+            const customerResponse = await API.get(`/customers/`, {
+                headers: {
+                    Authorization: `Bearer ${userData.access}`,
+                },
+            });
+            const customer = customerResponse.data.results.find(customer => customer.address.id === response.data.shipping_address);
+            if (customer) {
+                setCustomer(customer);
+            } else {
+                console.error("Customer not found for addressId:", response.data.shipping_address);
+                openErrorNotification("Customer not found.");
+            }
+        }
+
+        const fetchAddressData = async (addressId) => {
             try {
-                const response = await API.get(`/orders/${order_id}/`, {
-                    headers: {
-                        Authorization: `Bearer ${userData.access}`,
-                    },
-                });
-
-                if (response.status === 401 || response.code === 'token_not_valid') {
-                    openErrorNotification("Unauthorized access");
-                    logout();
-                    return;
-                }
-
-                setOrder(response.data);
-                setFormData({
-                    order_number: response.data.order_number || "",
-                    subtotal_price: response.data.subtotal_price || "",
-                    shipping_cost: response.data.shipping_cost || "",
-                    discount_amount: response.data.discount_amount || "",
-                    tax_amount: response.data.tax_amount || "",
-                    total_price: response.data.total_price || "",
-                    shipping_method: response.data.shipping_method || "",
-                    payment_method: response.data.payment_method || "",
-                    payment_status: response.data.payment_status || "",
-                    status: response.data.status || "",
-                    note: response.data.note || "",
-                    items: response.data.items || [],
-                    shipping_address: response.data.shipping_address || "",
-                    billing_address: response.data.billing_address || "",
-                });
-                
-                const customerResponse = await API.get(`/customers/`, {
-                    headers: {
-                        Authorization: `Bearer ${userData.access}`,
-                    },
-                });
-                const customer = customerResponse.data.results.find(customer => customer.address.id === response.data.shipping_address);
-                if (customer) {
-                    setCustomer(customer);
-                } else {
-                    console.error("Customer not found for addressId:", response.data.shipping_address);
-                    openErrorNotification("Customer not found.");
-                }
-
-                const addressResponse = await API.get(`/address/${response.data.shipping_address}`, {
+                const addressResponse = await API.get(`/address/detail/${response.data.shipping_address}`, {
                     headers: {
                         Authorization: `Bearer ${userData.access}`,
                     },
@@ -94,7 +96,7 @@ function OrderDetail() {
                         billing_address: addressResponse.data.id || "",
                     }));
                 } else {
-                    console.error("Address not found for addressId:", response.data.shipping_address);
+                    console.error("Address not found for addressId:", addressResponse.data.shipping_address);
                     openErrorNotification("Address not found.");
                 }
 
@@ -106,7 +108,7 @@ function OrderDetail() {
                 setProducts(productResponse.data);
                 setFormData(prevState => ({
                     ...prevState,
-                    items: response.data.items.map(item => {
+                    items: addressResponse.data.items.map(item => {
                         const product = productResponse.data.results.find(product => product.id === item.product);
                         return {
                             ...item,
@@ -158,8 +160,8 @@ function OrderDetail() {
                 <div className="col-md-12">
                 <form id="formOrderSettings" method="POST" onSubmit={handleSubmit}>
                     <div className="d-flex justify-content-between mt-2 mb-2">
-                        <div className="text-start">                                                
-                            <h3 style={{ fontSize: '24px', display: 'flex', alignItems: 'center' }}>Order Details / 
+                        <div className="text-start">
+                            <h3 style={{ fontSize: '24px', display: 'flex', alignItems: 'center' }}>Order Details /
                                 <span style={{color: '#696cff', marginLeft: '5px'}}>#{formData.order_number}</span>
                             </h3>
                         </div>
@@ -221,7 +223,7 @@ function OrderDetail() {
                                                                 <p>{formData.shipping_method}</p> {/* Hiển thị tên phương thức vận chuyển */}
                                                             </div>
                                                         </div>
-                                                        
+
                                                         <div className="row">
                                                             {/* Order Status */}
                                                             <div className="mb-3 col-md-6">
@@ -231,11 +233,11 @@ function OrderDetail() {
                                                                     id="status"
                                                                     name="status"
                                                                     value={formData.status}
-                                                                    onChange={(value) => handleInputChange({ 
-                                                                        target: { 
-                                                                            name: 'status', 
-                                                                            value 
-                                                                            } 
+                                                                    onChange={(value) => handleInputChange({
+                                                                        target: {
+                                                                            name: 'status',
+                                                                            value
+                                                                            }
                                                                     })}
                                                                     required
                                                                 >
@@ -246,7 +248,7 @@ function OrderDetail() {
                                                                     ))}
                                                                 </Select>
                                                             </div>
-                                                            
+
                                                             {/* Payment Status */}
                                                             <div className="mb-3 col-md-6">
                                                                     <label className="form-label">Payment Status</label>
@@ -255,11 +257,11 @@ function OrderDetail() {
                                                                         id="payment_status"
                                                                         name="payment_status"
                                                                         value={formData.payment_status}
-                                                                        onChange={(value) => handleInputChange({ 
-                                                                            target: { 
-                                                                                name: 'payment_status', 
-                                                                                value 
-                                                                                } 
+                                                                        onChange={(value) => handleInputChange({
+                                                                            target: {
+                                                                                name: 'payment_status',
+                                                                                value
+                                                                                }
                                                                         })}
                                                                     >
                                                                         {paymentStatus.map(status => (
@@ -270,9 +272,9 @@ function OrderDetail() {
                                                                     </Select>
                                                             </div>
                                                         </div>
-                                                        
 
-                                                        
+
+
                                                     </div>
                                                 </div>
 
@@ -308,7 +310,7 @@ function OrderDetail() {
                                                         </div>
                                                     </div>
                                                 </div>
-                                                
+
 
                                             </div>
 
@@ -350,7 +352,7 @@ function OrderDetail() {
                                                             onChange={handleInputChange}
                                                         ></textarea>
                                                 </div>
-                                            </div>   
+                                            </div>
                                         </div>
                                 </div>
                         </div>
@@ -361,4 +363,4 @@ function OrderDetail() {
     );
 }
 
-export default OrderDetail; 
+export default OrderDetail;

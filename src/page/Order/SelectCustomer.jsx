@@ -40,7 +40,7 @@ const Customers = ({ searchTerm, onCustomerSelect }) => {
                 params.search = searchParams.searchText;
             }
 
-            const response = await API.get('customers/', {
+            const response = await API.get('customer/list', {
                 headers: {
                     'Authorization': `Bearer ${userData.access}`,
                 },

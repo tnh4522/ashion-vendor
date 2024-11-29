@@ -45,7 +45,7 @@ const Brands = () => {
                 params.search = searchParams.searchText;
             }
 
-            const response = await API.get('brands/', {
+            const response = await API.get('brand/list/', {
                 headers: {
                     'Authorization': `Bearer ${userData.access}`,
                 },

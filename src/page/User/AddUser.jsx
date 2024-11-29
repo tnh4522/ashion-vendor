@@ -5,7 +5,6 @@ import useNotificationContext from '../../hooks/useNotificationContext';
 import {useNavigate} from "react-router-dom";
 import {Tabs} from 'antd';
 import emailjs from '@emailjs/browser';
-import AddressForm from './AddressForm';
 import Addresses from '../Address/Addresses';
 
 function AddUser() {

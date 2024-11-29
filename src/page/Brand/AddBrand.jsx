@@ -52,7 +52,7 @@ function AddBrand() {
                 formDataToSend.append('brand_logo', brandLogoFile);
             }
 
-            const response = await API.post('brands/create/', formDataToSend, {
+            const response = await API.post('brand/create/', formDataToSend, {
                 headers: {
                     'Authorization': `Bearer ${userData.access}`,
                     'Content-Type': 'multipart/form-data',

@@ -32,7 +32,7 @@ function CustomerDetail() {
     useEffect(() => {
         const fetchCustomerData = async () => {
             try {
-                const response = await API.get(`/customer/${customer_id}/`, {
+                const response = await API.get(`/customer/detail/${customer_id}/`, {
                     headers: {
                         Authorization: `Bearer ${userData.access}`,
                     },
@@ -100,14 +100,14 @@ function CustomerDetail() {
             };
 
             if (addressData.id) {
-                await API.put(`/address/${addressData.id}/`, addressData, {
+                await API.put(`/address/detail/${addressData.id}/`, addressData, {
                     headers: {
                         Authorization: `Bearer ${userData.access}`,
                         "Content-Type": "application/json",
                     },
                 });
             } else {
-                const addressResponse = await API.post(`/address/`, addressData, {
+                const addressResponse = await API.post(`/address/create`, addressData, {
                     headers: {
                         Authorization: `Bearer ${userData.access}`,
                         "Content-Type": "application/json",
@@ -116,7 +116,7 @@ function CustomerDetail() {
                 formDataToSend.address = addressResponse.data.id;
             }
 
-            const response = await API.put(`/customer/${customer_id}/`, formDataToSend, {
+            const response = await API.put(`/customer/detail/${customer_id}/`, formDataToSend, {
                 headers: {
                     Authorization: `Bearer ${userData.access}`,
                     "Content-Type": "application/json",

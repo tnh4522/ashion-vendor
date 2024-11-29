@@ -45,7 +45,7 @@ const Customers = () => {
                 params.search = searchParams.searchText;
             }
 
-            const response = await API.get('customers/', {
+            const response = await API.get('customer/list', {
                 headers: {
                     'Authorization': `Bearer ${userData.access}`,
                 },
@@ -87,7 +87,7 @@ const Customers = () => {
             okText: 'Confirm',
             okType: 'danger',
             onOk() {
-                return API.delete(`customer/${id}/`, {
+                return API.delete(`customer/detail/${id}/`, {
                     headers: {
                         'Authorization': `Bearer ${userData.access}`,
                     }
