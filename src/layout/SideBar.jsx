@@ -158,6 +158,11 @@ function SideBar() {
                     icon: <i className="menu-icon fa-solid fa-user-tie"></i>
                 },
                 {
+                    key: 'roleDefault',
+                    label: <Link to="/role-default">Role Default</Link>,
+                    icon: <i className="menu-icon fa-solid fa-shield-halved"></i>
+                },
+                {
                     key: 'permissionManagement',
                     label: <Link to="/permissions">Permission Management</Link>,
                     icon: <i className="menu-icon fa-solid fa-briefcase"></i>

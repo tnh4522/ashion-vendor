@@ -39,6 +39,7 @@ import CreateAddress from "./page/Address/CreateAddress.jsx";
 import OrderDetail from "./page/Order/OrderDetail.jsx";
 import VerifyEmail from "./page/Authentication/VerifyEmail.jsx";
 import MyStore from "./page/Store/MyStore.jsx";
+import RoleDefault from "./page/Authorization/RoleDefault.jsx";
 
 
 function App() {
@@ -87,6 +88,7 @@ function App() {
                                     <Route path="/add-user" element={<ProtectedRoute><AddUser/></ProtectedRoute>}/>
                                     <Route path="/user-detail/:id" element={<ProtectedRoute><UserDetail/></ProtectedRoute>}/>
                                     <Route path="/roles" element={<ProtectedRoute><RoleManagement/></ProtectedRoute>}/>
+                                    <Route path="/role-default" element={<ProtectedRoute><RoleDefault/></ProtectedRoute>}/>
                                     <Route path="/create-role" element={<ProtectedRoute><CreateRole/></ProtectedRoute>}/>
                                     <Route path="/edit-role/:id" element={<ProtectedRoute><RoleDetail/></ProtectedRoute>}/>
                                     <Route path='/permissions' element={<ProtectedRoute><PermissionsManagement/></ProtectedRoute>}/>

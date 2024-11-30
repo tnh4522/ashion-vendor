@@ -3,10 +3,8 @@ import { Table } from 'antd';
 import qs from 'qs';
 import API from "../../service/service.jsx";
 import useUserContext from "../../hooks/useUserContext.jsx";
-import { useNavigate } from "react-router-dom";
 
 const PermissionsManagement = () => {
-    const navigator = useNavigate();
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
     const [tableParams, setTableParams] = useState({
@@ -103,34 +101,13 @@ const PermissionsManagement = () => {
         }
     };
 
-    const handleEdit = (permission) => {
-        console.log('Edit permission:', permission);
-        navigator(`/edit-permission/${permission.id}`);
-    };
-
-    const handleDelete = (permission) => {
-        console.log('Delete permission:', permission);
-        API.delete(`permissions/${permission.id}/`, {
-            headers: {
-                'Authorization': `Bearer ${userData.access}`,
-            },
-        })
-            .then(() => {
-                fetchData();
-            })
-            .catch((error) => {
-                console.error('Error deleting permission:', error);
-            });
-    };
-
     return (
         <div className="container-xxl flex-grow-1 container-p-y">
-            <div className="card">
-                <div className="card-header"
-                     style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h5 className="card-title">Permissions Management</h5>
+            <div className="card mt-3">
+                <div className="card-header">
+                    <h5>Permissions Settings</h5>
                 </div>
-                <div className="table-responsive text-nowrap" style={{ padding: '20px' }}>
+                <div className="table-responsive text-nowrap" style={{padding: '20px'}}>
                     <Table
                         columns={columns}
                         rowKey={(record) => record.id}
@@ -141,7 +118,6 @@ const PermissionsManagement = () => {
                     />
                 </div>
             </div>
-            <hr className="my-5" />
         </div>
     );
 };
