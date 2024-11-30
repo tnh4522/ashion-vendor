@@ -70,7 +70,7 @@ function Register() {
 
     return (
         <div className="card">
-            {!success ? (
+            {success ? (
                 <div className="card-body">
                     <LogoAdmin/>
                     <h4 className="mb-2">Thank you for registering! 🎉</h4>

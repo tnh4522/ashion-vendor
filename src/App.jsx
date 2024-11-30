@@ -38,6 +38,7 @@ import Addresses from "./page/Address/Addresses.jsx";
 import CreateAddress from "./page/Address/CreateAddress.jsx";
 import OrderDetail from "./page/Order/OrderDetail.jsx";
 import VerifyEmail from "./page/Authentication/VerifyEmail.jsx";
+import MyStore from "./page/Store/MyStore.jsx";
 
 
 function App() {
@@ -71,6 +72,7 @@ function App() {
                             <div className="content-wrapper">
                                 <Routes>
                                     <Route path="/" element={<ProtectedRoute><Dashboard/></ProtectedRoute>}/>
+                                    <Route path="/my-store" element={<ProtectedRoute><MyStore/></ProtectedRoute>}/>
                                     <Route path="/account" element={<ProtectedRoute><Account/></ProtectedRoute>}/>
                                     <Route path="/products" element={<ProtectedRoute><Products/></ProtectedRoute>}/>
                                     <Route path="/customers" element={<ProtectedRoute><Customers/></ProtectedRoute>}/>

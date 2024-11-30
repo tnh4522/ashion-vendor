@@ -13,7 +13,7 @@ function SideBar() {
         },
         {
             key: 'store',
-            label: 'My Store',
+            label: <Link to="/my-store">My Store</Link>,
             icon: <i className="menu-icon tf-icons fa-solid fa-store"></i>,
             // children: [
             //     {
