@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Input, Button, Form, message, Upload } from 'antd';
+import { Input, Button, Form, message, Upload, Switch } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import API from "../../service/service.jsx";
 import useUserContext from "../../hooks/useUserContext.jsx";
@@ -113,10 +113,12 @@ const EditCategory = () => {
                         <Form.Item
                             label="Is Active"
                             name="is_active"
+                            className='d-flex flex-row mx-2'
                             valuePropName="checked"
                             rules={[{ required: true, message: 'Please select if the category is active!' }]}
                         >
-                            <Input type="checkbox" />
+                            
+                            <Switch id="is_active"/>
                         </Form.Item>
                         <Form.Item
                             label="Category Image"
@@ -135,7 +137,7 @@ const EditCategory = () => {
                             <Button type="primary" htmlType="submit" loading={loading}>
                                 Update Category
                             </Button>
-                            <Button type="primary" loading={loading} onClick={() => handleCancel()}>
+                            <Button className='mx-2' type="primary" loading={loading} onClick={() => handleCancel()}>
                                 Cancel
                             </Button>
                         </Form.Item>

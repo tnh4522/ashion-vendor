@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Table } from 'antd';
+import { Table, Button } from 'antd';
 import API from "../../service/service.jsx";
 import useUserContext from "../../hooks/useUserContext.jsx";
 import { useNavigate } from 'react-router-dom';
@@ -72,8 +72,21 @@ const Categories = () => {
             dataIndex: '',
             render: (text, record) => (
                 <span>
-                    <i className="fa-solid fa-pen-to-square cursor-pointer" style={{ marginRight: '10px' }} onClick={() => handleEdit(record.id)}></i>
-                    <i className="fa-solid fa-trash cursor-pointer" onClick={() => handleDelete(record.id)}></i>
+                    <span>
+                    <Button
+                        type="link"
+                        icon={<i className="fa-solid fa-pen-to-square"></i>}
+                        onClick={() => handleEdit(record.id)}
+                    >
+                    </Button>
+                    <Button
+                        type="link"
+                        danger
+                        icon={<i className="fa-solid fa-trash"></i>}
+                        onClick={() => handleDelete(record.id)}
+                    >
+                    </Button>
+                </span>
                 </span>
             ),
         }
