@@ -13,20 +13,20 @@ function SideBar() {
         },
         {
             key: 'store',
-            label: 'Store Management',
+            label: 'My Store',
             icon: <i className="menu-icon tf-icons fa-solid fa-store"></i>,
-            children: [
-                {
-                    key: 'stores',
-                    label: <Link to="/stores">List Store</Link>,
-                    icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>
-                },
-                {
-                    key: 'add-store',
-                    label: <Link to="/add-store">Add Store</Link>,
-                    icon: <i className="menu-icon tf-icons fa-solid fa-plus"></i>
-                }
-            ]
+            // children: [
+            //     {
+            //         key: 'stores',
+            //         label: <Link to="/stores">List Store</Link>,
+            //         icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>
+            //     },
+            //     {
+            //         key: 'add-store',
+            //         label: <Link to="/add-store">Add Store</Link>,
+            //         icon: <i className="menu-icon tf-icons fa-solid fa-plus"></i>
+            //     }
+            // ]
         },
         {
             key: 'category',

@@ -37,12 +37,16 @@ import CustomerDetail from "./page/Customer/CustomerDetail.jsx";
 import Addresses from "./page/Address/Addresses.jsx";
 import CreateAddress from "./page/Address/CreateAddress.jsx";
 import OrderDetail from "./page/Order/OrderDetail.jsx";
+import VerifyEmail from "./page/Authentication/VerifyEmail.jsx";
 
 
 function App() {
     const location = useLocation();
 
-    const isAuthRoute = location.pathname.includes('login') || location.pathname.includes('register') || location.pathname.includes('create-password');
+    const isAuthRoute = location.pathname.includes('login')
+        || location.pathname.includes('register')
+        || location.pathname.includes('create-password')
+        || location.pathname.includes('verify-email');
 
     return (
         <UserContextProvider>
@@ -54,6 +58,7 @@ function App() {
                                 <Route path="/login" element={<Login/>}/>
                                 <Route path="/register" element={<Register/>}/>
                                 <Route path="/create-password/:username/:token" element={<CreatePassword/>}/>
+                                <Route path="/verify-email/:token" element={<VerifyEmail/>}/>
                             </Routes>
                         </div>
                     </div>

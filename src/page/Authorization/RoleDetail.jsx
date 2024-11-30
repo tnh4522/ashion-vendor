@@ -24,18 +24,25 @@ const RoleDetail = () => {
                         Authorization: `Bearer ${userData.access}`,
                     },
                 });
+
                 if (response.status === 200) {
                     setRoleDetails(response.data);
-                    // Set initial permissions and mark them as allowed if they exist in permissions_display
-                    const permissionsWithAllowedState = dataPermission.flatMap(model =>
-                        model.action.map(action => ({
-                            model: model.model,
+
+                    // Add this line to check the API response
+                    console.log('API Response:', response.data);
+
+                    // Group permissions by model with safeguards
+                    const permissionsByModel = dataPermission.map((model) => ({
+                        model: model.model,
+                        permissions: Array.isArray(model.action) ? model.action.map((action) => ({
                             action: action.name,
                             description: action.description,
-                            allowed: response.data.permissions_display.includes(`${model.model}:${action.name}`)
-                        }))
-                    );
-                    setPermissions(permissionsWithAllowedState);
+                            allowed: Array.isArray(response.data.permissions_display)
+                                ? response.data.permissions_display.includes(`${model.model}:${action.name}`)
+                                : false,
+                        })) : [],
+                    }));
+                    setPermissions(permissionsByModel);
                 }
             } catch (error) {
                 if (error.response && error.response.status === 401) {
@@ -52,10 +59,17 @@ const RoleDetail = () => {
         fetchRoleDetails();
     }, [id, userData.access, logout, openErrorNotification]);
 
-    const handleSwitchChange = (permissionIndex) => {
+    const handleSwitchChange = (modelIndex, permissionIndex) => {
         setPermissions((prevPermissions) => {
             const updatedPermissions = [...prevPermissions];
-            updatedPermissions[permissionIndex].allowed = !updatedPermissions[permissionIndex].allowed;
+            const updatedModel = {...updatedPermissions[modelIndex]};
+            const updatedPermissionsList = [...updatedModel.permissions];
+            updatedPermissionsList[permissionIndex] = {
+                ...updatedPermissionsList[permissionIndex],
+                allowed: !updatedPermissionsList[permissionIndex].allowed,
+            };
+            updatedModel.permissions = updatedPermissionsList;
+            updatedPermissions[modelIndex] = updatedModel;
             return updatedPermissions;
         });
     };
@@ -63,8 +77,11 @@ const RoleDetail = () => {
     const handleUpdatePermissions = async () => {
         try {
             const updatedPermissions = permissions
-                .filter(perm => perm.allowed)
-                .map(perm => `${perm.model}:${perm.action}`);
+                .flatMap((model) =>
+                    model.permissions
+                        .filter((perm) => perm.allowed)
+                        .map((perm) => `${model.model}:${perm.action}`)
+                );
 
             const response = await API.post(
                 `/roles/${id}/update-permissions/`,
@@ -111,9 +128,10 @@ const RoleDetail = () => {
                                 >
                                     Create New Role
                                 </button>
-                                <button type="primary"
-                                        className="btn btn-primary"
-                                        onClick={handleUpdatePermissions}
+                                <button
+                                    type="primary"
+                                    className="btn btn-primary"
+                                    onClick={handleUpdatePermissions}
                                 >
                                     Save Changes
                                 </button>
@@ -144,34 +162,51 @@ const RoleDetail = () => {
                                     />
                                 </div>
                             </div>
-                            <Table
-                                dataSource={permissions}
-                                rowKey={(record) => `${record.model}:${record.action}`}
-                                columns={[
-                                    {
-                                        title: "Permission",
-                                        dataIndex: "description",
-                                        key: "description",
-                                        render: (text, record) => (
-                                            <span>
-                                                {text} - {record.action}
-                                            </span>
-                                        ),
-                                    },
-                                    {
-                                        title: "Status",
-                                        dataIndex: "allowed",
-                                        key: "allowed",
-                                        render: (allowed, record, index) => (
-                                            <Switch
-                                                checked={allowed}
-                                                onChange={() => handleSwitchChange(index)}
-                                            />
-                                        ),
-                                    },
-                                ]}
-                                locale={{emptyText: <Empty description="No permissions assigned"/>}}
-                            />
+                            {permissions.map((model, modelIndex) => (
+                                <div key={model.model}>
+                                    <h5 style={{ marginTop: '20px' }}>{String(model.model).toUpperCase() + ' MANAGEMENT'}</h5>
+                                    <Table
+                                        dataSource={model.permissions.map((perm, permIndex) => ({
+                                            ...perm,
+                                            modelIndex,
+                                            permIndex,
+                                        }))}
+                                        rowKey={(record) => `${model.model}:${record.action}`}
+                                        columns={[
+                                            {
+                                                title: "Permission",
+                                                dataIndex: "description",
+                                                key: "description",
+                                                width: "80%",
+                                                render: (text) => <span>{text}</span>,
+                                            },
+                                            // {
+                                            //     title: "Action",
+                                            //     dataIndex: "action",
+                                            //     key: "action",
+                                            //     width: "20%",
+                                            //     render: (action) => <span>{action}</span>,
+                                            // },
+                                            {
+                                                title: "Status",
+                                                dataIndex: "allowed",
+                                                key: "allowed",
+                                                width: "20%",
+                                                render: (allowed, record) => (
+                                                    <Switch
+                                                        checked={allowed}
+                                                        onChange={() =>
+                                                            handleSwitchChange(record.modelIndex, record.permIndex)
+                                                        }
+                                                    />
+                                                ),
+                                            },
+                                        ]}
+                                        pagination={false}
+                                        locale={{emptyText: <Empty description="No permissions assigned"/>}}
+                                    />
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>
