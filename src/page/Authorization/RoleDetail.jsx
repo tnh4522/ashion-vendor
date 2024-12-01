@@ -1,5 +1,5 @@
 import {useState, useEffect} from "react";
-import {useParams, useNavigate, Link} from "react-router-dom";
+import {useParams, Link} from "react-router-dom";
 import {Table, Switch, Empty} from "antd";
 import API from "../../service/service.jsx";
 import useUserContext from "../../hooks/useUserContext.jsx";
@@ -10,7 +10,6 @@ const RoleDetail = () => {
     const {id} = useParams();
     const {userData, logout} = useUserContext();
     const {openSuccessNotification, openErrorNotification} = useNotificationContext();
-    const navigate = useNavigate();
 
     const [roleDetails, setRoleDetails] = useState(null);
     const [permissions, setPermissions] = useState([]);
@@ -110,31 +109,32 @@ const RoleDetail = () => {
         return <div>Role not found or an error occurred.</div>;
     }
 
+    const renderButton = () => {
+        if(roleDetails.name !== 'ADMIN' && roleDetails.name !== 'MANAGER' && roleDetails.name !== 'SELLER') {
+            return (
+                <button
+                    type="primary"
+                    className="btn btn-primary m-2"
+                    onClick={handleUpdatePermissions}
+                >
+                    Save Changes
+                </button>
+            )
+        }
+    };
+
     return (
         <div className="container-xxl flex-grow-1 container-p-y">
             <div className="row">
                 <div className="col-md-12">
-                    <Link to={"/roles"} className="btn btn-primary mb-4">
-                        <i className="bx bx-arrow-back me-2"></i>
-                        Back to List of Roles
-                    </Link>
                     <div className="card mb-4">
                         <div className="card-body">
-                            <div className="mb-2" style={{textAlign: "end"}}>
-                                <button
-                                    className={"btn btn-info me-2"}
-                                    type="primary"
-                                    onClick={() => navigate("/create-role")}
-                                >
-                                    Create New Role
-                                </button>
-                                <button
-                                    type="primary"
-                                    className="btn btn-primary"
-                                    onClick={handleUpdatePermissions}
-                                >
-                                    Save Changes
-                                </button>
+                            <div className="mb-2 d-flex justify-content-between">
+                                <Link to={"/roles"} className="btn btn-secondary m-2">
+                                    <i className="bx bx-arrow-back me-2"></i>
+                                    Back
+                                </Link>
+                                {renderButton()}
                             </div>
                             <div className="row">
                                 {/* Role Name */}
@@ -164,7 +164,7 @@ const RoleDetail = () => {
                             </div>
                             {permissions.map((model, modelIndex) => (
                                 <div key={model.model}>
-                                    <h5 style={{ marginTop: '20px' }}>{String(model.model).toUpperCase() + ' MANAGEMENT'}</h5>
+                                    <h5 style={{marginTop: '20px'}}>{String(model.model).toUpperCase() + ' MANAGEMENT'}</h5>
                                     <Table
                                         dataSource={model.permissions.map((perm, permIndex) => ({
                                             ...perm,

@@ -2,7 +2,7 @@ import {useState, useEffect} from 'react';
 import API from "../../service/service.jsx";
 import useUserContext from "../../hooks/useUserContext.jsx";
 import useNotificationContext from "../../hooks/useNotificationContext.jsx";
-import {useNavigate} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import dataPermission from '../../constant/data-permission.js';
 import dataPermissionMin from '../../constant/data-permission-min.js'; // Import quyền tối thiểu
 
@@ -17,9 +17,7 @@ const CreateRole = () => {
         permissions: [],
     });
 
-    const [roles, setRoles] = useState([]);
 
-    // Tự động điền các quyền tối thiểu
     useEffect(() => {
         const defaultPermissions = dataPermissionMin.flatMap((modelPermission) =>
             modelPermission.action.map((actionItem) => `${modelPermission.model}:${actionItem.name}`)
@@ -29,24 +27,6 @@ const CreateRole = () => {
             permissions: defaultPermissions,
         }));
     }, []);
-
-    useEffect(() => {
-        const fetchRoles = async () => {
-            try {
-                const response = await API.get('roles/', {
-                    headers: {
-                        'Authorization': `Bearer ${userData.access}`,
-                    },
-                });
-                if (response.status === 200) {
-                    setRoles(response.data.results);
-                }
-            } catch (error) {
-                console.error('There was an error fetching roles:', error);
-            }
-        };
-        fetchRoles();
-    }, [userData.access]);
 
     const handleChange = (e) => {
         const {name, value} = e.target;
@@ -108,7 +88,7 @@ const CreateRole = () => {
             });
             if (response.status === 201) {
                 openSuccessNotification('Role created successfully');
-                navigate('/role');
+                navigate('/roles');
             }
         } catch (error) {
             if (error.response && error.response.status === 401) {
@@ -129,15 +109,12 @@ const CreateRole = () => {
                         <div className="card-body">
                             <form id="formCreateRole" method="POST" onSubmit={handleSubmit}>
                                 <div className="row">
-                                    <div className="mt-2" style={{textAlign: "end"}}>
-                                        <button type="submit" className="btn btn-primary me-2">Create Role</button>
-                                        <button
-                                            type="button"
-                                            className="btn btn-outline-secondary"
-                                            onClick={() => navigate('/roles')}
-                                        >
-                                            Cancel
-                                        </button>
+                                    <div className="mb-2 d-flex justify-content-between">
+                                        <Link to={"/roles"} className="btn btn-secondary m-2">
+                                            <i className="bx bx-arrow-back me-2"></i>
+                                            Back
+                                        </Link>
+                                        <button type="submit" className="btn btn-primary m-2">Create Role</button>
                                     </div>
                                     {/* Role Name */}
                                     <div className="mb-3 col-md-6">
@@ -163,15 +140,15 @@ const CreateRole = () => {
                                             onChange={handleRoleSelect}
                                         >
                                             <option value="">Select a role</option>
-                                            {roles.map((role) => (
-                                                <option key={role.id} value={role.id}>{role.name}</option>
-                                            ))}
+                                            <option value="1">ADMIN</option>
+                                            <option value="2">MANAGER</option>
+                                            <option value="3">SELLER</option>
                                         </select>
                                     </div>
                                     {/* Permissions */}
                                     <div className="mb-3 col-md-12">
                                         {dataPermission.map((modelPermission, modelIndex) => (
-                                            <div key={modelIndex}>
+                                            <div key={modelIndex} className="mb-4">
                                                 <h5>{modelPermission.model.charAt(0).toUpperCase() + modelPermission.model.slice(1)} Permissions</h5>
                                                 <table className="table table-bordered table-hover">
                                                     <thead>
@@ -202,7 +179,6 @@ const CreateRole = () => {
                                                     })}
                                                     </tbody>
                                                 </table>
-                                                <hr/>
                                             </div>
                                         ))}
                                     </div>

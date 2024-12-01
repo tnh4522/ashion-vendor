@@ -1,13 +1,13 @@
-import { useEffect, useState } from 'react';
-import { Table, Input, Button } from 'antd';
+import {useEffect, useState} from 'react';
+import { Table, Input, Button, Modal } from 'antd';
 import qs from 'qs';
 import API from "../../service/service.jsx";
 import useUserContext from "../../hooks/useUserContext.jsx";
-import { useNavigate } from "react-router-dom";
+import {useNavigate} from "react-router-dom";
 
 const RolesManagement = () => {
     const navigate = useNavigate();
-    const { userData } = useUserContext();
+    const {userData} = useUserContext();
 
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -33,7 +33,7 @@ const RolesManagement = () => {
             },
         })
             .then((response) => {
-                const { results, count } = response.data;
+                const {results, count} = response.data;
                 setData(results);
                 setTableParams({
                     ...tableParams,
@@ -65,7 +65,7 @@ const RolesManagement = () => {
     });
 
     const handleInputChange = (e) => {
-        const { name, value } = e.target;
+        const {name, value} = e.target;
         setSearchParams((prev) => ({
             ...prev,
             [name]: value,
@@ -115,17 +115,26 @@ const RolesManagement = () => {
     };
 
     const handleDelete = (role) => {
-        API.delete(`roles/${role.id}/`, {
-            headers: {
-                'Authorization': `Bearer ${userData.access}`,
+        Modal.confirm({
+            title: 'Are you sure you want to delete this role?',
+            content: `Role Name: ${role.name}`,
+            okText: 'Yes',
+            okType: 'danger',
+            cancelText: 'No',
+            onOk: () => {
+                API.delete(`roles/${role.id}/`, {
+                    headers: {
+                        'Authorization': `Bearer ${userData.access}`,
+                    },
+                })
+                    .then(() => {
+                        fetchData();
+                    })
+                    .catch((error) => {
+                        console.error('Error deleting role:', error);
+                    });
             },
-        })
-            .then(() => {
-                fetchData();
-            })
-            .catch((error) => {
-                console.error('Error deleting role:', error);
-            });
+        });
     };
 
     const columns = [
@@ -143,27 +152,46 @@ const RolesManagement = () => {
         },
         {
             title: 'Description',
-            dataIndex: 'description',
+            key: 'description',
             width: '40%',
+            render: (text, record) => {
+                console.log(record);
+                if (record.name !== 'ADMIN' && record.name !== 'MANAGER' && record.name !== 'SELLER') {
+                    return <span>Custom Role</span>;
+                } else {
+                    return <span>Default Role (Cannot be edited or deleted)</span>;
+                }
+            }
         },
         {
             title: 'Action',
             key: 'action',
             width: '10%',
-            render: (text, record) => (
-                <span>
+            render: (text, record) => {
+                console.log(record);
+                if (record.name !== 'ADMIN' && record.name !== 'MANAGER' && record.name !== 'SELLER') {
+                    return (
+                        <span>
                     <i
                         className="fa-solid fa-pen-to-square"
-                        style={{ marginRight: '10px', cursor: 'pointer' }}
+                        style={{marginRight: '10px', cursor: 'pointer'}}
                         onClick={() => handleEdit(record)}
                     ></i>
                     <i
                         className="fa-solid fa-trash"
-                        style={{ cursor: 'pointer', color: 'red' }}
+                        style={{cursor: 'pointer', color: 'red'}}
                         onClick={() => handleDelete(record)}
-                    ></i>
-                </span>
-            ),
+                    ></i></span>
+                    );
+                } else {
+                    return <span>
+                        <i className="fa-solid fa-eye"
+                           style={{marginRight: '10px', cursor: 'pointer'}}
+                           onClick={() => handleEdit(record)}
+                        ></i>
+                    </span>;
+                }
+            }
         },
     ];
 
@@ -172,7 +200,7 @@ const RolesManagement = () => {
             <div className="card">
                 <div
                     className="card-header"
-                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                    style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}
                 >
                     <h5 className="card-title">Roles Management</h5>
                     <button className="btn btn-primary" onClick={() => navigate('/create-role')}>
@@ -183,10 +211,7 @@ const RolesManagement = () => {
                 <div className="card-body">
                     <div className="row mb-4">
                         {/* Search Input */}
-                        <div className="col-md-4">
-                            <label htmlFor="searchText" className="form-label">
-                                Search by Role Name or Description
-                            </label>
+                        <div className="col-md-6">
                             <Input
                                 id="searchText"
                                 name="searchText"
@@ -195,14 +220,11 @@ const RolesManagement = () => {
                                 placeholder="Search by role name or description"
                             />
                         </div>
-                    </div>
-                    {/* Buttons */}
-                    <div className="row mb-4">
-                        <div className="col-md-6 d-flex">
+                        <div className="col-md-6">
                             <Button
                                 type="default"
                                 onClick={handleResetFilters}
-                                style={{ marginRight: '10px' }}
+                                style={{marginRight: '10px'}}
                             >
                                 Reset Filters
                             </Button>
@@ -211,20 +233,19 @@ const RolesManagement = () => {
                             </Button>
                         </div>
                     </div>
-                </div>
-                {/* Table */}
-                <div className="table-responsive text-nowrap" style={{ padding: '20px' }}>
-                    <Table
-                        columns={columns}
-                        rowKey={(record) => record.id}
-                        dataSource={data}
-                        pagination={tableParams.pagination}
-                        loading={loading}
-                        onChange={handleTableChange}
-                    />
+                    {/* Table */}
+                    <div className="table-responsive text-nowrap">
+                        <Table
+                            columns={columns}
+                            rowKey={(record) => record.id}
+                            dataSource={data}
+                            pagination={tableParams.pagination}
+                            loading={loading}
+                            onChange={handleTableChange}
+                        />
+                    </div>
                 </div>
             </div>
-            <hr className="my-5" />
         </div>
     );
 };

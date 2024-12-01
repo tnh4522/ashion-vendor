@@ -79,19 +79,36 @@ function SideBar() {
                 }
             ],
         },
+        // {
+        //     key: 'brand',
+        //     label: 'Brand Management',
+        //     icon: <i className="menu-icon tf-icons fa-solid fa-tags"></i>,
+        //     children: [
+        //         {
+        //             key: 'listBrand',
+        //             label: <Link to="/brands">List Brand</Link>,
+        //             icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>
+        //         },
+        //         {
+        //             key: 'addBrand',
+        //             label: <Link to="/add-brand">Add Brand</Link>,
+        //             icon: <i className="menu-icon tf-icons fa-solid fa-plus"></i>
+        //         }
+        //     ],
+        // },
         {
-            key: 'brand',
-            label: 'Brand Management',
-            icon: <i className="menu-icon tf-icons fa-solid fa-tags"></i>,
+            key: 'customers',
+            label: 'Customer Management',
+            icon: <i className="menu-icon tf-icons fa-solid fa-address-book"></i>,
             children: [
                 {
-                    key: 'listBrand',
-                    label: <Link to="/brands">List Brand</Link>,
+                    key: 'list-customer',
+                    label: <Link to="/customers">List Customer</Link>,
                     icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>
                 },
                 {
-                    key: 'addBrand',
-                    label: <Link to="/add-brand">Add Brand</Link>,
+                    key: 'add-customer',
+                    label: <Link to="/add-customer">Add Customer</Link>,
                     icon: <i className="menu-icon tf-icons fa-solid fa-plus"></i>
                 }
             ],
@@ -131,26 +148,9 @@ function SideBar() {
             ],
         },
         {
-            key: 'customers',
-            label: 'Customer Management',
-            icon: <i className="menu-icon tf-icons fa-solid fa-address-book"></i>,
-            children: [
-                {
-                    key: 'list-customer',
-                    label: <Link to="/customers">List Customer</Link>,
-                    icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>
-                },
-                {
-                    key: 'add-customer',
-                    label: <Link to="/add-customer">Add Customer</Link>,
-                    icon: <i className="menu-icon tf-icons fa-solid fa-plus"></i>
-                }
-            ],
-        },
-        {
             key: 'sub4',
             label: 'Authorization',
-            icon: <i className="menu-icon tf-icons fa-solid fa-lock-open"></i>,
+            icon: <i className="menu-icon fa-solid fa-lock"></i>,
             children: [
                 {
                     key: 'roleManagement',
