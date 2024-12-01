@@ -155,7 +155,6 @@ const RolesManagement = () => {
             key: 'description',
             width: '40%',
             render: (text, record) => {
-                console.log(record);
                 if (record.name !== 'ADMIN' && record.name !== 'MANAGER' && record.name !== 'SELLER') {
                     return <span>Custom Role</span>;
                 } else {
@@ -168,7 +167,6 @@ const RolesManagement = () => {
             key: 'action',
             width: '10%',
             render: (text, record) => {
-                console.log(record);
                 if (record.name !== 'ADMIN' && record.name !== 'MANAGER' && record.name !== 'SELLER') {
                     return (
                         <span>

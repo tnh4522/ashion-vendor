@@ -4,7 +4,7 @@ import useUserContext from "../../hooks/useUserContext.jsx";
 import useNotificationContext from "../../hooks/useNotificationContext.jsx";
 import {Link, useNavigate} from "react-router-dom";
 import dataPermission from '../../constant/data-permission.js';
-import dataPermissionMin from '../../constant/data-permission-min.js'; // Import quyền tối thiểu
+import dataPermissionMin from '../../constant/data-permission-min.js';
 
 const CreateRole = () => {
     const {userData, logout} = useUserContext();
@@ -20,7 +20,7 @@ const CreateRole = () => {
 
     useEffect(() => {
         const defaultPermissions = dataPermissionMin.flatMap((modelPermission) =>
-            modelPermission.action.map((actionItem) => `${modelPermission.model}:${actionItem.name}`)
+            modelPermission.actions.map((actionItem) => `${modelPermission.model}:${actionItem.name}`)
         );
         setFormData((prevFormData) => ({
             ...prevFormData,
@@ -160,7 +160,7 @@ const CreateRole = () => {
                                                     </tr>
                                                     </thead>
                                                     <tbody>
-                                                    {modelPermission.action.map((actionItem, actionIndex) => {
+                                                    {modelPermission.actions.map((actionItem, actionIndex) => {
                                                         const permissionValue = `${modelPermission.model}:${actionItem.name}`;
                                                         return (
                                                             <tr key={actionIndex}>
