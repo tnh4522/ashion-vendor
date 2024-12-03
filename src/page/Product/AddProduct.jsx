@@ -47,7 +47,7 @@ const AddProduct = () => {
 
     const [categories, setCategories] = useState([]);
     const [stocks, setStocks] = useState([]);
-    const [stockData, setStockData] = useState([]); // Dữ liệu tồn kho cho từng kho
+    const [stockData, setStockData] = useState([]);
     const [loadingStocks, setLoadingStocks] = useState(true);
 
     const handleInputChange = (e) => {
@@ -127,7 +127,7 @@ const AddProduct = () => {
         }
 
         try {
-            const response = await API.post('products/create/', formDataToSend, {
+            const response = await API.post('product/create/', formDataToSend, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                     'Authorization': `Bearer ${userData.access}`,

@@ -6,7 +6,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Button } from 'antd';
 
 const EditProduct = () => {
-    const { id } = useParams();
+    const id = useParams().id;
     const { userData, logout } = useUserContext();
     const { openSuccessNotification, openErrorNotification } = useNotificationContext();
     const navigate = useNavigate();
@@ -101,7 +101,7 @@ const EditProduct = () => {
         }
 
         try {
-            const response = await API.put(`products/${id}`, formDataToSend, {
+            const response = await API.put(`product/detail/${id}/`, formDataToSend, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                     'Authorization': `Bearer ${userData.access}`,
@@ -128,7 +128,7 @@ const EditProduct = () => {
         const fetchProduct = async () => {
             setLoading(true);
             try {
-                const response = await API.get(`products/${id}/`, {
+                const response = await API.get(`product/detail/${id}/`, {
                     headers: {
                         'Authorization': `Bearer ${userData.access}`,
                     },

@@ -27,7 +27,7 @@ const Products = () => {
     const fetchData = () => {
         setLoading(true);
         const params = qs.stringify(getProductParams(tableParams));
-        API.get(`products/?${params}`, {
+        API.get(`product/list/?${params}`, {
             headers: {
                 'Authorization': `Bearer ${userData.access}`,
             },
@@ -72,7 +72,7 @@ const Products = () => {
     }, [JSON.stringify(tableParams)]);
 
     const handleEdit = (id) => {
-        navigate(`/edit-product/${id}/`);
+        navigate(`/edit-product/${id}`);
     };
 
     const handleDelete = (id) => {
