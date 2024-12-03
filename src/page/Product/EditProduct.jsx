@@ -77,7 +77,7 @@ const EditProduct = () => {
         setLoading(true);
 
         // Kiểm tra các trường bắt buộc
-        const requiredFields = ['name', 'category', 'description', 'sku', 'weight', 'dimensions', 'price', 'status'];
+        const requiredFields = ['name', 'category', 'description', 'sku', 'weight', 'price', 'status'];
         for (let field of requiredFields) {
             if (!formData[field] || formData[field] === '') {
                 openErrorNotification(`${field.charAt(0).toUpperCase() + field.slice(1)} is required.`);
@@ -101,7 +101,7 @@ const EditProduct = () => {
         }
 
         try {
-            const response = await API.put(`products/${id}/update/`, formDataToSend, {
+            const response = await API.put(`products/${id}`, formDataToSend, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                     'Authorization': `Bearer ${userData.access}`,
