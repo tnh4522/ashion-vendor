@@ -27,13 +27,10 @@ const RoleDetail = () => {
                 if (response.status === 200) {
                     setRoleDetails(response.data);
 
-                    // Add this line to check the API response
-                    console.log('API Response:', response.data);
-
                     // Group permissions by model with safeguards
                     const permissionsByModel = dataPermission.map((model) => ({
                         model: model.model,
-                        permissions: Array.isArray(model.action) ? model.action.map((action) => ({
+                        permissions: Array.isArray(model.actions) ? model.actions.map((action) => ({
                             action: action.name,
                             description: action.description,
                             allowed: Array.isArray(response.data.permissions_display)
