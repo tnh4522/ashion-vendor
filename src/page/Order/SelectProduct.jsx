@@ -28,7 +28,7 @@ const Products = ({ onProductSelect }) => {
     const fetchData = () => {
         setLoading(true);
         const params = qs.stringify(getProductParams(tableParams));
-        API.get(`products/?${params}`, {
+        API.get(`product/list/?${params}`, {
             headers: {
                 'Authorization': `Bearer ${userData.access}`,
             },
