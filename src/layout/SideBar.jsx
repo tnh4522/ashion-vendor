@@ -30,20 +30,8 @@ function SideBar() {
         },
         {
             key: 'category',
-            label: 'Category Management',
+            label: <Link to="/categories">Categories</Link>,
             icon: <i className="menu-icon tf-icons fa-solid fa-layer-group"></i>,
-            children: [
-                {
-                    key: 'listCategory',
-                    label: <Link to="/categories">List Category</Link>,
-                    icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>
-                },
-                {
-                    key: 'addCategory',
-                    label: <Link to="/add-category">Add Category</Link>,
-                    icon: <i className="menu-icon tf-icons fa-solid fa-plus"></i>
-                }
-            ]
         },
         {
             key: 'sub2',
