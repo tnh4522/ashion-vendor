@@ -1,13 +1,14 @@
 import {useEffect, useState} from 'react';
-import {Button, Input, Table} from 'antd';
+import {Button, Input, Select, Table} from 'antd';
 import API from '../../service/service';
 import useUserContext from '../../hooks/useUserContext';
 import useNotificationContext from '../../hooks/useNotificationContext';
 import {useNavigate} from "react-router-dom";
 
+const {Option} = Select;
+
 const ActivityLog = () => {
     const navigate = useNavigate();
-
     const {userData, logout} = useUserContext();
     const {openErrorNotification} = useNotificationContext();
 
@@ -15,6 +16,8 @@ const ActivityLog = () => {
     const [loading, setLoading] = useState(false);
     const [searchParams, setSearchParams] = useState({
         searchText: '',
+        status: '',
+        model: '',
     });
     const [tableParams, setTableParams] = useState({
         pagination: {
@@ -42,6 +45,12 @@ const ActivityLog = () => {
             if (searchParams.searchText) {
                 params.search = searchParams.searchText;
             }
+            if (searchParams.status) {
+                params.status = searchParams.status;
+            }
+            if (searchParams.model) {
+                params.model = searchParams.model;
+            }
 
             const response = await API.get('activity/list/', {
                 headers: {
@@ -49,9 +58,6 @@ const ActivityLog = () => {
                 },
                 params,
             });
-
-            console.log('Count from API:', response.data.count);
-            console.log('Results length:', response.data.results.length);
 
             setData(response.data.results);
             setTableParams({
@@ -147,6 +153,13 @@ const ActivityLog = () => {
         }));
     };
 
+    const handleFilterChange = (value, name) => {
+        setSearchParams((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+    };
+
     const handleSearch = () => {
         setTableParams({
             ...tableParams,
@@ -161,6 +174,8 @@ const ActivityLog = () => {
     const handleResetFilters = () => {
         setSearchParams({
             searchText: '',
+            status: '',
+            model: '',
         });
         setTableParams({
             ...tableParams,
@@ -184,8 +199,7 @@ const ActivityLog = () => {
                 </div>
                 <div className="card-body">
                     <div className="row mb-4">
-                        {/* Search Input */}
-                        <div className="col-md-6">
+                        <div className="col-md-4">
                             <Input
                                 id="searchText"
                                 name="searchText"
@@ -194,7 +208,38 @@ const ActivityLog = () => {
                                 placeholder="Search by user or action"
                             />
                         </div>
-                        <div className="col-md-6">
+                        <div className="col-md-4">
+                            <Select
+                                id="status"
+                                name="status"
+                                value={searchParams.status}
+                                onChange={(value) => handleFilterChange(value, 'status')}
+                                placeholder="Filter by status"
+                                style={{width: '100%'}}
+                                allowClear
+                            >
+                                <Option value="">Select Status</Option>
+                                <Option value="200">200</Option>
+                                <Option value="201">201</Option>
+                                <Option value="400">400</Option>
+                                <Option value="401">401</Option>
+                                <Option value="403">403</Option>
+                                <Option value="404">404</Option>
+                                <Option value="500">500</Option>
+                            </Select>
+                        </div>
+                        <div className="col-md-4">
+                            <Input
+                                id="model"
+                                name="model"
+                                value={searchParams.model}
+                                onChange={handleInputChange}
+                                placeholder="Filter by model"
+                            />
+                        </div>
+                    </div>
+                    <div className="row">
+                        <div className="col-md-12 text-right">
                             <Button
                                 type="default"
                                 onClick={handleResetFilters}
@@ -244,7 +289,6 @@ const ActivityLog = () => {
                             }
                         }}
                     />
-
                 </div>
             </div>
         </div>
