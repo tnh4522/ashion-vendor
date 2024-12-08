@@ -167,16 +167,19 @@ const Users = () => {
         },
         {
             title: 'Action',
-            dataIndex: 'id',
             width: '10%',
-            render: (id) => (
-                <span>
-                    <Link to={`/user-detail/${id}`}><i className="fa-solid fa-pen-to-square"
+            render: (user) => {
+                if (!user.is_superuser) {
+                    return (
+                        <span>
+                    <Link to={`/user-detail/${user.id}`}><i className="fa-solid fa-pen-to-square"
                                                        style={{marginRight: '10px'}}></i></Link>
                     <i className="fa-solid fa-trash" style={{color: 'red', cursor: 'pointer'}}
-                       onClick={() => handleDelete(id)}></i>
+                       onClick={() => handleDelete(user.id)}></i>
                 </span>
-            ),
+                    )
+                }
+            },
         }
     ];
 

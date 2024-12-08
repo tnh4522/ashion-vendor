@@ -1,13 +1,13 @@
-import { useState } from 'react';
+import {useState} from 'react';
 import API from '../../service/service';
 import useUserContext from '../../hooks/useUserContext';
 import useNotificationContext from '../../hooks/useNotificationContext';
-import { useNavigate } from "react-router-dom";
-import { Tabs } from 'antd';
+import {useNavigate} from "react-router-dom";
+import {Tabs} from 'antd';
 
 function AddCustomer() {
-    const { userData } = useUserContext();
-    const { openSuccessNotification, openErrorNotification } = useNotificationContext();
+    const {userData} = useUserContext();
+    const {openSuccessNotification, openErrorNotification} = useNotificationContext();
     const [formData, setFormData] = useState({
         first_name: '',
         last_name: '',
@@ -27,7 +27,7 @@ function AddCustomer() {
     const navigator = useNavigate();
 
     const handleInputChange = (e) => {
-        const { name, value } = e.target;
+        const {name, value} = e.target;
         setFormData(prevState => ({
             ...prevState,
             [name]: value
@@ -35,7 +35,7 @@ function AddCustomer() {
     };
 
     const handleAddressChange = (e) => {
-        const { name, value } = e.target;
+        const {name, value} = e.target;
         setAddressData(prevState => ({
             ...prevState,
             [name]: value
@@ -53,20 +53,12 @@ function AddCustomer() {
         }
 
         try {
-            const addressResponse = await API.post('address/create/', addressData, {
-                headers: {
-                    'Authorization': `Bearer ${userData.access}`,
-                    'Content-Type': 'application/json',
-                }
-            });
-
-            const addressId = addressResponse.data.id;
             const customerData = {
                 first_name: formData.first_name,
                 last_name: formData.last_name,
                 email: formData.email,
                 phone_number: formData.phone_number,
-                address: addressId,
+                address: addressData,
             }
             const customerResponse = await API.post('customer/create/', customerData, {
                 headers: {
@@ -75,23 +67,25 @@ function AddCustomer() {
                 }
             });
 
-            openSuccessNotification('Customer created successfully');
-            setFormData({
-                first_name: '',
-                last_name: '',
-                email: '',
-                phone_number: '',
-            });
-            setAddressData({
-                full_name: '',
-                phone_number: '',
-                street_address: '',
-                city: '',
-                province: '',
-                postal_code: '',
-                country: 'Vietnam',
-            });
-            navigator('/customers');
+            if (customerResponse.status === 201) {
+                openSuccessNotification('Customer created successfully');
+                setFormData({
+                    first_name: '',
+                    last_name: '',
+                    email: '',
+                    phone_number: '',
+                });
+                setAddressData({
+                    full_name: '',
+                    phone_number: '',
+                    street_address: '',
+                    city: '',
+                    province: '',
+                    postal_code: '',
+                    country: 'Vietnam',
+                });
+                navigator('/customers');
+            }
         } catch (error) {
             console.error('Error creating customer:', error);
             if (error.response && error.response.data) {
@@ -118,7 +112,7 @@ function AddCustomer() {
                                     defaultActiveKey="1"
                                     type="card"
                                     size="large"
-                                    style={{ marginBottom: '1.5rem' }}
+                                    style={{marginBottom: '1.5rem'}}
                                 >
                                     <Tabs.TabPane tab="Customer Information" key="1">
                                         <div className="row">
@@ -160,7 +154,8 @@ function AddCustomer() {
                                             </div>
                                             {/* Phone Number */}
                                             <div className="mb-3 col-md-6">
-                                                <label htmlFor="phone_number" className="form-label">Phone Number</label>
+                                                <label htmlFor="phone_number" className="form-label">Phone
+                                                    Number</label>
                                                 <input
                                                     className="form-control"
                                                     type="text"
@@ -188,7 +183,8 @@ function AddCustomer() {
                                             </div>
                                             {/* Phone Number */}
                                             <div className="mb-3 col-md-6">
-                                                <label htmlFor="address_phone_number" className="form-label">Phone Number</label>
+                                                <label htmlFor="address_phone_number" className="form-label">Phone
+                                                    Number</label>
                                                 <input
                                                     className="form-control"
                                                     type="text"
@@ -200,7 +196,8 @@ function AddCustomer() {
                                             </div>
                                             {/* Street Address */}
                                             <div className="mb-3 col-md-12">
-                                                <label htmlFor="street_address" className="form-label">Street Address</label>
+                                                <label htmlFor="street_address" className="form-label">Street
+                                                    Address</label>
                                                 <input
                                                     className="form-control"
                                                     type="text"

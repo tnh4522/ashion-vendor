@@ -144,7 +144,6 @@ const Categories = () => {
             title: 'Is Active',
             dataIndex: 'is_active',
             key: 'is_active',
-            render: (isActive) => (isActive ? 'Yes' : 'No'),
             align: 'center',
             width: '10%',
             render: (isActive) => (
