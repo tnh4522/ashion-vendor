@@ -198,9 +198,8 @@ const Customers = () => {
                 </div>
                 <div className="card-body">
                     <div className="row mb-4">
-                        {/* Search Text */}
-                        <div className="col-md-4">
-                            <label htmlFor="searchText" className="form-label">Search by First Name, Last Name or Email</label>
+                        {/* Search Input */}
+                        <div className="col-md-6">
                             <Input
                                 id="searchText"
                                 name="searchText"
@@ -209,13 +208,17 @@ const Customers = () => {
                                 placeholder="Search by first name, last name or email"
                             />
                         </div>
-                    </div>
-                    {/* Buttons */}
-                    <div className="row mb-4">
-                        <div className="col-md-6 d-flex">
-                            <Button type="default" onClick={handleResetFilters} style={{marginRight: '10px'}}>Reset
-                                Filters</Button>
-                            <Button type="primary" onClick={handleSearch}>Perform Search</Button>
+                        <div className="col-md-6">
+                            <Button
+                                type="default"
+                                onClick={handleResetFilters}
+                                style={{marginRight: '10px'}}
+                            >
+                                Reset Filters
+                            </Button>
+                            <Button type="primary" onClick={handleSearch}>
+                                Perform Search
+                            </Button>
                         </div>
                     </div>
                 </div>

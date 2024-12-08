@@ -210,32 +210,6 @@ function CustomerDetail() {
                             <Tabs.TabPane tab="Address Information" key="2">
                                 <div className="card-body">
                                     <div className="row">
-                                        {/* Full Name */}
-                                        <div className="mb-3 col-md-6">
-                                            <label htmlFor="full_name" className="form-label">Full Name</label>
-                                            <input
-                                                className="form-control"
-                                                type="text"
-                                                id="full_name"
-                                                name="full_name"
-                                                value={addressData.full_name}
-                                                onChange={handleAddressChange}
-                                                required
-                                            />
-                                        </div>
-                                        {/* Phone Number */}
-                                        <div className="mb-3 col-md-6">
-                                            <label htmlFor="address_phone_number" className="form-label">Phone Number</label>
-                                            <input
-                                                className="form-control"
-                                                type="text"
-                                                id="address_phone_number"
-                                                name="phone_number"
-                                                value={addressData.phone_number}
-                                                onChange={handleAddressChange}
-                                                required
-                                            />
-                                        </div>
                                         {/* Street Address */}
                                         <div className="mb-3 col-md-12">
                                             <label htmlFor="street_address" className="form-label">Street Address</label>
