@@ -102,20 +102,21 @@ const Products = () => {
     const columns = [
         {
             title: 'Image',
-            dataIndex: 'main_image_url',
-            key: 'main_image',
+            key: 'image',
             width: '10%',
-            render: (text, record) => (
-                record.main_image ? (
+            render: (text, record) => {
+                // console.log(record.images[0].image);
+                const firstImage = record.images && record.images.length > 0 ? record.images[0].image : null;
+                return firstImage ? (
                     <img
-                        src={convertUrl(record.main_image)}
+                        src={firstImage}
                         alt={record.name}
                         style={{ width: '50px', height: '50px', objectFit: 'cover' }}
                     />
                 ) : (
                     <div style={{ width: '50px', height: '50px', backgroundColor: '#f0f0f0' }} />
-                )
-            ),
+                );
+            },
         },
         {
             title: 'Product Name',
@@ -167,10 +168,6 @@ const Products = () => {
             ),
         },
     ];
-
-    const convertUrl = (url) => {
-        return url.replace("/media/", "/api/static/");
-    };
 
     const getProductParams = (params) => ({
         page_size: params.pagination?.pageSize,
