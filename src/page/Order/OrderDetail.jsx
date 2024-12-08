@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import useUserContext from "../../hooks/useUserContext.jsx";
 import API from "../../service/service.jsx";
 import useNotificationContext from "../../hooks/useNotificationContext.jsx";
-import { Select } from 'antd';
+import { Table, Select } from 'antd';
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { orderStatus, paymentStatus } from '../../utils/Constant';
 
@@ -16,7 +16,6 @@ function OrderDetail() {
 
     const [order, setOrder] = useState(null);
     const [customer, setCustomer] = useState(null);
-    const [address, setAddress] = useState(null);
     const [formData, setFormData] = useState({
         order_number: "",
         subtotal_price: "",
@@ -33,11 +32,10 @@ function OrderDetail() {
         shipping_address: "",
         billing_address: "",
     });
-    const [products, setProducts] = useState([]);
 
     useEffect(() => {
         const fetchOrderData = async () => {
-            const response = await API.get(`/orders/${order_id}/`, {
+            const response = await API.get(`orders/${order_id}/`, {
                 headers: {
                     Authorization: `Bearer ${userData.access}`,
                 },
@@ -51,6 +49,7 @@ function OrderDetail() {
 
             setOrder(response.data);
             setFormData({
+                customer: response.data.customer ,
                 order_number: response.data.order_number || "",
                 subtotal_price: response.data.subtotal_price || "",
                 shipping_cost: response.data.shipping_cost || "",
@@ -67,64 +66,33 @@ function OrderDetail() {
                 billing_address: response.data.billing_address || "",
             });
 
-            const customerResponse = await API.get(`/customers/`, {
+            const customerResponse = await API.get(`customer/detail/${response.data.customer}/`, {
                 headers: {
                     Authorization: `Bearer ${userData.access}`,
                 },
             });
-            const customer = customerResponse.data.results.find(customer => customer.address.id === response.data.shipping_address);
-            if (customer) {
-                setCustomer(customer);
-            } else {
-                console.error("Customer not found for addressId:", response.data.shipping_address);
-                openErrorNotification("Customer not found.");
-            }
+            setCustomer(customerResponse.data);
+
+            const fetchProductDetails = async (item) => {
+                const productResponse = await API.get(`/product/detail/${item.product}/`, {
+                    headers: {
+                        Authorization: `Bearer ${userData.access}`,
+                    },
+                });
+                return { 
+                    ...item,
+                    product_name: productResponse.data.name,
+                    main_image: productResponse.data.main_image,    
+                };
+            };
+
+            const itemsProduct = await Promise.all(response.data.items.map(fetchProductDetails));
+
+            setFormData(prevState => ({
+                ...prevState,
+                items: itemsProduct,
+            }));
         }
-
-        const fetchAddressData = async (addressId) => {
-            try {
-                const addressResponse = await API.get(`/address/detail/${response.data.shipping_address}`, {
-                    headers: {
-                        Authorization: `Bearer ${userData.access}`,
-                    },
-                });
-                if (addressResponse.data) {
-                    setAddress(addressResponse.data);
-                    setFormData(prevState => ({
-                        ...prevState,
-                        shipping_address: addressResponse.data.id || "",
-                        billing_address: addressResponse.data.id || "",
-                    }));
-                } else {
-                    console.error("Address not found for addressId:", addressResponse.data.shipping_address);
-                    openErrorNotification("Address not found.");
-                }
-
-                const productResponse = await API.get(`/products/`, {
-                    headers: {
-                        Authorization: `Bearer ${userData.access}`,
-                    },
-                });
-                setProducts(productResponse.data);
-                setFormData(prevState => ({
-                    ...prevState,
-                    items: addressResponse.data.items.map(item => {
-                        const product = productResponse.data.results.find(product => product.id === item.product);
-                        return {
-                            ...item,
-                            product_name: product ? product.name : '',
-                        };
-                    }),
-                }));
-            } catch (error) {
-                console.error("Error fetching order data:", error);
-                if (error.status === 401) {
-                    openErrorNotification("Unauthorized access");
-                    logout();
-                    return;
-                }
-            }
-        };
 
         if (userData.access) {
             fetchOrderData();
@@ -153,6 +121,50 @@ function OrderDetail() {
             openErrorNotification("Failed to update order.");
         }
     };
+
+    const convertUrl = (url) => {
+        return url.replace("/media/", "/api/static/");
+    };
+
+    const columns = [
+        {
+            title: 'Image',
+            dataIndex: 'main_image',
+            key: 'image',
+            width: '10%',
+            render: (record) => 
+                record ? (
+                    <img
+                        src={convertUrl(record)}
+                        alt={record.name}
+                        style={{ width: '50px', height: '50px', objectFit: 'cover' }}
+                    />
+                ) : (
+                    <div style={{ width: '50px', height: '50px', backgroundColor: '#f0f0f0' }} />
+                )
+            ,
+        },
+        {
+            title: 'Product Name',
+            dataIndex: 'product_name',
+        },
+        {
+            title: 'Size',
+            dataIndex: 'size',
+        },
+        {
+            title: 'Quantity',
+            dataIndex: 'quantity',
+        },
+        {
+            title: 'Price',
+            dataIndex: 'price',
+        },
+        {
+            title: 'Total Price',
+            dataIndex: 'total_price',
+        },
+    ];
 
     return (
         <div className="container-xxl flex-grow-1 container-p-y">
@@ -198,12 +210,12 @@ function OrderDetail() {
                                                             {/* Address */}
                                                             <div className="mb-2 col-md-6">
                                                                 <label className="form-label">Shipping Address</label>
-                                                                {address ? (
+                                                                {customer ? (
                                                                     <div className="selected-customer-info p-2 ">
-                                                                        <p className="mb-1"><strong style={{ color: '#68798c' }}>City:</strong> {address.city}</p>
-                                                                        <p className="mb-1"><strong style={{ color: '#68798c' }}>Country:</strong> {address.country}</p>
-                                                                        <p className="mb-0"><strong style={{ color: '#68798c' }}>Zip Code:</strong> {address.postal_code}</p>
-                                                                        <p className="mb-0"><strong style={{ color: '#68798c' }}>Address:</strong> {address.street_address}</p>
+                                                                        <p className="mb-1"><strong style={{ color: '#68798c' }}>City:</strong> {customer.address.city}</p>
+                                                                        <p className="mb-1"><strong style={{ color: '#68798c' }}>Country:</strong> {customer.address.country}</p>
+                                                                        <p className="mb-0"><strong style={{ color: '#68798c' }}>Zip Code:</strong> {customer.address.postal_code}</p>
+                                                                        <p className="mb-0"><strong style={{ color: '#68798c' }}>Address:</strong> {customer.address.street_address}</p>
                                                                     </div>
                                                                 ) : (
                                                                     <p>Loading address information...</p>
@@ -283,35 +295,15 @@ function OrderDetail() {
                                                     <h5 className="card-title">Order Items</h5>
                                                     <div className="card">
                                                         <div className="card-body">
-                                                            <table className="table">
-                                                                <thead>
-                                                                    <tr>
-                                                                        <th>Image</th>
-                                                                        <th>Product</th>
-                                                                        <th>Size</th>
-                                                                        <th>Quantity</th>
-                                                                        <th>Price</th>
-                                                                        <th>Total Price</th>
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                    {formData.items.map((item, index) => (
-                                                                        <tr key={index}>
-                                                                            <td>{}</td>
-                                                                            <td>{item.product_name}</td>
-                                                                            <td>{item.size}</td>
-                                                                            <td>{item.quantity}</td>
-                                                                            <td>${item.price}</td>
-                                                                            <td>${item.total_price}</td>
-                                                                        </tr>
-                                                                    ))}
-                                                                </tbody>
-                                                            </table>
+                                                            <Table
+                                                            columns={columns}
+                                                            dataSource={formData.items}
+                                                            pagination={false}
+                                                            rowKey={(record) => record.product_name}
+                                                            />
                                                         </div>
                                                     </div>
                                                 </div>
-
-
                                             </div>
 
                                             <div className="col-md-4">

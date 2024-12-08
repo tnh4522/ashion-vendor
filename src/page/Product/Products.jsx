@@ -102,7 +102,7 @@ const Products = () => {
     const columns = [
         {
             title: 'Image',
-            dataIndex: 'main_image_url',
+            dataIndex: 'main_image',
             key: 'main_image',
             width: '10%',
             render: (text, record) => (
