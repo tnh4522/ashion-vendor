@@ -148,14 +148,6 @@ const EditCategory = () => {
                                         {fileList.length < 1 && <div><UploadOutlined /> Upload</div>}
                                     </Upload>
                                 </Form.Item>
-                                {/* <Form.Item>
-                                    <Button type="primary" htmlType="submit" loading={loading}>
-                                        Update Image
-                                    </Button>
-                                    <Button className='mx-2' type="primary" loading={loading} onClick={handleCancel}>
-                                        Cancel
-                                    </Button>
-                                </Form.Item> */}
                             </Form>
                         </Tabs.TabPane>
                     </Tabs>

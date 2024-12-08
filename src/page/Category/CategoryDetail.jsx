@@ -156,6 +156,7 @@ const CategoryDetail = () => {
             cancelText: 'No',
             onOk() {
                 handleDeleteSelected();
+                setSelectedRowKeys([]);
             },
             onCancel() {
                 console.log('Cancel');
@@ -208,6 +209,7 @@ const CategoryDetail = () => {
     const handleEdit = (id) => {
         navigate(`/edit-category/${id}/`);
     };
+
 
     const columns = [
         {
