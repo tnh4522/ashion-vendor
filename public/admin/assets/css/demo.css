@@ -117,3 +117,15 @@
     flex-wrap: wrap;
     justify-content: space-between
 }
+
+.status-success {
+    background-color: #e6ffed;
+}
+
+.status-error {
+    background-color: #ffe6e6;
+}
+
+.status-warning {
+    background-color: #fff7e6;
+}
