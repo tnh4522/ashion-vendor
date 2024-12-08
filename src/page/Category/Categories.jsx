@@ -92,7 +92,7 @@ const Categories = () => {
 
     const showDeleteConfirm = () => {
         confirm({
-            title: 'Are you sure you want to delete these categories?',
+            title: 'Are you sure you want to delete these categories ?',
             content: 'This action cannot be undone.',
             okText: 'Yes',
             okType: 'danger',
@@ -131,7 +131,7 @@ const Categories = () => {
                         <img
                             src={convertUrl(record.image)}
                             alt={record.name}
-                            style={{ width: '50px', height: '50px', objectFit: 'cover', marginRight: '10px' }}
+                            style={{ width: '50px', height: '50px', objectFit: 'cover', marginRight: '20px' }}
                         />
                     ) : (
                         <PictureOutlined style={{ fontSize: '50px', marginRight: '10px' }} /> 
@@ -144,7 +144,6 @@ const Categories = () => {
             title: 'Is Active',
             dataIndex: 'is_active',
             key: 'is_active',
-            render: (isActive) => (isActive ? 'Yes' : 'No'),
             align: 'center',
             width: '10%',
             render: (isActive) => (
@@ -152,29 +151,11 @@ const Categories = () => {
             ),
         },
         {
-            title: 'Product Public',
+            title: 'Product',
             dataIndex: 'product_public',
             key: 'product_public',
             align: 'center',
             width: '10%',
-        },
-        {
-            title: 'Action',
-            key: 'x',
-            dataIndex: '',
-            align: 'center',
-            render: (text, record) => (
-                <span>
-                    <span>
-                        <Button
-                            type="link"
-                            icon={<i className="fa-solid fa-pen-to-square"></i>}
-                            onClick={() => handleEdit(record.id)}
-                        >
-                        </Button>
-                    </span>
-                </span>
-            ),
         }
     ];
 
@@ -213,7 +194,7 @@ const Categories = () => {
     return (
         <div className="container-xxl flex-grow-1 container-p-y">
             <div className="card">
-            <h5 className="card-header">List Categories ({categoryCount})</h5>
+            <h3 className="card-header">List Categories ({categoryCount})</h3>
                 <div className="table-responsive text-nowrap" style={{ padding: '20px' }}>
                     <Table
                         rowSelection={{
@@ -226,35 +207,36 @@ const Categories = () => {
                         loading={loading}
                     />
                 </div>
-                <div className="d-flex justify-content-between align-items-center mt-3" style={{ padding: '20px' }}>
-                    <div>
-                        {selectedRowKeys.length > 0 && (
-                            <Space>
-                                <Button onClick={handleActive}>Active</Button>
-                                <Button onClick={handleUnactive}>Unactive</Button>
-                                <Button onClick={showDeleteConfirm} style={{ marginRight: '10px' }}>Delete</Button>
-                            </Space>
-                        )}
-                        <Button onClick={handleImport} style={{ marginRight: '10px' }}>Import</Button>
-                        <Button onClick={handleExport} style={{ marginRight: '10px' }}>Export</Button>
+                <div style={{backgroundColor: '#eeeeee'}} className='mx-3 mb-3' >
+                    <div className="d-flex justify-content-between align-items-center" style={{ padding: '20px' }}>
+                        <div>
+                            {selectedRowKeys.length > 0 && (
+                                <Space>
+                                    <Button onClick={handleActive}>Active</Button>
+                                    <Button onClick={handleUnactive}>Unactive</Button>
+                                    <Button onClick={showDeleteConfirm} style={{ marginRight: '10px' }}>Delete</Button>
+                                </Space>
+                            )}
+                            <Button onClick={handleImport} style={{ marginRight: '10px' }}>Import</Button>
+                            <Button onClick={handleExport} style={{ marginRight: '10px' }}>Export</Button>
+                        </div>
+                        <div className="d-flex align-items-center">
+                            <Input 
+                                placeholder="New Category" 
+                                value={newCategoryName}
+                                required
+                                onChange={(e) => setNewCategoryName(e.target.value)}
+                                style={{ marginRight: '10px' }} 
+                            />
+                            <Button type="primary" onClick={handleAdd}>Add</Button>
+                        </div>
                     </div>
-                    <div className="d-flex align-items-center">
-                        <Input 
-                            placeholder="New Category" 
-                            value={newCategoryName}
-                            required
-                            onChange={(e) => setNewCategoryName(e.target.value)}
-                            style={{ marginRight: '10px' }} 
-                        />
-                        <Button type="primary" onClick={handleAdd}>Add</Button>
+                    <div className="d-flex justify-content-end" style={{ padding: '20px' }}>
+                        <Radio.Group onChange={(e) => setSortBy(e.target.value)} value={sortBy} style={{ marginRight: '10px' }}>
+                            <Radio value="name">Sort by Name</Radio>
+                            <Radio value="sort_order">Sort by Order</Radio>
+                        </Radio.Group>
                     </div>
-                </div>
-                <div className="d-flex justify-content-end mt-3" style={{ padding: '20px' }}>
-                    <Radio.Group onChange={(e) => setSortBy(e.target.value)} value={sortBy} style={{ marginRight: '10px' }}>
-                        <Radio value="name">Sort by Name</Radio>
-                        <Radio value="sort_order">Sort by Order</Radio>
-                    </Radio.Group>
-
                 </div>
             </div>
             <hr className="my-5" />
