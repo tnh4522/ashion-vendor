@@ -4,6 +4,7 @@ import API from "../../service/service.jsx";
 import useNotificationContext from "../../hooks/useNotificationContext.jsx";
 import { Tabs } from 'antd';
 import { Link, useNavigate, useParams } from "react-router-dom";
+import RaiseEvent from "../../utils/RaiseEvent.jsx";
 
 function CustomerDetail() {
     const { openSuccessNotification, openErrorNotification } = useNotificationContext();
@@ -96,7 +97,7 @@ function CustomerDetail() {
         try {
             const formDataToSend = {
                 ...formData,
-                address: addressData.id || null,
+                address: addressData,
             };
 
             if (addressData.id) {
@@ -113,7 +114,7 @@ function CustomerDetail() {
                         "Content-Type": "application/json",
                     },
                 });
-                formDataToSend.address = addressResponse.data.id;
+                formDataToSend.address = addressResponse.data;
             }
 
             const response = await API.put(`/customer/detail/${customer_id}/`, formDataToSend, {
@@ -123,9 +124,33 @@ function CustomerDetail() {
                 },
             });
 
-            setCustomer(response.data);
-            openSuccessNotification("Customer updated successfully!");
-            navigator("/customers");
+            if (response.status === 401 || response.code === 'token_not_valid') {
+                openErrorNotification("Unauthorized access");
+                logout();
+                return;
+            }
+
+            if(response.status === 400) {
+                openErrorNotification("Failed to update customer.");
+                return;
+            }
+
+            if(response.status === 404) {
+                openErrorNotification("Customer not found.");
+                return;
+            }
+
+            if(response.status === 500) {
+                openErrorNotification("Internal server error.");
+                return;
+            }
+
+            if(response.status === 200 || response.status === 201) {
+                await RaiseEvent(userData, '201', 'UPDATE', 'CUSTOMER', 'Update customer', response.data);
+                setCustomer(response.data);
+                openSuccessNotification("Customer updated successfully!");
+                navigator("/customers");
+            }
         } catch (error) {
             console.error("Error updating customer data:", error);
             openErrorNotification("Failed to update customer.");
