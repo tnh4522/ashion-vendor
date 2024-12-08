@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import {Table, Input, Button} from 'antd';
+import {Button, Input, Table} from 'antd';
 import API from '../../service/service';
 import useUserContext from '../../hooks/useUserContext';
 import useNotificationContext from '../../hooks/useNotificationContext';
@@ -9,7 +9,7 @@ const ActivityLog = () => {
     const navigate = useNavigate();
 
     const {userData, logout} = useUserContext();
-    const {openSuccessNotification, openErrorNotification} = useNotificationContext();
+    const {openErrorNotification} = useNotificationContext();
 
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -19,7 +19,7 @@ const ActivityLog = () => {
     const [tableParams, setTableParams] = useState({
         pagination: {
             current: 1,
-            pageSize: 5,
+            pageSize: 10,
         },
         filters: {},
         sorter: {},
@@ -33,14 +33,12 @@ const ActivityLog = () => {
                 page_size: tableParams.pagination.pageSize,
             };
 
-            // Sort logic
             if (tableParams.sorter.field) {
                 params.ordering = tableParams.sorter.order === 'ascend'
                     ? tableParams.sorter.field
                     : `-${tableParams.sorter.field}`;
             }
 
-            // Search logic (giả sử API hỗ trợ tìm kiếm theo action hoặc user.username)
             if (searchParams.searchText) {
                 params.search = searchParams.searchText;
             }
@@ -51,6 +49,9 @@ const ActivityLog = () => {
                 },
                 params,
             });
+
+            console.log('Count from API:', response.data.count);
+            console.log('Results length:', response.data.results.length);
 
             setData(response.data.results);
             setTableParams({
@@ -115,7 +116,11 @@ const ActivityLog = () => {
             title: 'Data',
             dataIndex: 'data',
             width: '15%',
-            render: (text) => JSON.stringify(text),
+            render: (value) => {
+                const text = JSON.stringify(value);
+                if (!text) return '';
+                return text.length > 20 ? text.substring(0, 20) + '...' : text;
+            },
         },
         {
             title: 'Time',
@@ -205,6 +210,13 @@ const ActivityLog = () => {
                 </div>
                 <div className="table-responsive text-nowrap" style={{padding: '0 20px 20px'}}>
                     <Table
+                        onRow={(record) => {
+                            return {
+                                onClick: () => {
+                                    navigate(`/activity/${record.id}`);
+                                },
+                            };
+                        }}
                         columns={columns}
                         rowKey={(record) => record.id}
                         dataSource={data}
