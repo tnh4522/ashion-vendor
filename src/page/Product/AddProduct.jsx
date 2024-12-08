@@ -1,11 +1,9 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import API from "../../service/service";
 import useUserContext from "../../hooks/useUserContext";
 import useNotificationContext from "../../hooks/useNotificationContext";
 import { useNavigate } from "react-router-dom";
-import { Steps, Button, Table, InputNumber } from 'antd';
-
-const { Step } = Steps;
+import { Button, Table, InputNumber, Progress } from 'antd';
 
 const AddProduct = () => {
     const { userData, logout } = useUserContext();
@@ -14,7 +12,6 @@ const AddProduct = () => {
     const [loading, setLoading] = useState(false);
 
     const [currentStep, setCurrentStep] = useState(0);
-    const mainImageRef = useRef(null);
 
     const [formData, setFormData] = useState({
         name: '',
@@ -39,7 +36,7 @@ const AddProduct = () => {
         is_featured: false,
         is_new_arrival: false,
         is_on_sale: false,
-        main_image: null,
+        images: [], // Mảng ảnh
         video_url: '',
         meta_title: '',
         meta_description: '',
@@ -73,8 +70,16 @@ const AddProduct = () => {
         }
     };
 
-    const handleImageChange = (e) => {
-        mainImageRef.current = e.target.files[0];
+    const handleImagesChange = (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length > 5) {
+            openErrorNotification("You can only upload a maximum of 5 images");
+            return;
+        }
+        setFormData(prevState => ({
+            ...prevState,
+            images: files,
+        }));
     };
 
     const handleNext = () => {
@@ -116,14 +121,18 @@ const AddProduct = () => {
 
         const formDataToSend = new FormData();
 
+        // Append other product fields
         Object.keys(formData).forEach((key) => {
-            if (formData[key] !== null && formData[key] !== '') {
+            if (key !== 'images' && formData[key] !== null && formData[key] !== '') {
                 formDataToSend.append(key, formData[key]);
             }
         });
 
-        if (mainImageRef.current) {
-            formDataToSend.append('main_image', mainImageRef.current);
+        // Append multiple images
+        if (formData.images && formData.images.length > 0) {
+            formData.images.forEach((image) => {
+                formDataToSend.append('images', image);
+            });
         }
 
         try {
@@ -161,6 +170,9 @@ const AddProduct = () => {
                 logout();
                 return;
             }
+            if (error.response && error.response.data) {
+                console.log('Error response data:', error.response.data);
+            }
             console.error('There was an error adding the product:', error);
             openErrorNotification('There was an error adding the product.');
         } finally {
@@ -186,7 +198,7 @@ const AddProduct = () => {
                     },
                 });
                 setStocks(response.data.results);
-                // Khởi tạo stockData với danh sách kho và quantity = 0
+                // Khởi tạo stockData
                 const initialStockData = response.data.results.map(stock => ({
                     stockId: stock.id,
                     stockName: stock.name,
@@ -205,7 +217,6 @@ const AddProduct = () => {
         fetchStocks();
     }, [userData.access, openErrorNotification]);
 
-    // Hàm xử lý thay đổi số lượng tồn kho
     const handleStockQuantityChange = (value, stockId) => {
         setStockData(prevData => prevData.map(item => {
             if (item.stockId === stockId) {
@@ -262,16 +273,16 @@ const AddProduct = () => {
                             onChange={handleInputChange}
                         ></textarea>
                     </div>
-                    {/* Main Image */}
                     <div className="mb-3 col-md-6">
-                        <label htmlFor="main_image" className="form-label">Main Image</label>
+                        <label htmlFor="images" className="form-label">Product Images</label>
                         <input
                             className="form-control"
                             type="file"
-                            id="main_image"
-                            name="main_image"
+                            id="images"
+                            name="images"
                             accept="image/*"
-                            onChange={handleImageChange}
+                            multiple
+                            onChange={handleImagesChange}
                         />
                     </div>
                     {/* Brand */}
@@ -548,15 +559,23 @@ const AddProduct = () => {
         },
     ];
 
+    const current = currentStep + 1;
+    const total = steps.length;
+    const progressPercent = Math.round((current / total) * 100);
+
     return (
         <div className="container-xxl flex-grow-1 container-p-y">
             <div className="row">
                 <div className="col-md-12">
-                    <Steps current={currentStep}>
-                        {steps.map(item => (
-                            <Step key={item.title} title={item.title} />
-                        ))}
-                    </Steps>
+                    <div style={{ marginBottom: '20px' }}>
+                        <Progress
+                            percent={progressPercent}
+                            format={() => `${current}/${total}`}
+                        />
+                        <h4 style={{ marginTop: '10px' }}>
+                            Step {current}: {steps[currentStep].title}
+                        </h4>
+                    </div>
                     <div className="steps-content" style={{ marginTop: '20px' }}>
                         {steps[currentStep].content}
                     </div>

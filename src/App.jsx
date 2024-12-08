@@ -10,7 +10,6 @@ import Products from "./page/Product/Products.jsx";
 import AddProduct from "./page/Product/AddProduct.jsx";
 import EditProduct from "./page/Product/EditProduct.jsx";
 import Categories from "./page/Category/Categories.jsx";
-import AddCategory from "./page/Category/AddCategory.jsx";
 import Customers from "./page/Customer/Customers.jsx";
 import Users from "./page/User/Users.jsx";
 import AddUser from "./page/User/AddUser.jsx";
@@ -40,6 +39,8 @@ import OrderDetail from "./page/Order/OrderDetail.jsx";
 import VerifyEmail from "./page/Authentication/VerifyEmail.jsx";
 import MyStore from "./page/Store/MyStore.jsx";
 import RoleDefault from "./page/Authorization/RoleDefault.jsx";
+import CategoryDetail from "./page/Category/CategoryDetail.jsx";
+import ActivityLog from "./page/Activity/ActivityLog.jsx";
 
 
 function App() {
@@ -73,6 +74,7 @@ function App() {
                             <div className="content-wrapper">
                                 <Routes>
                                     <Route path="/" element={<ProtectedRoute><Dashboard/></ProtectedRoute>}/>
+                                    <Route path="/activity" element={<ProtectedRoute><ActivityLog/></ProtectedRoute>}/>
                                     <Route path="/my-store" element={<ProtectedRoute><MyStore/></ProtectedRoute>}/>
                                     <Route path="/account" element={<ProtectedRoute><Account/></ProtectedRoute>}/>
                                     <Route path="/products" element={<ProtectedRoute><Products/></ProtectedRoute>}/>
@@ -82,8 +84,8 @@ function App() {
                                     <Route path="/add-product" element={<ProtectedRoute><AddProduct/></ProtectedRoute>}/>
                                     <Route path="/edit-product/:id" element={<ProtectedRoute><EditProduct/></ProtectedRoute>}/>
                                     <Route path="/categories" element={<ProtectedRoute><Categories/></ProtectedRoute>}/>
-                                    <Route path="/add-category" element={<ProtectedRoute><AddCategory/></ProtectedRoute>}/>
                                     <Route path="/edit-category/:id" element={<ProtectedRoute><EditCategory/></ProtectedRoute>}/>
+                                    <Route path="/categories/:id/products/:name" element={<ProtectedRoute><CategoryDetail/></ProtectedRoute>}/>
                                     <Route path="/users" element={<ProtectedRoute><Users/></ProtectedRoute>}/>
                                     <Route path="/add-user" element={<ProtectedRoute><AddUser/></ProtectedRoute>}/>
                                     <Route path="/user-detail/:id" element={<ProtectedRoute><UserDetail/></ProtectedRoute>}/>
