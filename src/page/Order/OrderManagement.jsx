@@ -25,8 +25,7 @@ const Orders = () => {
         { title: 'Order ID', dataIndex: 'order_number', sorter: true },
         { 
             title: 'Customer', 
-            dataIndex: 'shipping_address', 
-            render: (customer) => customer.first_name || 'N/A', 
+            dataIndex: 'customer_name',
             sorter: true 
         },
         { 
@@ -86,6 +85,18 @@ const Orders = () => {
         },
     ];
 
+    const fetchCustomerData = async (customerId) => {
+        try {
+            const response = await API.get(`customer/detail/${customerId}/`, {
+                headers: { 'Authorization': `Bearer ${userData.access}` },
+            });
+            return `${response.data.first_name} ${response.data.last_name}`; 
+        } catch (error) {
+            console.error('Error fetching customer details:', error);
+            return 'N/A'; 
+        }
+    };
+
     const fetchData = async () => {
         setLoading(true);
         try {
@@ -99,13 +110,14 @@ const Orders = () => {
                 headers: { 'Authorization': `Bearer ${userData.access}` },
                 params,
             });
-
-            const processedData = response.data.results.map(order => ({
+    
+            const ordersWithCustomers = await Promise.all(response.data.results.map(async order => ({
                 ...order,
+                customer_name: await fetchCustomerData(order.customer),
                 total_price: parseFloat(order.total_price),
-            }));
-
-            setData(processedData);
+            })));
+    
+            setData(ordersWithCustomers);
             setTableParams({
                 ...tableParams,
                 pagination: { ...tableParams.pagination, total: response.data.count },
