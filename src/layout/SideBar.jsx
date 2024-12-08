@@ -29,6 +29,11 @@ function SideBar() {
             // ]
         },
         {
+            key: 'acitvity',
+            label: <Link to="/activity">Activity Log</Link>,
+            icon: <i className="menu-icon tf-icons fa-solid fa-font-awesome"></i>,
+        },
+        {
             key: 'category',
             label: <Link to="/categories">Categories</Link>,
             icon: <i className="menu-icon tf-icons fa-solid fa-layer-group"></i>,

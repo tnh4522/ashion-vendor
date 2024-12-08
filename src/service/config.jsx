@@ -5,6 +5,7 @@ const CONFIG_HEADER = {
     }
 };
 
-const BE_URL = ' https://sterling-notably-monster.ngrok-free.app';
+// const BE_URL = 'http://localhost:8000/';
+const BE_URL = 'https://sterling-notably-monster.ngrok-free.app/';
 const FE_URL = 'https://ashion-vendor.onrender.com/';
 export { CONFIG_HEADER, BE_URL, FE_URL };

@@ -4,6 +4,7 @@ import useUserContext from '../../hooks/useUserContext';
 import useNotificationContext from '../../hooks/useNotificationContext';
 import {useNavigate} from "react-router-dom";
 import {Tabs} from 'antd';
+import RaiseEvent from "../../utils/RaiseEvent.jsx";
 
 function AddCustomer() {
     const {userData} = useUserContext();
@@ -68,6 +69,7 @@ function AddCustomer() {
             });
 
             if (customerResponse.status === 201) {
+                RaiseEvent(userData, '201', 'CREATE', 'CUSTOMER', 'Create new customer', customerData);
                 openSuccessNotification('Customer created successfully');
                 setFormData({
                     first_name: '',

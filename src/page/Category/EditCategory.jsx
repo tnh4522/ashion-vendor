@@ -5,6 +5,7 @@ import API from "../../service/service.jsx";
 import useUserContext from "../../hooks/useUserContext.jsx";
 import { useNavigate, useParams } from 'react-router-dom';
 import removeAccents from 'remove-accents';
+import {BE_URL} from "../../service/config.jsx";
 
 const convertToSlug = (str) => {
     return removeAccents(str).toLowerCase().replace(/\s+/g, '-');
@@ -26,7 +27,7 @@ const EditCategory = () => {
                 setCategory(response.data);
 
                 if (response.data.image) {
-                    setFileList([{ url: convertUrl(`http://127.0.0.1:8000` + response.data.image) }]);
+                    setFileList([{ url: convertUrl(BE_URL + response.data.image) }]);
                 }
             } catch (error) {
                 if (error.status === 401) {

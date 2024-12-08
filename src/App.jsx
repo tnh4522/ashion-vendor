@@ -40,6 +40,7 @@ import VerifyEmail from "./page/Authentication/VerifyEmail.jsx";
 import MyStore from "./page/Store/MyStore.jsx";
 import RoleDefault from "./page/Authorization/RoleDefault.jsx";
 import CategoryDetail from "./page/Category/CategoryDetail.jsx";
+import ActivityLog from "./page/Activity/ActivityLog.jsx";
 
 
 function App() {
@@ -73,6 +74,7 @@ function App() {
                             <div className="content-wrapper">
                                 <Routes>
                                     <Route path="/" element={<ProtectedRoute><Dashboard/></ProtectedRoute>}/>
+                                    <Route path="/activity" element={<ProtectedRoute><ActivityLog/></ProtectedRoute>}/>
                                     <Route path="/my-store" element={<ProtectedRoute><MyStore/></ProtectedRoute>}/>
                                     <Route path="/account" element={<ProtectedRoute><Account/></ProtectedRoute>}/>
                                     <Route path="/products" element={<ProtectedRoute><Products/></ProtectedRoute>}/>
