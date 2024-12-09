@@ -193,21 +193,9 @@ const ActivityLog = () => {
                 <div className="card-header"
                      style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                     <h4 className="card-title" style={{color: '#696cff'}}>Activity Logs</h4>
-                    <Button type="primary" onClick={() => navigate('/')}>
-                        Back to Dashboard
-                    </Button>
                 </div>
                 <div className="card-body">
                     <div className="row mb-4">
-                        <div className="col-md-4">
-                            <Input
-                                id="searchText"
-                                name="searchText"
-                                value={searchParams.searchText}
-                                onChange={handleInputChange}
-                                placeholder="Search by user or action"
-                            />
-                        </div>
                         <div className="col-md-4">
                             <Select
                                 id="status"
@@ -219,13 +207,13 @@ const ActivityLog = () => {
                                 allowClear
                             >
                                 <Option value="">Select Status</Option>
-                                <Option value="200">200</Option>
-                                <Option value="201">201</Option>
-                                <Option value="400">400</Option>
-                                <Option value="401">401</Option>
-                                <Option value="403">403</Option>
-                                <Option value="404">404</Option>
-                                <Option value="500">500</Option>
+                                <Option value="200">200 - Success</Option>
+                                <Option value="201">201 - Created</Option>
+                                <Option value="400">400 - Bad Request</Option>
+                                <Option value="401">401 - Unauthorized</Option>
+                                <Option value="403">403 - Forbidden</Option>
+                                <Option value="404">404 - Not Found</Option>
+                                <Option value="500">500 - Internal Server Error</Option>
                             </Select>
                         </div>
                         <div className="col-md-4">
@@ -237,9 +225,7 @@ const ActivityLog = () => {
                                 placeholder="Filter by model"
                             />
                         </div>
-                    </div>
-                    <div className="row">
-                        <div className="col-md-12 text-right">
+                        <div className="col-md-4">
                             <Button
                                 type="default"
                                 onClick={handleResetFilters}

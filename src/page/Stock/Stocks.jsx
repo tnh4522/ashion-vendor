@@ -226,13 +226,12 @@ const Stocks = () => {
                                 ))}
                             </Select>
                         </div>
-                    </div>
-
-                    {/* Buttons */}
-                    <div className="row mb-4">
-                        <div className="col-md-6 d-flex">
-                            <Button type="default" onClick={handleResetFilters} style={{marginRight: '10px'}}>Reset Filters</Button>
-                            <Button type="primary" onClick={handleSearch}>Perform Search</Button>
+                        {/* Buttons */}
+                        <div className="col-md-4">
+                            <div className="col-md-6 d-flex">
+                                <Button type="default" onClick={handleResetFilters} style={{marginRight: '10px'}}>Reset Filters</Button>
+                                <Button type="primary" onClick={handleSearch}>Perform Search</Button>
+                            </div>
                         </div>
                     </div>
                 </div>
