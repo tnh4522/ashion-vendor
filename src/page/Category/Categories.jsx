@@ -8,6 +8,7 @@ import removeAccents from 'remove-accents';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import ExportModal from './ExportModal.jsx';
+import AddCategoryModal from './AddCategoryModal.jsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
@@ -33,6 +34,16 @@ const Categories = () => {
     const [importFile, setImportFile] = useState(null); 
     const [isExportModalVisible, setIsExportModalVisible] = useState(false);
     
+    const [isAddPlusModalVisible, setIsAddPlusModalVisible] = useState(false);
+
+    const showAddPlusModal = () => {
+        setIsAddPlusModalVisible(true);
+    };
+
+    const hideAddPlusModal = () => {
+        setIsAddPlusModalVisible(false);
+    };
+
     const showExportModal = () => {
         if (selectedRowKeys.length === 0) {
             message.warning('Please select at least one category to export.');
@@ -205,6 +216,10 @@ const Categories = () => {
         }
     };
 
+    const handleAddPlus = () => {
+        navigate('/');
+    }
+
     const handleActive = async () => {
         try {
             await API.post('categories/update-active/', {
@@ -374,7 +389,6 @@ const Categories = () => {
         reader.readAsArrayBuffer(file); // Đọc file dưới dạng ArrayBuffer
     };
     
-
     const importData = async (data) => {
         const formData = new FormData();
         formData.append('data', JSON.stringify(data)); 
@@ -391,6 +405,10 @@ const Categories = () => {
             console.error('Error importing data:', error);
             message.error('Failed to import data');
         }
+    };
+
+    const handleAddCategory = () => {
+        fetchCategories(true);
     };
 
     const columns = [
@@ -425,9 +443,9 @@ const Categories = () => {
             ),
         },
         {
-            title: 'Product',
-            dataIndex: 'product_public',
-            key: 'product_public',
+            title: 'Sub-Category',
+            dataIndex: 'subcategory_count',
+            key: 'subcategory_count',
             align: 'center',
             width: '10%',
         }
@@ -437,17 +455,24 @@ const Categories = () => {
         return url.replace("/media/", "/api/static/");
     }
 
-    const fetchCategories = async () => {
+    const fetchCategories = async (withoutParent = false) => {
         setLoading(true);
         try {
-            const response = await API.get(`categories/?sort_by=${sortBy}&order=${order}`);
+            const params = new URLSearchParams();
+            params.append('sort_by', sortBy);
+            params.append('order', order);
+            if (withoutParent) {
+                params.append('without_parent', 'true');
+            }
+    
+            const response = await API.get(`categories/?${params.toString()}`);
             setData(response.data.results);
             setCategoryCount(response.data.results.length); 
         } catch (error) {
             if (error.status === 401) {
                 logout();
                 return;
-            };
+            }
             console.error('There was an error fetching the categories:', error);
         } finally {
             setLoading(false);
@@ -455,7 +480,7 @@ const Categories = () => {
     };
 
     useEffect(() => {
-        fetchCategories();
+        fetchCategories(true);
     }, [sortBy, order]);
 
     const rowSelection = {
@@ -475,8 +500,6 @@ const Categories = () => {
         }
         setSelectedRowKeys(selectedKeys);
     };
-
-
 
 
     return (
@@ -569,7 +592,7 @@ const Categories = () => {
                                 onExport={handleExport}
                             />
                         </div>
-                        <div className="d-flex align-items-center">
+                        <div className="d-flex align-items-center ">
                             <Input 
                                 placeholder="New Category" 
                                 value={newCategoryName}
@@ -577,7 +600,14 @@ const Categories = () => {
                                 onChange={(e) => setNewCategoryName(e.target.value)}
                                 style={{ marginRight: '10px' }} 
                             />
-                            <Button type="primary" onClick={handleAdd}>Add</Button>
+                            <Button type="primary" className='mx-2' onClick={handleAdd}>Add</Button>
+                            <Button type="primary" onClick={showAddPlusModal}>Add +</Button>
+                            <AddCategoryModal
+                                isVisible={isAddPlusModalVisible}
+                                onClose={hideAddPlusModal}
+                                onAddCategory={handleAddCategory}
+                                categories={data}
+                            />
                         </div>
                     </div>
                     <div className="d-flex justify-content-end" style={{ padding: '20px' }}>
