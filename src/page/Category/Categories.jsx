@@ -8,15 +8,11 @@ import removeAccents from 'remove-accents';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import ExportModal from './ExportModal.jsx';
-import AddCategoryModal from './AddCategoryModel.jsx'
+import AddCategoryModal from './AddCategoryModal.jsx'
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-
+import { convertUrl, convertToSlug} from '../../utils/Function.jsx';
 const { confirm } = Modal;
-
-const convertToSlug = (str) => {
-    return removeAccents(str).toLowerCase().replace(/\s+/g, '-');
-};
 
 const Categories = () => {
     const [data, setData] = useState([]);
@@ -209,10 +205,19 @@ const Categories = () => {
             });
             message.success('Category added successfully');
             setNewCategoryName('');
-            fetchCategories();
+            fetchCategories(true);
         } catch (error) {
-            console.error('There was an error adding the category:', error);
-            message.error('Failed to add category');
+            if (error.response && error.response.data && error.response.data.error) {
+                message.error(error.response.data.error);
+            } else {
+                message.error('Failed to add category');
+            }
+        }
+    };
+
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            handleAdd();
         }
     };
 
@@ -227,7 +232,7 @@ const Categories = () => {
                 is_active: true
             });
             message.success('Categories activated successfully');
-            fetchCategories();
+            fetchCategories(true);
         } catch (error) {
             console.error('There was an error activating the categories:', error);
             message.error('Failed to activate categories');
@@ -241,7 +246,7 @@ const Categories = () => {
                 is_active: false
             });
             message.success('Categories deactivated successfully');
-            fetchCategories();
+            fetchCategories(true);
         } catch (error) {
             console.error('There was an error deactivating the categories:', error);
             message.error('Failed to deactivate categories');
@@ -270,7 +275,7 @@ const Categories = () => {
                 ids: selectedRowKeys
             });
             message.success('Categories deleted successfully');
-            fetchCategories();
+            fetchCategories(true);
             setSelectedRowKeys([]);
         } catch (error) {
             console.error('There was an error deleting the categories:', error);
@@ -400,7 +405,7 @@ const Categories = () => {
                 },
             });
             message.success('Import data successfully!');
-            fetchCategories();
+            fetchCategories(true);
         } catch (error) {
             console.error('Error importing data:', error);
             message.error('Failed to import data');
@@ -450,10 +455,6 @@ const Categories = () => {
             width: '10%',
         }
     ];
-
-    const convertUrl = (url) => {
-        return url.replace("/media/", "/api/static/");
-    }
 
     const fetchCategories = async (withoutParent = false) => {
         setLoading(true);
@@ -536,7 +537,8 @@ const Categories = () => {
                                 <Space>
                                     <Button onClick={handleActive}>Active</Button>
                                     <Button onClick={handleUnactive}>Unactive</Button>
-                                    <Button onClick={showDeleteConfirm} style={{ marginRight: '10px' }}>Delete</Button>
+                                    <Button onClick={showDeleteConfirm} >Delete</Button>
+                                    <Button onClick={showExportModal} style={{ marginRight: '10px' }}>Export</Button>
                                 </Space>
                             )}
                             <Button onClick={showImportModal} style={{ marginRight: '10px' }}>Import</Button>
@@ -585,7 +587,6 @@ const Categories = () => {
                                     </Space>
                                 </div>
                             </Modal>
-                            <Button onClick={showExportModal}>Export</Button>
                             <ExportModal
                                 open={isExportModalVisible}
                                 onClose={hideExportModal}
@@ -598,7 +599,8 @@ const Categories = () => {
                                 value={newCategoryName}
                                 required
                                 onChange={(e) => setNewCategoryName(e.target.value)}
-                                style={{ marginRight: '10px' }} 
+                                style={{ marginRight: '10px' }}
+                                onKeyDown={handleKeyDown}
                             />
                             <Button type="primary" className='mx-2' onClick={handleAdd}>Add</Button>
                             <Button type="primary" onClick={showAddPlusModal}>Add +</Button>

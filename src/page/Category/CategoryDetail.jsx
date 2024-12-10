@@ -4,13 +4,10 @@ import { Table, message, Input, Button, Form, Tooltip, Space, Modal} from 'antd'
 import { Link, useNavigate } from 'react-router-dom';
 import { PictureOutlined, CheckCircleOutlined, CloseCircleOutlined, SettingFilled, ProductFilled, SmileOutlined} from '@ant-design/icons';
 import API from "../../service/service.jsx";
-import removeAccents from 'remove-accents';
-
+import { convertUrl, convertToSlug} from '../../utils/Function.jsx';
+import {BE_URL} from "../../service/config.jsx";
 const { confirm } = Modal;
 
-const convertToSlug = (str) => {
-    return removeAccents(str).toLowerCase().replace(/\s+/g, '-');
-};
 
 const CategoryDetail = () => {
     const {id, name} = useParams();
@@ -100,10 +97,6 @@ const CategoryDetail = () => {
             setSelectedRowKeys(selectedRowKeys);
         },
     };
-
-    const convertUrl = (url) => {
-        return url.replace("/media/", "/api/static/");
-    }
 
     const handleActive = async () => {
         try {
@@ -201,8 +194,17 @@ const CategoryDetail = () => {
             setSubCategories([...subCategories, response.data]);
             setSubCategoryCount(subCategoryCount + 1);
         } catch (error) {
-            console.error('Error creating subcategory:', error);
-            message.error('Failed to create sub-category');
+            if (error.response && error.response.data && error.response.data.error) {
+                message.error(error.response.data.error);
+            } else {
+                message.error('Failed to add category');
+            }
+        }
+    };
+
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            handleCreateSubCategory();
         }
     };
 
@@ -210,6 +212,16 @@ const CategoryDetail = () => {
         navigate(`/edit-category/${id}/`);
     };
 
+    const onRowClick = (record) => {
+        const selectedKeys = [...selectedRowKeys];
+        const index = selectedKeys.indexOf(record.id);
+        if (index === -1) {
+            selectedKeys.push(record.id);
+        } else {
+            selectedKeys.splice(index, 1);
+        }
+        setSelectedRowKeys(selectedKeys);
+    };
 
     const columns = [
         {
@@ -221,7 +233,7 @@ const CategoryDetail = () => {
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                     {record.image ? (
                         <img
-                            src={convertUrl('http://127.0.0.1:8000/' + record.image)}
+                            src={convertUrl(BE_URL + record.image)}
                             alt={record.name}
                             style={{ width: '50px', height: '50px', objectFit: 'cover', marginRight: '20px' }}
                         />
@@ -295,6 +307,9 @@ const CategoryDetail = () => {
                                   </div>
                                 ),
                               }}
+                            onRow={(record) => ({
+                                onClick: () => onRowClick(record),
+                            })}
                         />
                         
                     </div>
@@ -305,11 +320,11 @@ const CategoryDetail = () => {
                                     <Space>
                                         <Button onClick={handleActive}>Active</Button>
                                         <Button onClick={handleUnactive}>Unactive</Button>
-                                        <Button onClick={showDeleteConfirm} style={{ marginRight: '10px' }}>Delete</Button>
+                                        <Button onClick={showDeleteConfirm}>Delete</Button>
+                                        <Button onClick={handleExport} style={{ marginRight: '10px' }}>Export</Button>
                                     </Space>
                                 )}
                                 <Button onClick={handleImport} style={{ marginRight: '10px' }}>Import</Button>
-                                <Button onClick={handleExport} style={{ marginRight: '10px' }}>Export</Button>
                             </div>
                             <div className="d-flex align-items-center">
                                 <Input 
@@ -317,9 +332,11 @@ const CategoryDetail = () => {
                                     value={subCategoryName}
                                     required
                                     onChange={(e) => setSubCategoryName(e.target.value)}
-                                    style={{ marginRight: '10px' }} 
+                                    style={{ marginRight: '10px' }}
+                                    onKeyDown={handleKeyDown}
                                 />
-                                <Button type="primary" onClick={handleCreateSubCategory}>Create</Button>
+                                <Button type="primary" className='mx-2' onClick={handleCreateSubCategory}>Add</Button>
+                                <Button type="primary" onClick={handleCreateSubCategory}>Add + </Button>
                             </div>
                         </div>
                     </div>
@@ -340,6 +357,7 @@ const CategoryDetail = () => {
                                   </div>
                                 ),
                               }}
+                            
                         />
                     </div>
                 </div>

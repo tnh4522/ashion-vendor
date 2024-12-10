@@ -6,10 +6,9 @@ import useUserContext from "../../hooks/useUserContext.jsx";
 import { useNavigate, useParams } from 'react-router-dom';
 import removeAccents from 'remove-accents';
 import {BE_URL} from "../../service/config.jsx";
+import { convertUrl, convertToSlug} from '../../utils/Function.jsx';
 
-const convertToSlug = (str) => {
-    return removeAccents(str).toLowerCase().replace(/\s+/g, '-');
-};
+
 
 const EditCategory = () => {
     const { id } = useParams();
@@ -42,10 +41,6 @@ const EditCategory = () => {
 
         fetchCategory();
     }, [id, logout]);
-
-    const convertUrl = (url) => {
-        return url.replace("/media/", "/api/static/");
-    };
 
     const handleSubmit = async (values) => {
         const formData = new FormData();
