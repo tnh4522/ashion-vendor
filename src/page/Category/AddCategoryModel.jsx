@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
 import { Modal, Input, Button, message, Upload, Select, Switch, Form, Row, Col } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
+import removeAccents from 'remove-accents';
+import API from "../../service/service.jsx";
+
+const convertToSlug = (str) => {
+    return removeAccents(str).toLowerCase().replace(/\s+/g, '-');
+};
 
 const AddCategoryModal = ({ isVisible, onClose, onAddCategory, categories }) => {
     const [categoryName, setCategoryName] = useState('');
@@ -27,12 +33,13 @@ const AddCategoryModal = ({ isVisible, onClose, onAddCategory, categories }) => 
 
         const formData = new FormData();
         formData.append('name', categoryName);
+        formData.append('slug', convertToSlug(categoryName));
         formData.append('description', categoryDescription);
         formData.append('meta_title', metaTitle);
         formData.append('meta_description', metaDescription);
         formData.append('is_active', isActive);
-        console.log(formData);
         if (image) formData.append('image', image);
+        console.log(image);
         if (parentCategory) formData.append('parent', parentCategory);
         try {
             const response = await API.post('categories/create/', formData, {
@@ -42,8 +49,6 @@ const AddCategoryModal = ({ isVisible, onClose, onAddCategory, categories }) => 
                 },
             });
             message.success('Category added successfully');
-            setNewCategoryName('');
-            fetchCategories();
         } catch (error) {
             console.error('There was an error adding the category:', error);
             message.error('Failed to add category');

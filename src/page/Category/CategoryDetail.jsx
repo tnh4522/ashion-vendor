@@ -221,7 +221,7 @@ const CategoryDetail = () => {
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                     {record.image ? (
                         <img
-                            src={convertUrl(record.image)}
+                            src={convertUrl('http://127.0.0.1:8000/' + record.image)}
                             alt={record.name}
                             style={{ width: '50px', height: '50px', objectFit: 'cover', marginRight: '20px' }}
                         />

@@ -8,7 +8,7 @@ import removeAccents from 'remove-accents';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import ExportModal from './ExportModal.jsx';
-import AddCategoryModal from './AddCategoryModal.jsx';
+import AddCategoryModal from './AddCategoryModel.jsx'
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
@@ -386,7 +386,7 @@ const Categories = () => {
     
             importData(processedData);
         };
-        reader.readAsArrayBuffer(file); // Đọc file dưới dạng ArrayBuffer
+        reader.readAsArrayBuffer(file); 
     };
     
     const importData = async (data) => {
