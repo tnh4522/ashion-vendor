@@ -40,7 +40,7 @@ function SideBar() {
         },
         {
             key: 'sub2',
-            label: 'Product Management',
+            label: 'Product',
             icon: <i className="menu-icon tf-icons fa-solid fa-bag-shopping"></i>,
             children: [
                 {
@@ -57,20 +57,20 @@ function SideBar() {
         },
         {
             key: 'stock',
-            label: 'Stock Management',
+            label: <Link to="/stocks">Stock</Link>,
             icon: <i className="menu-icon tf-icons fa-solid fa-boxes-stacked"></i>,
-            children: [
-                {
-                    key: 'stocks',
-                    label: <Link to="/stocks">List Stock</Link>,
-                    icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>
-                },
-                {
-                    key: 'add-stock',
-                    label: <Link to="/add-stock">Add Stock</Link>,
-                    icon: <i className="menu-icon tf-icons fa-solid fa-plus"></i>
-                }
-            ],
+            // children: [
+            //     {
+            //         key: 'stocks',
+            //         label: <Link to="/stocks">List Stock</Link>,
+            //         icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>
+            //     },
+            //     {
+            //         key: 'add-stock',
+            //         label: <Link to="/add-stock">Add Stock</Link>,
+            //         icon: <i className="menu-icon tf-icons fa-solid fa-plus"></i>
+            //     }
+            // ],
         },
         // {
         //     key: 'brand',
@@ -91,54 +91,54 @@ function SideBar() {
         // },
         {
             key: 'customers',
-            label: 'Customer Management',
+            label: <Link to="/customers">Customer</Link>,
             icon: <i className="menu-icon tf-icons fa-solid fa-address-book"></i>,
-            children: [
-                {
-                    key: 'list-customer',
-                    label: <Link to="/customers">List Customer</Link>,
-                    icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>
-                },
-                {
-                    key: 'add-customer',
-                    label: <Link to="/add-customer">Add Customer</Link>,
-                    icon: <i className="menu-icon tf-icons fa-solid fa-plus"></i>
-                }
-            ],
+            // children: [
+            //     {
+            //         key: 'list-customer',
+            //         label: <Link to="/customers">List Customer</Link>,
+            //         icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>
+            //     },
+            //     {
+            //         key: 'add-customer',
+            //         label: <Link to="/add-customer">Add Customer</Link>,
+            //         icon: <i className="menu-icon tf-icons fa-solid fa-plus"></i>
+            //     }
+            // ],
         },
         {
             key: 'orders',
-            label: 'Order Management',
+            label: <Link to="/orders">Order</Link>,
             icon: <i className="menu-icon tf-icons fa-solid fa-cart-shopping"></i>,
-            children: [
-                {
-                    key: 'orders',
-                    label: <Link to="/orders">List Orders</Link>,
-                    icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>
-                },
-                {
-                    key: 'add-order',
-                    label: <Link to="/add-order">Add Order</Link>,
-                    icon: <i className="menu-icon tf-icons fa-solid fa-plus"></i>
-                }
-            ],
+            // children: [
+            //     {
+            //         key: 'orders',
+            //         label: <Link to="/orders">List Orders</Link>,
+            //         icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>
+            //     },
+            //     {
+            //         key: 'add-order',
+            //         label: <Link to="/add-order">Add Order</Link>,
+            //         icon: <i className="menu-icon tf-icons fa-solid fa-plus"></i>
+            //     }
+            // ],
         },
         {
             key: 'users',
-            label: 'Collaborator Management',
+            label: <Link to="/users">User</Link>,
             icon: <i className="menu-icon tf-icons fa-solid fa-users"></i>,
-            children: [
-                {
-                    key: 'list-user',
-                    label: <Link to="/users">List User</Link>,
-                    icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>,
-                },
-                {
-                    key: 'add-user',
-                    label: <Link to="/add-user">Add User</Link>,
-                    icon: <i className="menu-icon tf-icons fa-solid fa-plus"></i>
-                }
-            ],
+            // children: [
+            //     {
+            //         key: 'list-user',
+            //         label: <Link to="/users">List User</Link>,
+            //         icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>,
+            //     },
+            //     {
+            //         key: 'add-user',
+            //         label: <Link to="/add-user">Add User</Link>,
+            //         icon: <i className="menu-icon tf-icons fa-solid fa-plus"></i>
+            //     }
+            // ],
         },
         {
             key: 'sub4',

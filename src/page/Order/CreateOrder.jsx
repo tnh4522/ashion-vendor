@@ -4,10 +4,13 @@ import useUserContext from "../../hooks/useUserContext.jsx";
 import useNotificationContext from "../../hooks/useNotificationContext.jsx";
 import {useNavigate} from "react-router-dom";
 import {Modal, Button, Select} from 'antd';
-import {SearchOutlined} from '@ant-design/icons';
+import {PlusOutlined, SearchOutlined} from '@ant-design/icons';
 import SelectProduct from "./SelectProduct.jsx";
 import SelectCustomer from "./SelectCustomer.jsx";
 import {paymentMethods, shippingMethods, sizes } from '../../utils/Constant';
+import CreateCustomer from "./CreateCustomer.jsx";
+import {getDistrictInformation, getWardInformation} from "../../component/Helper.jsx";
+import provincesData from "../../constant/province.json";
 
 const {Option} = Select;
 
@@ -17,10 +20,21 @@ const CreateOrder = () => {
     const navigate = useNavigate();
     const [isCustomerModalVisible, setIsCustomerModalVisible] = useState(false);
     const [isProductModalVisible, setIsProductModalVisible] = useState(false);
+    const [isAddCustomerModalVisible, setIsAddCustomerModalVisible] = useState(false);
     const [selectedCustomer, setSelectedCustomer] = useState(null);
     const [selectedProductIndex, setSelectedProductIndex] = useState(null);
-    const [shippingAddress, setShippingAddress] = useState(null);
-    const [billingAddress, setBillingAddress] = useState(null);
+    const [shippingAddress, setShippingAddress] = useState({
+        province: '',
+        district: '',
+        ward: '',
+        street_address: '',
+    });
+    const [billingAddress, setBillingAddress] = useState({
+        city: '',
+        country: 'Vietnam',
+        postal_code: '',
+        street_address: '',
+    });
 
     const [orderData, setOrderData] = useState({
         customer: '',
@@ -75,6 +89,10 @@ const CreateOrder = () => {
         setIsProductModalVisible(true);
     }
 
+    const showAddCustomerModal = async () => {
+        setIsAddCustomerModalVisible(true);
+    }
+
     const handleCustomerSelect = async (customer) => {
         setSelectedCustomer(customer);
         setOrderData(prev => ({
@@ -88,6 +106,7 @@ const CreateOrder = () => {
         setBillingAddress(customer.address);
 
         setIsCustomerModalVisible(false);
+        setIsAddCustomerModalVisible(false);
     };
 
     const handleProductSelect = (product) => {
@@ -161,6 +180,49 @@ const CreateOrder = () => {
         setOrderData({...orderData, items: updatedItems});
     };
 
+
+    const [provinceName, setProvinceName] = useState('');
+    const [districtName, setDistrictName] = useState('');
+    const [wardName, setWardName] = useState('');
+
+    useEffect(() => {
+        if (selectedCustomer) {
+            const province = provincesData.data.find(
+                item => item.ProvinceID === parseInt(shippingAddress.province, 10)
+            );
+            setProvinceName(province ? province.ProvinceName : 'Unknown');
+
+            getDistrictInformation(shippingAddress.province)
+                .then(districts => {
+                    const district = districts.find(
+                        item => item.DistrictID === parseInt(shippingAddress.district, 10)
+                    );
+                    setDistrictName(district ? district.DistrictName : 'Unknown');
+                })
+                .catch(err => {
+                    console.error('Error fetching district:', err);
+                    setDistrictName('Unknown');
+                });
+
+            getWardInformation(shippingAddress.district)
+                .then(wards => {
+                    const ward = wards.find(
+                        item => item.WardCode === shippingAddress.ward
+                    );
+                    setWardName(ward ? ward.WardName : 'Unknown');
+                })
+                .catch(err => {
+                    console.error('Error fetching ward:', err);
+                    setWardName('Unknown');
+                });
+        } else {
+            setProvinceName('');
+            setDistrictName('');
+            setWardName('');
+        }
+    }, [selectedCustomer, shippingAddress.province, shippingAddress.district, shippingAddress.ward]);
+
+
     return (
         <div className="container-xxl flex-grow-1 container-p-y">
             <div className="row">
@@ -174,10 +236,16 @@ const CreateOrder = () => {
                                     <div className="mb-3 col-md-12">
                                         <div className="d-flex justify-content-between align-items-center">
                                             <label className="form-label">Customer</label>
-                                            <Button type="button" className="btn-link"
-                                                    onClick={showCustomerModal} icon={<SearchOutlined/>}>
-                                                Select Customer
-                                            </Button>
+                                            <div>
+                                                <Button type="button" className="btn-link"
+                                                        onClick={showCustomerModal} icon={<SearchOutlined/>}>
+                                                    Select Customer
+                                                </Button>
+                                                <Button type="button" className="btn-link"
+                                                        onClick={showAddCustomerModal} icon={<PlusOutlined/>}>
+                                                    Add Customer
+                                                </Button>
+                                            </div>
                                         </div>
                                         {selectedCustomer && (
                                             <div className="selected-customer-info mt-2 p-2 border rounded">
@@ -196,43 +264,24 @@ const CreateOrder = () => {
                                         <label className="form-label">Shipping Address</label>
                                         {selectedCustomer ? (
                                             <div className="selected-customer-info mt-2 p-2 border rounded">
-                                                <p className="mb-1"><strong>City:</strong> {shippingAddress.city}</p>
-                                                <p className="mb-1"><strong>Country:</strong> {shippingAddress.country}
+                                                <p className="mb-1">
+                                                    Province/City:<strong> {provinceName}</strong>
                                                 </p>
-                                                <p className="mb-0"><strong>Zip
-                                                    Code:</strong> {shippingAddress.postal_code}</p>
+                                                <p className="mb-1">
+                                                    District/County:<strong> {districtName}</strong>
+                                                </p>
                                                 <p className="mb-0">
-                                                    <strong>Address:</strong> {shippingAddress.street_address}</p>
+                                                    Ward/Village:<strong> {wardName}</strong>
+                                                </p>
+                                                <p className="mb-0">
+                                                    Address:<strong> {shippingAddress.street_address}</strong>
+                                                </p>
                                             </div>
                                         ) : (
                                             <textarea
                                                 className="form-control"
                                                 name="shipping_address"
                                                 value={orderData.shipping_address}
-                                                onChange={handleOrderChange}
-                                                rows="3"
-                                                required
-                                            />
-                                        )}
-                                    </div>
-
-                                    <div className="mb-3 col-md-6">
-                                        <label className="form-label">Billing Address</label>
-                                        {selectedCustomer ? (
-                                            <div className="selected-customer-info mt-2 p-2 border rounded">
-                                                <p className="mb-1"><strong>City:</strong> {billingAddress.city}</p>
-                                                <p className="mb-1"><strong>Country:</strong> {billingAddress.country}
-                                                </p>
-                                                <p className="mb-0"><strong>Zip
-                                                    Code:</strong> {billingAddress.postal_code}</p>
-                                                <p className="mb-0">
-                                                    <strong>Address:</strong> {billingAddress.street_address}</p>
-                                            </div>
-                                        ) : (
-                                            <textarea
-                                                className="form-control"
-                                                name="billing_address"
-                                                value={orderData.billing_address}
                                                 onChange={handleOrderChange}
                                                 rows="3"
                                                 required
@@ -457,8 +506,7 @@ const CreateOrder = () => {
             </div>
 
             <Modal
-                title="Select Customer"
-                visible={isCustomerModalVisible}
+                open={isCustomerModalVisible}
                 onCancel={() => setIsCustomerModalVisible(false)}
                 footer={null}
                 width={1000}
@@ -470,14 +518,25 @@ const CreateOrder = () => {
 
 
             <Modal
-                title="Select Product"
-                visible={isProductModalVisible}
+                open={isProductModalVisible}
                 onCancel={() => setIsProductModalVisible(false)}
                 footer={null}
                 width={1000}
             >
                 <SelectProduct
                     onProductSelect={handleProductSelect}
+                />
+            </Modal>
+
+            <Modal
+                open={isAddCustomerModalVisible}
+                onCancel={() => setIsAddCustomerModalVisible(false)}
+                footer={null}
+                width={1000}
+            >
+                <CreateCustomer
+                    onCustomerAdd={handleCustomerSelect}
+                    closeModal={() => setIsAddCustomerModalVisible(false)}
                 />
             </Modal>
         </div>
