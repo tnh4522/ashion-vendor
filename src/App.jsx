@@ -42,6 +42,7 @@ import RoleDefault from "./page/Authorization/RoleDefault.jsx";
 import CategoryDetail from "./page/Category/CategoryDetail.jsx";
 import ActivityLog from "./page/Activity/ActivityLog.jsx";
 import ActivityDetail from "./page/Activity/ActivityDetail.jsx";
+import DeliveryManager from "./page/Delivery/DeliveryManager.jsx";
 
 
 function App() {
@@ -110,6 +111,7 @@ function App() {
                                     <Route path='/brand-detail/:id' element={<ProtectedRoute><BrandDetail/></ProtectedRoute>}/>
                                     <Route path="/address" element={<ProtectedRoute><Addresses /></ProtectedRoute>}/>
                                     <Route path="/create-address" element={<ProtectedRoute><CreateAddress/></ProtectedRoute>} />
+                                    <Route path="/delivey" element={<ProtectedRoute><DeliveryManager/></ProtectedRoute>}/>
                                 </Routes>
                             </div>
                         </div>

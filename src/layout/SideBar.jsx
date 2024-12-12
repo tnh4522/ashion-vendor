@@ -124,6 +124,11 @@ function SideBar() {
             // ],
         },
         {
+            key: 'delivery',
+            label: <Link to="/delivey">Delivery</Link>,
+            icon: <i className="menu-icon tf-icons fa-solid fa-truck"></i>,
+        },
+        {
             key: 'users',
             label: <Link to="/users">User</Link>,
             icon: <i className="menu-icon tf-icons fa-solid fa-users"></i>,

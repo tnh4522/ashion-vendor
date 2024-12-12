@@ -1,5 +1,4 @@
 import axios from "axios";
-import provincesData from "../constant/province.json";
 
 const GTTK_TOKEN = 'ac51542f-b632-11ef-81b6-5e2e958f07fa';
 const SHOP_ID =	5512583;

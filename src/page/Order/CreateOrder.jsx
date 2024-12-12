@@ -228,14 +228,13 @@ const CreateOrder = () => {
             <div className="row">
                 <div className="col-md-12">
                     <div className="card mb-4">
-                        <h4 className="card-header" style={{ color: '#696cff' }}>New Order</h4>
                         <div className="card-body">
                             <form id="formCreateOrder" method="POST" onSubmit={handleOrderSubmit}>
                                 <div className="row">
                                     {/* Customer Selection */}
                                     <div className="mb-3 col-md-12">
                                         <div className="d-flex justify-content-between align-items-center">
-                                            <label className="form-label">Customer</label>
+                                            <label className="form-label"><i className="fa-solid fa-user mx-1"></i> Customer</label>
                                             <div>
                                                 <Button type="button" className="btn-link"
                                                         onClick={showCustomerModal} icon={<SearchOutlined/>}>
@@ -260,8 +259,8 @@ const CreateOrder = () => {
                                     </div>
 
                                     {/* Addresses */}
-                                    <div className="mb-3 col-md-6">
-                                        <label className="form-label">Shipping Address</label>
+                                    <div className="mb-3 col-md-12">
+                                        <label className="form-label"><i className="fa-solid fa-truck m-1"></i> Shipping Address</label>
                                         {selectedCustomer ? (
                                             <div className="selected-customer-info mt-2 p-2 border rounded">
                                                 <p className="mb-1">
@@ -289,7 +288,7 @@ const CreateOrder = () => {
                                         )}
                                     </div>
 
-                                    {/* Shipping and Payment */}
+                                    {/* Shipping */}
                                     <div className="mb-3 col-md-6">
                                         <label className="form-label">Shipping Method</label>
                                         <Select
@@ -313,10 +312,24 @@ const CreateOrder = () => {
                                     </div>
 
                                     <div className="mb-3 col-md-6">
+                                        <label className="form-label">Shipping Service</label>
+                                        <Select
+                                            className="w-100"
+                                            name="shipping_service"
+                                            required
+                                            defaultValue="1"
+                                        >
+                                            <Option value="1">Giao hàng tiết kiệm</Option>
+                                            <Option value="2">Giao hàng nhanh</Option>
+                                            <Option value="3">Viettel Post</Option>
+                                        </Select>
+                                    </div>
+
+                                    <div className="mb-3 col-md-6">
                                         <label className="form-label">Payment Method</label>
                                         <Select
                                             className="w-100"
-                                            name = 'payment_method'
+                                            name='payment_method'
                                             value={orderData.payment_method}
                                             onChange={(value) => handleOrderChange({
                                                 target: {
@@ -334,9 +347,21 @@ const CreateOrder = () => {
                                         </Select>
                                     </div>
 
+                                    <div className="mb-3 col-md-6">
+                                        <label className="form-label">Module Payment</label>
+                                        <Select
+                                            className="w-100"
+                                            name="module_payment"
+                                            required
+                                            defaultValue="1"
+                                        >
+                                            <Option value="1">Viva</Option>
+                                        </Select>
+                                    </div>
+
                                     {/* Order Items */}
                                     <div className="mb-3 col-md-12">
-                                        <label className="form-label">Order Items</label>
+                                        <label className="form-label"><i className="fa-solid fa-cart-shopping m-1"></i> Order Items</label>
                                         {orderData.items.map((item, index) => (
                                             <div key={index} className="row mb-3 align-items-end">
                                                 <div className="col-md-4">
@@ -365,10 +390,10 @@ const CreateOrder = () => {
                                                     >
                                                         <option value="">Select Size</option>
                                                         {sizes.map(size => (
-                                                        <option key={size.value} value={size.value}>
-                                                            {size.label}
-                                                        </option>
-                                                    ))}
+                                                            <option key={size.value} value={size.value}>
+                                                                {size.label}
+                                                            </option>
+                                                        ))}
                                                     </select>
                                                 </div>
                                                 <div className="col-md-1">
