@@ -66,4 +66,4 @@ function getAvailableService(from_district, to_district) {
 }
 
 
-export { getDistrictInformation, getWardInformation, getAvailableService };
+export { getDistrictInformation, getWardInformation, getAvailableService , GTTK_TOKEN, SHOP_ID};

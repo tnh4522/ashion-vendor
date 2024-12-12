@@ -7,10 +7,11 @@ import {Modal, Button, Select} from 'antd';
 import {PlusOutlined, SearchOutlined} from '@ant-design/icons';
 import SelectProduct from "./SelectProduct.jsx";
 import SelectCustomer from "./SelectCustomer.jsx";
-import {paymentMethods, shippingMethods, sizes } from '../../utils/Constant';
+import {paymentMethods, shippingMethods, sizes} from '../../utils/Constant';
 import CreateCustomer from "./CreateCustomer.jsx";
-import {getDistrictInformation, getWardInformation} from "../../component/Helper.jsx";
+import {getDistrictInformation, getWardInformation, GTTK_TOKEN, SHOP_ID} from "../../component/Helper.jsx";
 import provincesData from "../../constant/province.json";
+import axios from "axios";
 
 const {Option} = Select;
 
@@ -61,22 +62,68 @@ const CreateOrder = () => {
         ],
     });
 
+    const [shippingTotal, setShippingTotal] = useState(0);
+    const [serviceID, setServiceID] = useState(null);
+
     useEffect(() => {
+        const endpoint = 'https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/available-services';
+        axios.get(endpoint, {
+            headers: {
+                'token': GTTK_TOKEN,
+            },
+            params: {
+                shop_id: SHOP_ID,
+                from_district: 1530,
+                to_district: parseInt(shippingAddress.district),
+            },
+        }).then(response => {
+            setServiceID(response.data.data[0].service_id)
+        }).catch(error => {
+            console.error('Error fetching available service:', error);
+        });
+
         calculateTotals();
+
     }, [orderData.items]);
 
 
     const calculateTotals = () => {
         const subtotal = orderData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         const tax = subtotal * 0.1;
-        const shipping = orderData.shipping_cost || 0;
         const discount = orderData.discount_amount || 0;
+
+        axios.post(
+            'https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee',
+            {
+                "service_id": serviceID,
+                "insurance_value": subtotal,
+                "coupon": null,
+                "from_district_id": 1530,
+                "to_district_id": parseInt(shippingAddress.district),
+                "to_ward_code": shippingAddress.ward,
+                "height": 15,
+                "length": 15,
+                "weight": 1000,
+                "width": 15
+            },
+            {
+                headers: {
+                    'token': GTTK_TOKEN,
+                    'shop_id': SHOP_ID
+                }
+            }
+        ).then(response => {
+            setShippingTotal(response.data.data.total)
+        }).catch(error => {
+            console.error('Error fetching available service:', error);
+        });
 
         setOrderData(prev => ({
             ...prev,
             subtotal_price: subtotal,
             tax_amount: tax,
-            total_price: subtotal + tax + shipping - discount
+            shipping_cost: shippingTotal,
+            total_price: subtotal + tax + shippingTotal - discount
         }));
     };
 
@@ -234,7 +281,8 @@ const CreateOrder = () => {
                                     {/* Customer Selection */}
                                     <div className="mb-3 col-md-12">
                                         <div className="d-flex justify-content-between align-items-center">
-                                            <label className="form-label"><i className="fa-solid fa-user mx-1"></i> Customer</label>
+                                            <label className="form-label"><i
+                                                className="fa-solid fa-user mx-1"></i> Customer</label>
                                             <div>
                                                 <Button type="button" className="btn-link"
                                                         onClick={showCustomerModal} icon={<SearchOutlined/>}>
@@ -260,7 +308,8 @@ const CreateOrder = () => {
 
                                     {/* Addresses */}
                                     <div className="mb-3 col-md-12">
-                                        <label className="form-label"><i className="fa-solid fa-truck m-1"></i> Shipping Address</label>
+                                        <label className="form-label"><i className="fa-solid fa-truck m-1"></i> Shipping
+                                            Address</label>
                                         {selectedCustomer ? (
                                             <div className="selected-customer-info mt-2 p-2 border rounded">
                                                 <p className="mb-1">
@@ -288,80 +337,17 @@ const CreateOrder = () => {
                                         )}
                                     </div>
 
-                                    {/* Shipping */}
-                                    <div className="mb-3 col-md-6">
-                                        <label className="form-label">Shipping Method</label>
-                                        <Select
-                                            className="w-100"
-                                            name="shipping_method"
-                                            value={orderData.shipping_method}
-                                            onChange={(value) => handleOrderChange({
-                                                target: {
-                                                    name: 'shipping_method',
-                                                    value
-                                                }
-                                            })}
-                                            required
-                                        >
-                                            {shippingMethods.map(method => (
-                                                <Option key={method.value} value={method.value}>
-                                                    {method.label}
-                                                </Option>
-                                            ))}
-                                        </Select>
-                                    </div>
-
-                                    <div className="mb-3 col-md-6">
-                                        <label className="form-label">Shipping Service</label>
-                                        <Select
-                                            className="w-100"
-                                            name="shipping_service"
-                                            required
-                                            defaultValue="1"
-                                        >
-                                            <Option value="1">Giao hàng tiết kiệm</Option>
-                                            <Option value="2">Giao hàng nhanh</Option>
-                                            <Option value="3">Viettel Post</Option>
-                                        </Select>
-                                    </div>
-
-                                    <div className="mb-3 col-md-6">
-                                        <label className="form-label">Payment Method</label>
-                                        <Select
-                                            className="w-100"
-                                            name='payment_method'
-                                            value={orderData.payment_method}
-                                            onChange={(value) => handleOrderChange({
-                                                target: {
-                                                    name: 'payment_method',
-                                                    value
-                                                }
-                                            })}
-                                            required
-                                        >
-                                            {paymentMethods.map(method => (
-                                                <Option key={method.value} value={method.value}>
-                                                    {method.label}
-                                                </Option>
-                                            ))}
-                                        </Select>
-                                    </div>
-
-                                    <div className="mb-3 col-md-6">
-                                        <label className="form-label">Module Payment</label>
-                                        <Select
-                                            className="w-100"
-                                            name="module_payment"
-                                            required
-                                            defaultValue="1"
-                                        >
-                                            <Option value="1">Viva</Option>
-                                        </Select>
-                                    </div>
-
                                     {/* Order Items */}
                                     <div className="mb-3 col-md-12">
-                                        <label className="form-label"><i className="fa-solid fa-cart-shopping m-1"></i> Order Items</label>
+                                        <label className="form-label"><i
+                                            className="fa-solid fa-cart-shopping m-1"></i> Order Items</label>
+                                        <button
+                                            type="button"
+                                            className="btn btn-secondary btn-sm ms-2"
+                                            onClick={addItem}
+                                        >
+                                            + Add Item
+                                        </button>
                                         {orderData.items.map((item, index) => (
                                             <div key={index} className="row mb-3 align-items-end">
                                                 <div className="col-md-4">
@@ -457,17 +443,81 @@ const CreateOrder = () => {
                                                 </div>
                                             </div>
                                         ))}
-                                        <button
-                                            type="button"
-                                            className="btn btn-secondary btn-sm"
-                                            onClick={addItem}
+                                    </div>
+
+                                    {/* Shipping */}
+                                    <div className="mb-3 col-md-6">
+                                        <label className="form-label">Shipping Method</label>
+                                        <Select
+                                            className="w-100"
+                                            name="shipping_method"
+                                            value={orderData.shipping_method}
+                                            onChange={(value) => handleOrderChange({
+                                                target: {
+                                                    name: 'shipping_method',
+                                                    value
+                                                }
+                                            })}
+                                            required
                                         >
-                                            + Add Item
-                                        </button>
+                                            {shippingMethods.map(method => (
+                                                <Option key={method.value} value={method.value}>
+                                                    {method.label}
+                                                </Option>
+                                            ))}
+                                        </Select>
+                                    </div>
+
+                                    <div className="mb-3 col-md-6">
+                                        <label className="form-label">Shipping Service</label>
+                                        <Select
+                                            className="w-100"
+                                            name="shipping_service"
+                                            required
+                                            defaultValue="1"
+                                        >
+                                            <Option value="1">Giao hàng tiết kiệm</Option>
+                                            <Option value="2">Giao hàng nhanh</Option>
+                                            <Option value="3">Viettel Post</Option>
+                                        </Select>
+                                    </div>
+
+                                    <div className="mb-3 col-md-6">
+                                        <label className="form-label">Payment Method</label>
+                                        <Select
+                                            className="w-100"
+                                            name='payment_method'
+                                            value={orderData.payment_method}
+                                            onChange={(value) => handleOrderChange({
+                                                target: {
+                                                    name: 'payment_method',
+                                                    value
+                                                }
+                                            })}
+                                            required
+                                        >
+                                            {paymentMethods.map(method => (
+                                                <Option key={method.value} value={method.value}>
+                                                    {method.label}
+                                                </Option>
+                                            ))}
+                                        </Select>
+                                    </div>
+
+                                    <div className="mb-3 col-md-6">
+                                        <label className="form-label">Module Payment</label>
+                                        <Select
+                                            className="w-100"
+                                            name="module_payment"
+                                            required
+                                            defaultValue="1"
+                                        >
+                                            <Option value="1">Viva</Option>
+                                        </Select>
                                     </div>
 
                                     {/* Order Summary */}
-                                    <div className="col-md-12">
+                                    <div className="col-md-12 m-2">
                                         <div className="row justify-content-end">
                                             <div className="col-md-6">
                                                 <div className="card">
