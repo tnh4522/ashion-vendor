@@ -199,7 +199,7 @@ const Stocks = () => {
                     <div className="row mb-4">
                         {/* Search Text */}
                         <div className="col-md-4">
-                            <label htmlFor="searchText" className="form-label">Search Universal</label>
+                            <label htmlFor="searchText" className="form-label">Search Stock</label>
                             <Input
                                 id="searchText"
                                 name="searchText"

@@ -1,9 +1,40 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import API from "../../service/service";
 import useUserContext from "../../hooks/useUserContext";
 import useNotificationContext from "../../hooks/useNotificationContext";
 import { useNavigate } from "react-router-dom";
-import { Button, Table, InputNumber, Progress } from 'antd';
+import {
+    Button,
+    Input,
+    Typography,
+    Select,
+    Space,
+    Row,
+    Col,
+    Modal,
+    Card,
+    Progress,
+    message
+} from 'antd';
+import { ArrowLeftOutlined } from "@ant-design/icons";
+
+import BasicInformation from './components/BasicInformation.jsx';
+import InventoryDetails from './components/InventoryDetails.jsx';
+import SalesDetails from './components/SalesDetails.jsx';
+import ImageManagement from './components/ImageManagement.jsx';
+
+const { Text, Title } = Typography;
+const { Option } = Select;
+const { confirm } = Modal;
+
+function customSlugify(str) {
+    return str
+        .toLowerCase()
+        .trim()
+
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+}
 
 const AddProduct = () => {
     const { userData, logout } = useUserContext();
@@ -11,11 +42,23 @@ const AddProduct = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
 
-    const [currentStep, setCurrentStep] = useState(0);
+    const [categories, setCategories] = useState([]);
+    const [stocks, setStocks] = useState([]);
+    const [loadingStocks, setLoadingStocks] = useState(true);
+
+    const [originalSizes, setOriginalSizes] = useState([]);
+    const [originalColors, setOriginalColors] = useState([]);
+
+    const [productImages, setProductImages] = useState([]);
+    const [variants, setVariants] = useState([]);
+
+    const [filterSizes, setFilterSizes] = useState([]);
+    const [filterColors, setFilterColors] = useState([]);
 
     const [formData, setFormData] = useState({
         name: '',
         user: userData.id,
+        slug: '',
         sku: '',
         barcode: '',
         brand: '',
@@ -30,88 +73,267 @@ const AddProduct = () => {
         stock: 0,
         weight: '',
         dimensions: '',
-        sizes: 'S,M,L,XL',
-        colors: 'Red,Blue,Green,Black,White',
+        sizes: [],
+        colors: [],
         status: 'ACTIVE',
         is_featured: false,
         is_new_arrival: false,
         is_on_sale: false,
-        images: [], // Mảng ảnh
         video_url: '',
         meta_title: '',
         meta_description: '',
     });
 
-    const [categories, setCategories] = useState([]);
-    const [stocks, setStocks] = useState([]);
-    const [stockData, setStockData] = useState([]);
-    const [loadingStocks, setLoadingStocks] = useState(true);
+    const [currentStep, setCurrentStep] = useState(0);
+
+    useEffect(() => {
+        fetchCategories();
+        fetchStocks();
+    }, [userData.access]);
+
+    const fetchCategories = async () => {
+        try {
+            const response = await API.get('categories/');
+            setCategories(response.data.results);
+        } catch (error) {
+            console.error('There was an error fetching the categories:', error);
+        }
+    };
+
+    const fetchStocks = async () => {
+        try {
+            const response = await API.get('stocks/', {
+                headers: {
+                    'Authorization': `Bearer ${userData.access}`,
+                },
+            });
+            setStocks(response.data.results);
+            setLoadingStocks(false);
+        } catch (error) {
+            console.error('Error fetching stocks:', error);
+            openErrorNotification('There was an error fetching the stock data.');
+            setLoadingStocks(false);
+        }
+    };
 
     const handleInputChange = (e) => {
-        const { name, value, type, checked, multiple, options } = e.target;
-        if (type === 'checkbox') {
-            setFormData(prevState => ({
-                ...prevState,
-                [name]: checked,
-            }));
-        } else if (multiple) {
-            const selectedOptions = Array.from(options)
-                .filter(option => option.selected)
-                .map(option => option.value);
-            setFormData(prevState => ({
-                ...prevState,
-                [name]: selectedOptions,
+        const { name, value, type, checked } = e.target;
+        let newValue = (type === 'checkbox' ? checked : value);
+
+        // Nếu field name thay đổi, tự sinh slug từ name
+        if (name === 'name') {
+            const generatedSlug = customSlugify(newValue || '');
+            setFormData(prev => ({
+                ...prev,
+                name: newValue,
+                slug: generatedSlug
             }));
         } else {
-            setFormData(prevState => ({
-                ...prevState,
-                [name]: value,
+            setFormData(prev => ({
+                ...prev,
+                [name]: newValue
             }));
         }
     };
 
-    const handleImagesChange = (e) => {
-        const files = Array.from(e.target.files);
-        if (files.length > 5) {
-            openErrorNotification("You can only upload a maximum of 5 images");
-            return;
-        }
-        setFormData(prevState => ({
-            ...prevState,
-            images: files,
+    const handleSizesChange = (newSizes) => {
+        const upperNewSizes = newSizes.map(size => size.toUpperCase());
+        setFormData(prev => ({
+            ...prev,
+            sizes: upperNewSizes
         }));
+        setOriginalSizes([...upperNewSizes]);
     };
 
-    const handleNext = () => {
-        if (currentStep === 0) {
-            const requiredFields = ['name', 'category'];
-            for (let field of requiredFields) {
-                if (!formData[field] || formData[field] === '') {
-                    openErrorNotification(`${field.charAt(0).toUpperCase() + field.slice(1)} is required.`);
-                    return;
-                }
+    const handleColorsChange = (newColors) => {
+        const upperNewColors = newColors.map(color => color.toUpperCase());
+        setFormData(prev => ({
+            ...prev,
+            colors: upperNewColors
+        }));
+        setOriginalColors([...upperNewColors]);
+    };
+
+    const handleReplaceImage = (file, imageId) => {
+        if (!file) return;
+        const updatedImages = productImages.map(img => {
+            if (img.id === imageId) {
+                return { ...img, newFile: file };
             }
-        } else if (currentStep === 1) {
-            const requiredFields = ['sku'];
-            for (let field of requiredFields) {
-                if (!formData[field] || formData[field] === '') {
-                    openErrorNotification(`${field.charAt(0).toUpperCase() + field.slice(1)} is required.`);
-                    return;
+            return img;
+        });
+        setProductImages(updatedImages);
+        message.success('Image replaced successfully');
+    };
+
+    const handleDeleteImage = (imageId) => {
+        confirm({
+            title: 'Are you sure you want to delete this image?',
+            content: 'This action cannot be undone.',
+            okText: 'Yes',
+            okType: 'danger',
+            cancelText: 'No',
+            onOk() {
+                setProductImages(prevImages => prevImages.filter(img => img.id !== imageId));
+                message.success('Image deleted successfully');
+            },
+        });
+    };
+
+    const handleAddImage = (file) => {
+        if (productImages.length >= 5) {
+            openErrorNotification("You can only upload a maximum of 5 images");
+            return false;
+        }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            setProductImages(prev => [...prev, { id: Date.now(), url: e.target.result, newFile: file }]);
+            message.success('Image added successfully');
+        };
+        reader.readAsDataURL(file);
+        return false;
+    };
+
+    const groupedVariants = useMemo(() => {
+        const groupMap = {};
+        variants.forEach(variant => {
+            const key = `${variant.size} - ${variant.color}`;
+            if (!groupMap[key]) {
+                groupMap[key] = {
+                    key,
+                    size: variant.size,
+                    color: variant.color,
+                    totalQuantity: 0,
+                    stocks: [],
+                };
+            }
+            groupMap[key].totalQuantity += variant.quantity;
+            groupMap[key].stocks.push({
+                stock_id: variant.stock_id,
+                stock_name: variant.stock_name,
+                quantity: variant.quantity,
+            });
+        });
+        return Object.values(groupMap);
+    }, [variants]);
+
+    const filteredGroupedVariants = useMemo(() => {
+        return groupedVariants.filter(variant => {
+            const sizeMatch = filterSizes.length > 0 ? filterSizes.includes(variant.size) : true;
+            const colorMatch = filterColors.length > 0 ? filterColors.includes(variant.color) : true;
+            return sizeMatch && colorMatch;
+        });
+    }, [groupedVariants, filterSizes, filterColors]);
+
+    const totalQuantity = useMemo(() => {
+        return filteredGroupedVariants.reduce((acc, variant) => acc + variant.totalQuantity, 0);
+    }, [filteredGroupedVariants]);
+
+    const handleStockQuantityChange = (value, record, parentKey) => {
+        setVariants(prevVariants =>
+            prevVariants.map(variant => {
+                if (
+                    `${variant.size} - ${variant.color}` === parentKey &&
+                    variant.stock_id === record.stock_id
+                ) {
+                    return { ...variant, quantity: value };
                 }
+                return variant;
+            })
+        );
+    };
+
+    const steps = [
+        {
+            title: 'Basic Information',
+            content: (
+                <BasicInformation
+                    formData={formData}
+                    handleInputChange={handleInputChange}
+                    handleSizesChange={handleSizesChange}
+                    handleColorsChange={handleColorsChange}
+                />
+            ),
+            requiredFields: ['name', 'category']
+        },
+        {
+            title: 'Inventory Details',
+            content: (
+                <InventoryDetails
+                    formData={formData}
+                    handleInputChange={handleInputChange}
+                    variants={variants}
+                    setVariants={setVariants}
+                    originalSizes={originalSizes}
+                    originalColors={originalColors}
+                    filterSizes={filterSizes}
+                    setFilterSizes={setFilterSizes}
+                    filterColors={filterColors}
+                    setFilterColors={setFilterColors}
+                    filteredGroupedVariants={filteredGroupedVariants}
+                    totalQuantity={totalQuantity}
+                    handleStockQuantityChange={handleStockQuantityChange}
+                />
+            ),
+            requiredFields: []
+        },
+        {
+            title: 'Sales Details',
+            content: (
+                <SalesDetails
+                    formData={formData}
+                    handleInputChange={handleInputChange}
+                    setFormData={setFormData}
+                />
+            ),
+            requiredFields: []
+        },
+        {
+            title: 'Image Management',
+            content: (
+                <ImageManagement
+                    productImages={productImages}
+                    handleReplaceImage={handleReplaceImage}
+                    handleDeleteImage={handleDeleteImage}
+                    handleAddImage={handleAddImage}
+                />
+            ),
+            requiredFields: ['price', 'status']
+        },
+    ];
+
+    const total = steps.length;
+    const current = currentStep + 1;
+    const progressPercent = Math.round((current / total) * 100);
+
+    const handleNext = () => {
+        const requiredFields = steps[currentStep].requiredFields;
+        const alwaysRequired = ['name', 'category'];
+
+        const allRequired = [...new Set([...requiredFields, ...alwaysRequired])];
+
+        for (let field of allRequired) {
+            if (!formData[field] || formData[field] === '') {
+                openErrorNotification(`${field.charAt(0).toUpperCase() + field.slice(1)} is required.`);
+                return;
             }
         }
-        setCurrentStep(prevStep => prevStep + 1);
+
+        setCurrentStep(prev => prev + 1);
     };
 
     const handleBack = () => {
-        setCurrentStep(prevStep => prevStep - 1);
+        setCurrentStep(prev => prev - 1);
     };
 
     const handleSubmit = async () => {
         setLoading(true);
 
-        const requiredFields = ['price', 'status'];
-        for (let field of requiredFields) {
+        const requiredFields = steps[currentStep].requiredFields;
+        const alwaysRequired = ['name', 'category', 'price', 'status'];
+        const allRequired = [...new Set([...requiredFields, ...alwaysRequired])];
+
+        for (let field of allRequired) {
             if (!formData[field] || formData[field] === '') {
                 openErrorNotification(`${field.charAt(0).toUpperCase() + field.slice(1)} is required.`);
                 setLoading(false);
@@ -120,20 +342,21 @@ const AddProduct = () => {
         }
 
         const formDataToSend = new FormData();
-
-        // Append other product fields
         Object.keys(formData).forEach((key) => {
-            if (key !== 'images' && formData[key] !== null && formData[key] !== '') {
-                formDataToSend.append(key, formData[key]);
+            if (key === 'sizes' || key === 'colors') {
+                formDataToSend.append(key, formData[key].join(','));
+            } else {
+                if (formData[key] !== null && formData[key] !== '') {
+                    formDataToSend.append(key, formData[key]);
+                }
             }
         });
 
-        // Append multiple images
-        if (formData.images && formData.images.length > 0) {
-            formData.images.forEach((image) => {
-                formDataToSend.append('images', image);
-            });
-        }
+        productImages.forEach((img) => {
+            if (img.newFile) {
+                formDataToSend.append('images', img.newFile);
+            }
+        });
 
         try {
             const response = await API.post('product/create/', formDataToSend, {
@@ -144,23 +367,6 @@ const AddProduct = () => {
             });
 
             if (response.status === 201) {
-                const productId = response.data.id;
-
-                // Tạo StockProduct cho từng kho
-                for (let stockItem of stockData) {
-                    if (stockItem.quantity > 0) {
-                        await API.post('stock-products/create/', {
-                            stock: stockItem.stockId,
-                            product: productId,
-                            quantity: stockItem.quantity,
-                        }, {
-                            headers: {
-                                'Authorization': `Bearer ${userData.access}`,
-                            },
-                        });
-                    }
-                }
-
                 openSuccessNotification('Product added successfully');
                 navigate('/products');
             }
@@ -170,9 +376,6 @@ const AddProduct = () => {
                 logout();
                 return;
             }
-            if (error.response && error.response.data) {
-                console.log('Error response data:', error.response.data);
-            }
             console.error('There was an error adding the product:', error);
             openErrorNotification('There was an error adding the product.');
         } finally {
@@ -180,406 +383,89 @@ const AddProduct = () => {
         }
     };
 
-    useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                const response = await API.get('categories/');
-                setCategories(response.data.results);
-            } catch (error) {
-                console.error('There was an error fetching the categories:', error);
-            }
-        };
-
-        const fetchStocks = async () => {
-            try {
-                const response = await API.get('stocks/', {
-                    headers: {
-                        'Authorization': `Bearer ${userData.access}`,
-                    },
-                });
-                setStocks(response.data.results);
-                // Khởi tạo stockData
-                const initialStockData = response.data.results.map(stock => ({
-                    stockId: stock.id,
-                    stockName: stock.name,
-                    quantity: 0,
-                }));
-                setStockData(initialStockData);
-                setLoadingStocks(false);
-            } catch (error) {
-                console.error('Error fetching stocks:', error);
-                openErrorNotification('There was an error fetching the stock data.');
-                setLoadingStocks(false);
-            }
-        };
-
-        fetchCategories();
-        fetchStocks();
-    }, [userData.access, openErrorNotification]);
-
-    const handleStockQuantityChange = (value, stockId) => {
-        setStockData(prevData => prevData.map(item => {
-            if (item.stockId === stockId) {
-                return { ...item, quantity: value };
-            }
-            return item;
-        }));
-    };
-
-    const steps = [
-        {
-            title: 'Basic Information',
-            content: (
-                <div className="row">
-                    {/* Product Name */}
-                    <div className="mb-3 col-md-6">
-                        <label htmlFor="name" className="form-label">Product Name<span style={{color: 'red'}}>*</span></label>
-                        <input
-                            className="form-control"
-                            type="text"
-                            id="name"
-                            name="name"
-                            value={formData.name}
-                            onChange={handleInputChange}
-                        />
-                    </div>
-                    {/* Category */}
-                    <div className="mb-3 col-md-6">
-                        <label htmlFor="category" className="form-label">Category<span style={{color: 'red'}}>*</span></label>
-                        <select
-                            id="category"
-                            name="category"
-                            className="form-select"
-                            value={formData.category}
-                            onChange={handleInputChange}
-                        >
-                            <option value="">Select Category</option>
-                            {categories.map((category) => (
-                                <option key={category.id} value={category.id}>
-                                    {category.name}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                    {/* Description */}
-                    <div className="mb-3 col-md-12">
-                        <label htmlFor="description" className="form-label">Description</label>
-                        <textarea
-                            className="form-control"
-                            id="description"
-                            name="description"
-                            rows="3"
-                            value={formData.description}
-                            onChange={handleInputChange}
-                        ></textarea>
-                    </div>
-                    <div className="mb-3 col-md-6">
-                        <label htmlFor="images" className="form-label">Product Images</label>
-                        <input
-                            className="form-control"
-                            type="file"
-                            id="images"
-                            name="images"
-                            accept="image/*"
-                            multiple
-                            onChange={handleImagesChange}
-                        />
-                    </div>
-                    {/* Brand */}
-                    <div className="mb-3 col-md-6">
-                        <label htmlFor="brand" className="form-label">Brand</label>
-                        <input
-                            className="form-control"
-                            type="text"
-                            id="brand"
-                            name="brand"
-                            value={formData.brand}
-                            onChange={handleInputChange}
-                        />
-                    </div>
-                    {/* Material */}
-                    <div className="mb-3 col-md-6">
-                        <label htmlFor="material" className="form-label">Material</label>
-                        <input
-                            className="form-control"
-                            type="text"
-                            id="material"
-                            name="material"
-                            value={formData.material}
-                            onChange={handleInputChange}
-                        />
-                    </div>
-                    {/* Care Instructions */}
-                    <div className="mb-3 col-md-6">
-                        <label htmlFor="care_instructions" className="form-label">Care Instructions</label>
-                        <textarea
-                            className="form-control"
-                            id="care_instructions"
-                            name="care_instructions"
-                            rows="3"
-                            value={formData.care_instructions}
-                            onChange={handleInputChange}
-                        ></textarea>
-                    </div>
-                    {/* Sizes */}
-                    <div className="mb-3 col-md-6">
-                        <label htmlFor="sizes" className="form-label">Sizes</label>
-                        <input
-                            className="form-control"
-                            type="text"
-                            id="sizes"
-                            name="sizes"
-                            value={formData.sizes}
-                            onChange={handleInputChange}
-                            placeholder="e.g., S,M,L,XL"
-                        />
-                    </div>
-                    {/* Colors */}
-                    <div className="mb-3 col-md-6">
-                        <label htmlFor="colors" className="form-label">Colors</label>
-                        <input
-                            className="form-control"
-                            type="text"
-                            id="colors"
-                            name="colors"
-                            value={formData.colors}
-                            onChange={handleInputChange}
-                            placeholder="e.g., Red,Blue,Green"
-                        />
-                    </div>
-                </div>
-            ),
-        },
-        {
-            title: 'Inventory Details',
-            content: (
-                <div className="row">
-                    {/* SKU */}
-                    <div className="mb-3 col-md-6">
-                        <label htmlFor="sku" className="form-label">SKU<span style={{color: 'red'}}>*</span></label>
-                        <input
-                            className="form-control"
-                            type="text"
-                            id="sku"
-                            name="sku"
-                            value={formData.sku}
-                            onChange={handleInputChange}
-                        />
-                    </div>
-                    {/* Weight */}
-                    <div className="mb-3 col-md-6">
-                        <label htmlFor="weight" className="form-label">Weight</label>
-                        <input
-                            className="form-control"
-                            type="number"
-                            step="0.01"
-                            id="weight"
-                            name="weight"
-                            value={formData.weight}
-                            onChange={handleInputChange}
-                        />
-                    </div>
-                    {/* Dimensions */}
-                    <div className="mb-3 col-md-6">
-                        <label htmlFor="dimensions" className="form-label">Dimensions</label>
-                        <input
-                            className="form-control"
-                            type="text"
-                            id="dimensions"
-                            name="dimensions"
-                            value={formData.dimensions}
-                            onChange={handleInputChange}
-                        />
-                    </div>
-                    {/* Warehouse Stock Table */}
-                    <div className="mb-3 col-md-12">
-                        <label className="form-label">Stock Quantities</label>
-                        <Table
-                            dataSource={stockData}
-                            columns={[
-                                {
-                                    title: 'Warehouse',
-                                    dataIndex: 'stockName',
-                                    key: 'stockName',
-                                },
-                                {
-                                    title: 'Quantity',
-                                    dataIndex: 'quantity',
-                                    key: 'quantity',
-                                    render: (text, record) => (
-                                        <InputNumber
-                                            min={0}
-                                            value={record.quantity}
-                                            onChange={(value) => handleStockQuantityChange(value, record.stockId)}
-                                        />
-                                    ),
-                                },
-                            ]}
-                            rowKey="stockId"
-                            pagination={{ pageSize: 4 }}
-                        />
-                    </div>
-                </div>
-            ),
-        },
-        {
-            title: 'Sales Details',
-            content: (
-                <div className="row">
-                    {/* Price */}
-                    <div className="mb-3 col-md-6">
-                        <label htmlFor="price" className="form-label">Price<span style={{color: 'red'}}>*</span></label>
-                        <input
-                            className="form-control"
-                            type="number"
-                            id="price"
-                            name="price"
-                            value={formData.price}
-                            onChange={handleInputChange}
-                        />
-                    </div>
-                    {/* Sale Price */}
-                    <div className="mb-3 col-md-6">
-                        <label htmlFor="sale_price" className="form-label">Sale Price</label>
-                        <input
-                            className="form-control"
-                            type="number"
-                            id="sale_price"
-                            name="sale_price"
-                            value={formData.sale_price}
-                            onChange={handleInputChange}
-                        />
-                    </div>
-                    {/* Start Sale Date */}
-                    <div className="mb-3 col-md-6">
-                        <label htmlFor="start_sale_date" className="form-label">Start Sale Date</label>
-                        <input
-                            className="form-control"
-                            type="date"
-                            id="start_sale_date"
-                            name="start_sale_date"
-                            value={formData.start_sale_date}
-                            onChange={handleInputChange}
-                        />
-                    </div>
-                    {/* End Sale Date */}
-                    <div className="mb-3 col-md-6">
-                        <label htmlFor="end_sale_date" className="form-label">End Sale Date</label>
-                        <input
-                            className="form-control"
-                            type="date"
-                            id="end_sale_date"
-                            name="end_sale_date"
-                            value={formData.end_sale_date}
-                            onChange={handleInputChange}
-                        />
-                    </div>
-                    {/* Status */}
-                    <div className="mb-3 col-md-6">
-                        <label htmlFor="status" className="form-label">Status<span style={{color: 'red'}}>*</span></label>
-                        <select
-                            id="status"
-                            name="status"
-                            className="form-select"
-                            value={formData.status}
-                            onChange={handleInputChange}
-                        >
-                            <option value="ACTIVE">Active</option>
-                            <option value="INACTIVE">Inactive</option>
-                            <option value="DRAFT">Draft</option>
-                        </select>
-                    </div>
-                    {/* Is Featured */}
-                    <div className="mb-3 col-md-6">
-                        <label className="form-label">Is Featured</label>
-                        <div className="form-check">
-                            <input
-                                className="form-check-input"
-                                type="checkbox"
-                                id="is_featured"
-                                name="is_featured"
-                                checked={formData.is_featured}
-                                onChange={handleInputChange}
-                            />
-                            <label className="form-check-label" htmlFor="is_featured">
-                                Featured Product
-                            </label>
-                        </div>
-                    </div>
-                    {/* Barcode */}
-                    <div className="mb-3 col-md-6">
-                        <label htmlFor="barcode" className="form-label">Barcode</label>
-                        <input
-                            className="form-control"
-                            type="text"
-                            id="barcode"
-                            name="barcode"
-                            value={formData.barcode}
-                            onChange={handleInputChange}
-                        />
-                    </div>
-                    {/* Video URL */}
-                    <div className="mb-3 col-md-6">
-                        <label htmlFor="video_url" className="form-label">Video URL</label>
-                        <input
-                            className="form-control"
-                            type="url"
-                            id="video_url"
-                            name="video_url"
-                            value={formData.video_url}
-                            onChange={handleInputChange}
-                        />
-                    </div>
-                    {/* Meta Title */}
-                    <div className="mb-3 col-md-6">
-                        <label htmlFor="meta_title" className="form-label">Meta Title</label>
-                        <input
-                            className="form-control"
-                            type="text"
-                            id="meta_title"
-                            name="meta_title"
-                            value={formData.meta_title}
-                            onChange={handleInputChange}
-                        />
-                    </div>
-                    {/* Meta Description */}
-                    <div className="mb-3 col-md-12">
-                        <label htmlFor="meta_description" className="form-label">Meta Description</label>
-                        <textarea
-                            className="form-control"
-                            id="meta_description"
-                            name="meta_description"
-                            rows="3"
-                            value={formData.meta_description}
-                            onChange={handleInputChange}
-                        ></textarea>
-                    </div>
-                </div>
-            ),
-        },
-    ];
-
-    const current = currentStep + 1;
-    const total = steps.length;
-    const progressPercent = Math.round((current / total) * 100);
-
     return (
         <div className="container-xxl flex-grow-1 container-p-y">
-            <div className="row">
-                <div className="col-md-12">
-                    <div style={{ marginBottom: '20px' }}>
-                        <Progress
-                            percent={progressPercent}
-                            format={() => `${current}/${total}`}
-                        />
-                        <h4 style={{ marginTop: '10px' }}>
-                            Step {current}: {steps[currentStep].title}
-                        </h4>
-                    </div>
-                    <div className="steps-content" style={{ marginTop: '20px' }}>
+            {loadingStocks ? (
+                <div style={{ textAlign: 'center', padding: '50px' }}>
+                    <Text>Loading...</Text>
+                </div>
+            ) : (
+                <Card bordered={false} style={{ borderRadius: '8px' }}>
+                    <Row justify="space-between" align="middle" style={{ marginBottom: '20px' }}>
+                        <Col>
+                            <Button
+                                type="link"
+                                icon={<ArrowLeftOutlined />}
+                                onClick={() => navigate('/products')}
+                            >
+                                Back
+                            </Button>
+                        </Col>
+                    </Row>
+
+                    {/* Luôn hiển thị 4 trường trên cùng */}
+                    <Row gutter={[16, 16]} justify="center" style={{ marginBottom: '20px' }}>
+                        <Col xs={24} sm={24} md={6}>
+                            <Title level={4}>Product Name<span style={{color: 'red'}}>*</span></Title>
+                            <Input
+                                value={formData.name}
+                                name="name"
+                                onChange={handleInputChange}
+                                placeholder="Enter product name"
+                                size="middle"
+                            />
+                        </Col>
+                        <Col xs={24} sm={24} md={6}>
+                            <Title level={4}>Slug</Title>
+                            <Input
+                                value={formData.slug}
+                                name="slug"
+                                placeholder="Slug auto-generated"
+                                size="middle"
+                                disabled
+                            />
+                        </Col>
+                        <Col xs={24} sm={24} md={6}>
+                            <Title level={4}>SKU</Title>
+                            <Input
+                                value={formData.sku}
+                                name="sku"
+                                onChange={handleInputChange}
+                                placeholder="Enter SKU (optional)"
+                                size="middle"
+                            />
+                        </Col>
+                        <Col xs={24} sm={24} md={6}>
+                            <Title level={4}>Category<span style={{color: 'red'}}>*</span></Title>
+                            <Select
+                                value={formData.category}
+                                onChange={(value) => setFormData({ ...formData, category: value })}
+                                placeholder="Select Category"
+                                style={{ width: '100%' }}
+                                size="middle"
+                            >
+                                {categories.map((category) => (
+                                    <Option key={category.id} value={category.id}>
+                                        {category.name}
+                                    </Option>
+                                ))}
+                            </Select>
+                        </Col>
+                    </Row>
+
+                    <Progress
+                        percent={progressPercent}
+                        format={() => `${current}/${total}`}
+                    />
+                    <Title level={4} style={{ marginTop: '10px' }}>
+                        Step {current}: {steps[currentStep].title}
+                    </Title>
+
+                    <div style={{ marginTop: '20px' }}>
                         {steps[currentStep].content}
                     </div>
-                    <div className="steps-action" style={{ marginTop: '20px', textAlign: 'right' }}>
+
+                    <div style={{ marginTop: '20px', textAlign: 'right' }}>
                         {currentStep > 0 && (
                             <Button style={{ margin: '0 8px' }} onClick={handleBack}>
                                 Back
@@ -596,8 +482,8 @@ const AddProduct = () => {
                             </Button>
                         )}
                     </div>
-                </div>
-            </div>
+                </Card>
+            )}
         </div>
     );
 };
