@@ -233,7 +233,7 @@ const CategoryDetail = () => {
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                     {record.image ? (
                         <img
-                            src={convertUrl(BE_URL + record.image)}
+                            src={BE_URL + record.image}
                             alt={record.name}
                             style={{ width: '50px', height: '50px', objectFit: 'cover', marginRight: '20px' }}
                         />

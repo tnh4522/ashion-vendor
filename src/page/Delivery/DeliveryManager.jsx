@@ -20,9 +20,6 @@ const DeliveryManager = () => {
     }, []);
 
     const handleFormSubmit = (values, service) => {
-        console.log("Updated Values:", values);
-        console.log("Service Being Updated:", service);
-
         message.success(`Service "${service.name_service}" updated successfully!`);
     };
 
@@ -32,6 +29,7 @@ const DeliveryManager = () => {
         background: token.colorFillAlter,
         borderRadius: token.borderRadiusLG,
         border: 'none',
+        overflow: 'hidden',
     };
 
     const renderCollapseItems = (services) => {
@@ -47,7 +45,10 @@ const DeliveryManager = () => {
 
         return services.map((service) => ({
             key: service.code,
-            label: service.name_service,
+            label: <div className="d-flex justify-content-between">
+                <h6 className="mb-0">{service.name_service}</h6>
+                <img className="me-3" src={service.logo} alt={service.name_service} style={{ width: 90, borderRadius: '10px' }} />
+            </div>,
             style: panelStyle,
             children: (
                 <Form

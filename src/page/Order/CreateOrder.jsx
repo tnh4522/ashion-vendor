@@ -279,7 +279,7 @@ const CreateOrder = () => {
                             <form id="formCreateOrder" method="POST" onSubmit={handleOrderSubmit}>
                                 <div className="row">
                                     {/* Customer Selection */}
-                                    <div className="mb-3 col-md-12">
+                                    <div className="mb-3 col-md-6">
                                         <div className="d-flex justify-content-between align-items-center">
                                             <label className="form-label"><i
                                                 className="fa-solid fa-user mx-1"></i> Customer</label>
@@ -297,32 +297,32 @@ const CreateOrder = () => {
                                         {selectedCustomer && (
                                             <div className="selected-customer-info mt-2 p-2 border rounded">
                                                 <p className="mb-1">
-                                                    <strong>Name:</strong> {selectedCustomer.first_name + ' ' + selectedCustomer.last_name}
+                                                    Name: <strong>{selectedCustomer.first_name + ' ' + selectedCustomer.last_name}</strong>
                                                 </p>
-                                                <p className="mb-1"><strong>Email:</strong> {selectedCustomer.email}</p>
-                                                <p className="mb-0">
-                                                    <strong>Phone:</strong> {selectedCustomer.phone_number}</p>
+                                                <p className="mb-1">Email: <strong>{selectedCustomer.email}</strong></p>
+                                                <p className="mb-1">Phone: <strong>{selectedCustomer.phone_number}</strong></p>
+                                                <p className="mb-0">Status: <strong>New Customer</strong></p>
                                             </div>
                                         )}
                                     </div>
 
                                     {/* Addresses */}
-                                    <div className="mb-3 col-md-12">
+                                    <div className="mb-3 col-md-6">
                                         <label className="form-label"><i className="fa-solid fa-truck m-1"></i> Shipping
                                             Address</label>
                                         {selectedCustomer ? (
                                             <div className="selected-customer-info mt-2 p-2 border rounded">
                                                 <p className="mb-1">
-                                                    Province/City:<strong> {provinceName}</strong>
+                                                    Province / City :<strong> {provinceName}</strong>
                                                 </p>
                                                 <p className="mb-1">
-                                                    District/County:<strong> {districtName}</strong>
+                                                    District / County :<strong> {districtName}</strong>
+                                                </p>
+                                                <p className="mb-1">
+                                                    Ward / Village:<strong> {wardName}</strong>
                                                 </p>
                                                 <p className="mb-0">
-                                                    Ward/Village:<strong> {wardName}</strong>
-                                                </p>
-                                                <p className="mb-0">
-                                                    Address:<strong> {shippingAddress.street_address}</strong>
+                                                    Address :<strong> {shippingAddress.street_address}</strong>
                                                 </p>
                                             </div>
                                         ) : (

@@ -284,15 +284,15 @@ const Products = () => {
             queryObj['status'] = params.filterStatus;
         }
 
-        if (params.filterPrice && params.filterPrice.length === 2) {
-            const [minPrice, maxPrice] = params.filterPrice;
-            if (minPrice !== null && minPrice !== undefined) {
-                queryObj['price__gte'] = minPrice;
-            }
-            if (maxPrice !== null && maxPrice !== undefined) {
-                queryObj['price__lte'] = maxPrice;
-            }
-        }
+        // if (params.filterPrice && params.filterPrice.length === 2) {
+        //     const [minPrice, maxPrice] = params.filterPrice;
+        //     if (minPrice !== null && minPrice !== undefined) {
+        //         queryObj['price__gte'] = minPrice;
+        //     }
+        //     if (maxPrice !== null && maxPrice !== undefined) {
+        //         queryObj['price__lte'] = maxPrice;
+        //     }
+        // }
 
         return queryObj;
     };

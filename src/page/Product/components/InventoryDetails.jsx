@@ -25,6 +25,7 @@ const InventoryDetails = ({
                           }) => {
     // Trong cột Quantity, disabled = isDisabled
     // Trong cột Upload, nếu isDisabled thì ẩn nút upload
+    console.log(filteredGroupedVariants);
     const stockDetailColumns = [
         {
             title: 'Stock Name',

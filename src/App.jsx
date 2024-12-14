@@ -43,6 +43,8 @@ import CategoryDetail from "./page/Category/CategoryDetail.jsx";
 import ActivityLog from "./page/Activity/ActivityLog.jsx";
 import ActivityDetail from "./page/Activity/ActivityDetail.jsx";
 import DeliveryManager from "./page/Delivery/DeliveryManager.jsx";
+import PaymentManagement from "./page/Payment/PaymentManagement.jsx";
+import EditPaymentMethod from "./page/Payment/EditPaymentMethod.jsx";
 
 
 function App() {
@@ -112,6 +114,8 @@ function App() {
                                     <Route path="/address" element={<ProtectedRoute><Addresses /></ProtectedRoute>}/>
                                     <Route path="/create-address" element={<ProtectedRoute><CreateAddress/></ProtectedRoute>} />
                                     <Route path="/delivey" element={<ProtectedRoute><DeliveryManager/></ProtectedRoute>}/>
+                                    <Route path="/payment" element={<ProtectedRoute><PaymentManagement/></ProtectedRoute>}/>
+                                    <Route path="/edit-payment-method" element={<ProtectedRoute><EditPaymentMethod/></ProtectedRoute>}/>
                                 </Routes>
                             </div>
                         </div>

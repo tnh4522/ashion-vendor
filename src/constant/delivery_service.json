@@ -3,6 +3,7 @@
     "shipping_method": "Standard",
     "name_service": "Giao Hàng Tiết Kiệm",
     "code": "GHTK",
+    "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQiLz5DEBJEUwDCvuyNBsfGmUgyvPfyO1SUQA&s",
     "config": {
       "token": "ac51542f-b632-11ef-81b6-5e2e958f07fa",
       "shop_id": "5512583"
@@ -12,6 +13,7 @@
     "shipping_method": "Express",
     "name_service": "Giao Hàng Nhanh",
     "code": "GHN",
+    "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQKMJZg9hDpwDVtVECT_q_MY8pMXrlAz5Bi-g&s",
     "config": {
       "token": "bc61542f-c732-22gf-91h7-6f3f958f08gb",
       "shop_id": "6613584"
@@ -19,8 +21,9 @@
   },
   {
     "shipping_method": "Express",
-    "name_service": "Giao Hàng Siêu Tốc",
-    "code": "GHST",
+    "name_service": "Viettel Post",
+    "code": "VIETTEL",
+    "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT7Bjy0DWn1PcpZ4Q7TEuRp3FGSCY2wgCjKcA&s",
     "config": {
       "token": "dc72542f-d832-33hg-92h8-7g4g958f09hc",
       "shop_id": "7714585"

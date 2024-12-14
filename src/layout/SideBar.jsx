@@ -129,6 +129,11 @@ function SideBar() {
             icon: <i className="menu-icon tf-icons fa-solid fa-truck"></i>,
         },
         {
+            key: 'payment',
+            label: <Link to="/payment">Payment</Link>,
+            icon: <i className="menu-icon tf-icons fa-solid fa-credit-card"></i>,
+        },
+        {
             key: 'users',
             label: <Link to="/users">User</Link>,
             icon: <i className="menu-icon tf-icons fa-solid fa-users"></i>,

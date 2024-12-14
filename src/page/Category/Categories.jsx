@@ -4,14 +4,13 @@ import { Link, useNavigate } from 'react-router-dom';
 import { PictureOutlined, CheckCircleOutlined, CloseCircleOutlined, AppstoreOutlined} from '@ant-design/icons';
 import API from "../../service/service.jsx";
 import useUserContext from "../../hooks/useUserContext.jsx";
-import removeAccents from 'remove-accents';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import ExportModal from './ExportModal.jsx';
 import AddCategoryModal from './AddCategoryModal.jsx'
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-import { convertUrl, convertToSlug} from '../../utils/Function.jsx';
+import { convertToSlug} from '../../utils/Function.jsx';
 const { confirm } = Modal;
 
 const Categories = () => {
@@ -426,7 +425,7 @@ const Categories = () => {
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                     {record.image ? (
                         <img
-                            src={convertUrl(record.image)}
+                            src={record.image}
                             alt={record.name}
                             style={{ width: '50px', height: '50px', objectFit: 'cover', marginRight: '20px' }}
                         />

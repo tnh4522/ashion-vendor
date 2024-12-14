@@ -1,0 +1,21 @@
+[
+  {
+    "module_name": "vivapayments",
+    "lib": "Module Thanh Toán Viva",
+    "payment_method": ["card", "paypal"],
+    "logo_url": "https://s3-eu-west-1.amazonaws.com/tpd/logos/65cf8f430acd12f4ff464deb/0x0.png",
+    "test_mode": "on",
+    "id_tpv": "4",
+    "client_id_test": "mk1y177854lzerc71x6tzdpzv00zq3ukg7g1ymn1fzi47.apps.vivapayments.com",
+    "client_secret_test": "8GXoL8nNcx0w47CwPT9JaVvytg3NbJ",
+    "merchant_id_test": "b89caceb-88d2-4762-8beb-068c8674a4be",
+    "cle_api_test": ">R@]s4",
+    "client_id_prod": "",
+    "client_secret_prod": "",
+    "merchant_id_prod": "",
+    "cle_api_prod": "",
+    "site_code_viva": "7633",
+    "payment_form_color": "#0f65d7",
+    "platform_url": "https://demo-accounts.vivapayments.com/Account/Login"
+  }
+]
