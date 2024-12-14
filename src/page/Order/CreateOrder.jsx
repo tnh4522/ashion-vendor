@@ -7,7 +7,7 @@ import {Modal, Button, Select} from 'antd';
 import {PlusOutlined, SearchOutlined} from '@ant-design/icons';
 import SelectProduct from "./SelectProduct.jsx";
 import SelectCustomer from "./SelectCustomer.jsx";
-import {paymentMethods, shippingMethods, sizes} from '../../utils/Constant';
+import {paymentMethods, shippingMethods} from '../../utils/Constant';
 import CreateCustomer from "./CreateCustomer.jsx";
 import {getDistrictInformation, getWardInformation, GTTK_TOKEN, SHOP_ID} from "../../component/Helper.jsx";
 import provincesData from "../../constant/province.json";
@@ -92,31 +92,33 @@ const CreateOrder = () => {
         const tax = subtotal * 0.1;
         const discount = orderData.discount_amount || 0;
 
-        axios.post(
-            'https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee',
-            {
-                "service_id": serviceID,
-                "insurance_value": subtotal,
-                "coupon": null,
-                "from_district_id": 1530,
-                "to_district_id": parseInt(shippingAddress.district),
-                "to_ward_code": shippingAddress.ward,
-                "height": 15,
-                "length": 15,
-                "weight": 1000,
-                "width": 15
-            },
-            {
-                headers: {
-                    'token': GTTK_TOKEN,
-                    'shop_id': SHOP_ID
+        if (orderData.shipping_method !== 'NONE') {
+            axios.post(
+                'https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee',
+                {
+                    "service_id": serviceID,
+                    "insurance_value": subtotal,
+                    "coupon": null,
+                    "from_district_id": 1530,
+                    "to_district_id": parseInt(shippingAddress.district),
+                    "to_ward_code": shippingAddress.ward,
+                    "height": 15,
+                    "length": 15,
+                    "weight": 1000,
+                    "width": 15
+                },
+                {
+                    headers: {
+                        'token': GTTK_TOKEN,
+                        'shop_id': SHOP_ID
+                    }
                 }
-            }
-        ).then(response => {
-            setShippingTotal(response.data.data.total)
-        }).catch(error => {
-            console.error('Error fetching available service:', error);
-        });
+            ).then(response => {
+                setShippingTotal(response.data.data.total)
+            }).catch(error => {
+                console.error('Error fetching available service:', error);
+            });
+        }
 
         setOrderData(prev => ({
             ...prev,
@@ -156,20 +158,44 @@ const CreateOrder = () => {
         setIsAddCustomerModalVisible(false);
     };
 
-    const handleProductSelect = (product) => {
-        if (product) {
+    const handleProductSelect = (products) => {
+        if (Array.isArray(products)) {
             const updatedItems = [...orderData.items];
-            updatedItems[selectedProductIndex] = {
-                ...updatedItems[selectedProductIndex],
-                product: product.id,
-                productName: product.name,
-                price: product.price,
-                total_price: product.price * updatedItems[selectedProductIndex].quantity
-            };
+
+            products.forEach((product, index) => {
+                const targetIndex = selectedProductIndex + index;
+                updatedItems[targetIndex] = {
+                    ...updatedItems[targetIndex] || {},
+                    product: product.id,
+                    productName: product.name,
+                    price: product.price,
+                    total_price: product.price * (updatedItems[targetIndex]?.quantity || 1),
+                    main_image: product.images[0]?.image || "",
+                    variants: product.stock_variants || [],
+                };
+            });
+
             setOrderData({...orderData, items: updatedItems});
         }
         setIsProductModalVisible(false);
     };
+
+    const renderVariant = (item, type) => {
+        const result = [];
+
+        item.variants.forEach(variant => {
+            if(variant.variant_name) {
+                const [size, color] = variant.variant_name.split(' - ');
+                result[size] = [...result[size] || [], color];
+            }
+        });
+
+        if(type === 'size') {
+            return Object.keys(result);
+        }
+
+        return result[item.size] || [];
+    }
 
     const handleOrderChange = (e) => {
         const {name, value} = e.target;
@@ -216,7 +242,6 @@ const CreateOrder = () => {
                 logout();
                 return;
             }
-            console.error('There was an error creating the order:', error);
             openErrorNotification('There was an error creating the order');
         }
     };
@@ -269,7 +294,6 @@ const CreateOrder = () => {
         }
     }, [selectedCustomer, shippingAddress.province, shippingAddress.district, shippingAddress.ward]);
 
-
     return (
         <div className="container-xxl flex-grow-1 container-p-y">
             <div className="row">
@@ -300,7 +324,8 @@ const CreateOrder = () => {
                                                     Name: <strong>{selectedCustomer.first_name + ' ' + selectedCustomer.last_name}</strong>
                                                 </p>
                                                 <p className="mb-1">Email: <strong>{selectedCustomer.email}</strong></p>
-                                                <p className="mb-1">Phone: <strong>{selectedCustomer.phone_number}</strong></p>
+                                                <p className="mb-1">Phone: <strong>{selectedCustomer.phone_number}</strong>
+                                                </p>
                                                 <p className="mb-0">Status: <strong>New Customer</strong></p>
                                             </div>
                                         )}
@@ -349,15 +374,24 @@ const CreateOrder = () => {
                                             + Add Item
                                         </button>
                                         {orderData.items.map((item, index) => (
-                                            <div key={index} className="row mb-3 align-items-end">
-                                                <div className="col-md-4">
-                                                    {item.productName ?
-                                                        <input
-                                                            className="form-control"
-                                                            type="text"
-                                                            value={item.productName}
-                                                            readOnly
-                                                        /> :
+                                            <div key={index} className="row mt-4">
+                                                {item.main_image && (<div className="col-md-1">
+                                                    <img
+                                                        src={item.main_image}
+                                                        alt="Product"
+                                                        className="img-fluid rounded img-order-item"
+                                                    />
+                                                </div>)}
+                                                <div className="col-md-3">
+                                                    <label className="form-label">Product</label>
+                                                    {item.productName ? (
+                                                            <input
+                                                                className="form-control"
+                                                                type="text"
+                                                                value={item.productName}
+                                                                readOnly
+                                                            />
+                                                        ) :
                                                         <Button icon={<SearchOutlined/>} type="button"
                                                                 className="btn-link"
                                                                 onClick={() => showProductModal(index)}>
@@ -365,6 +399,7 @@ const CreateOrder = () => {
                                                         </Button>
                                                     }
                                                 </div>
+
                                                 <div className="col-md-1">
                                                     <label className="form-label">Size</label>
                                                     <select
@@ -374,11 +409,8 @@ const CreateOrder = () => {
                                                         onChange={(e) => handleItemChange(index, e)}
                                                         required
                                                     >
-                                                        <option value="">Select Size</option>
-                                                        {sizes.map(size => (
-                                                            <option key={size.value} value={size.value}>
-                                                                {size.label}
-                                                            </option>
+                                                        {item.variants && renderVariant(item, 'size').map((size, index) => (
+                                                            <option key={index} value={size}>{size}</option>
                                                         ))}
                                                     </select>
                                                 </div>
@@ -391,12 +423,9 @@ const CreateOrder = () => {
                                                         onChange={(e) => handleItemChange(index, e)}
                                                         required
                                                     >
-                                                        <option value="">Select Size</option>
-                                                        <option style={{color: 'red'}} value="Red">Red</option>
-                                                        <option style={{color: 'blue'}} value="Blue">Blue</option>
-                                                        <option style={{color: 'green'}} value="Green">Green</option>
-                                                        <option style={{color: 'black'}} value="Black">Black</option>
-                                                        <option style={{color: 'yellow'}} value="Yellow">Yellow</option>
+                                                        {item.variants && renderVariant(item, 'color').map((color, index) => (
+                                                            <option key={index} value={color}>{color}</option>
+                                                        ))}
                                                     </select>
                                                 </div>
                                                 <div className="col-md-1">
@@ -433,6 +462,7 @@ const CreateOrder = () => {
                                                     />
                                                 </div>
                                                 <div className="col-md-1">
+                                                    <label className="form-label">Remove</label>
                                                     <button
                                                         type="button"
                                                         className="btn btn-danger btn-sm"
@@ -468,19 +498,22 @@ const CreateOrder = () => {
                                         </Select>
                                     </div>
 
-                                    <div className="mb-3 col-md-6">
-                                        <label className="form-label">Shipping Service</label>
-                                        <Select
-                                            className="w-100"
-                                            name="shipping_service"
-                                            required
-                                            defaultValue="1"
-                                        >
-                                            <Option value="1">Giao hàng tiết kiệm</Option>
-                                            <Option value="2">Giao hàng nhanh</Option>
-                                            <Option value="3">Viettel Post</Option>
-                                        </Select>
-                                    </div>
+                                    {orderData.shipping_method !== 'NONE' ? (
+                                        <div className="mb-3 col-md-6">
+                                            <label className="form-label">Shipping Service</label>
+                                            <Select
+                                                className="w-100"
+                                                name="shipping_service"
+                                                required
+                                                defaultValue="1"
+                                            >
+                                                <Option value="1">Giao hàng tiết kiệm</Option>
+                                                <Option value="2">Giao hàng nhanh</Option>
+                                                <Option value="3">Viettel Post</Option>
+                                            </Select>
+                                        </div>) : (
+                                        <div className="mb-3 col-md-6"></div>
+                                    )}
 
                                     <div className="mb-3 col-md-6">
                                         <label className="form-label">Payment Method</label>
@@ -504,17 +537,19 @@ const CreateOrder = () => {
                                         </Select>
                                     </div>
 
-                                    <div className="mb-3 col-md-6">
-                                        <label className="form-label">Module Payment</label>
-                                        <Select
-                                            className="w-100"
-                                            name="module_payment"
-                                            required
-                                            defaultValue="1"
-                                        >
-                                            <Option value="1">Viva</Option>
-                                        </Select>
-                                    </div>
+                                    {orderData.payment_method !== 'COD' ? (
+                                        <div className="mb-3 col-md-6">
+                                            <label className="form-label">Module Payment</label>
+                                            <Select
+                                                className="w-100"
+                                                name="module_payment"
+                                                required
+                                                defaultValue="1"
+                                            >
+                                                <Option value="1">Viva</Option>
+                                            </Select>
+                                        </div>
+                                    ) : (<div className="mb-3 col-md-6"></div>)}
 
                                     {/* Order Summary */}
                                     <div className="col-md-12 m-2">
@@ -527,10 +562,12 @@ const CreateOrder = () => {
                                                             <span>Subtotal:</span>
                                                             <span>${orderData.subtotal_price}</span>
                                                         </div>
-                                                        <div className="d-flex justify-content-between mb-1">
-                                                            <span>Shipping:</span>
-                                                            <span>${orderData.shipping_cost}</span>
-                                                        </div>
+                                                        {orderData.shipping_method !== 'NONE' && (
+                                                            <div className="d-flex justify-content-between mb-1">
+                                                                <span>Shipping:</span>
+                                                                <span>${orderData.shipping_cost}</span>
+                                                            </div>)
+                                                        }
                                                         <div className="d-flex justify-content-between mb-1">
                                                             <span>Tax:</span>
                                                             <span>${orderData.tax_amount}</span>

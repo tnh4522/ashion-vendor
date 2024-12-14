@@ -4,13 +4,12 @@ import API from "../../service/service.jsx";
 import useNotificationContext from "../../hooks/useNotificationContext.jsx";
 import {Tabs} from 'antd';
 import {useNavigate} from "react-router-dom";
-import {AndroidOutlined, AppleOutlined} from "@ant-design/icons";
+import {BE_URL} from "../../service/config.jsx";
 
 function MyStore() {
     const {openSuccessNotification, openErrorNotification} = useNotificationContext();
     const {userData, logout} = useUserContext();
     const navigator = useNavigate();
-    const store_id = 1;
 
     const [store, setStore] = useState(null);
     const [formData, setFormData] = useState({
@@ -38,7 +37,7 @@ function MyStore() {
     useEffect(() => {
         const fetchStoreData = async () => {
             try {
-                const response = await API.get(`/stores/${store_id}/`, {
+                const response = await API.get(`/me/store/`, {
                     headers: {
                         Authorization: `Bearer ${userData.access}`,
                     },
@@ -77,7 +76,7 @@ function MyStore() {
                     email: response.data.email || "",
                 });
                 if (response.data.store_logo) {
-                    setStoreLogoPreview(convertUrl(response.data.store_logo));
+                    setStoreLogoPreview(BE_URL + response.data.store_logo);
                 }
             } catch (error) {
                 console.error("Error fetching store data:", error);
@@ -109,10 +108,6 @@ function MyStore() {
             setStoreLogoFile(file);
             setStoreLogoPreview(URL.createObjectURL(file));
         }
-    };
-
-    const convertUrl = (url) => {
-        return url.replace("/static/", "/api/media/");
     };
 
     const handleSubmit = async (e) => {
@@ -148,7 +143,7 @@ function MyStore() {
                 formDataToSend.append("store_logo", storeLogoFile);
             }
 
-            const response = await API.put(`/stores/${store_id}/`, formDataToSend, {
+            const response = await API.put(`/stores/${store.id}/`, formDataToSend, {
                 headers: {
                     Authorization: `Bearer ${userData.access}`,
                     "Content-Type": "multipart/form-data",

@@ -20,6 +20,7 @@ export const paymentStatus = [
 ];
 
 export const shippingMethods = [
+  {value: 'NONE', label: 'Take Order in Store'},
   {value: 'STANDARD', label: 'Standard Shipping'},
   {value: 'EXPRESS', label: 'Express Shipping'}
 ];

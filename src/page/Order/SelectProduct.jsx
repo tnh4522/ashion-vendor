@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Table, Button, Input } from 'antd';
+import {Table, Button, Input, Checkbox} from 'antd';
 import qs from 'qs';
 import API from "../../service/service";
 import useUserContext from "../../hooks/useUserContext";
@@ -24,6 +24,7 @@ const Products = ({ onProductSelect }) => {
     })
     const { userData, logout } = useUserContext();
     const { openErrorNotification } = useNotificationContext();
+    const [selectedProduct, setSelectedProduct] = useState([]);
 
     const fetchData = () => {
         setLoading(true);
@@ -72,18 +73,34 @@ const Products = ({ onProductSelect }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [JSON.stringify(tableParams)]);
 
+    const onSelectChange = (record) => (e) => {
+        if (e.target.checked) {
+            setSelectedProduct((prev) => [...prev, record]);
+        } else {
+            setSelectedProduct((prev) => prev.filter((p) => p.id !== record.id));
+        }
+    }
+
     const columns = [
+        {
+            title: 'Select',
+            key: 'select',
+            width: '5%',
+            render: (record) => (
+                <Checkbox onChange={onSelectChange(record)}></Checkbox>
+            ),
+        },
         {
             title: 'Image',
             dataIndex: 'main_image_url',
             key: 'main_image',
             width: '10%',
             render: (text, record) => (
-                record.main_image ? (
+                record.images ? (
                     <img
-                        src={convertUrl(record.main_image)}
-                        alt={record.name}
-                        style={{ width: '50px', height: '50px', objectFit: 'cover' }}
+                        src={record.images[0].image}
+                        alt={record.images[0].caption}
+                        style={{ width: '60px', height: '60px', objectFit: 'cover'}}
                     />
                 ) : (
                     <div style={{ width: '50px', height: '50px', backgroundColor: '#f0f0f0' }} />
@@ -94,7 +111,7 @@ const Products = ({ onProductSelect }) => {
             title: 'Product Name',
             dataIndex: 'name',
             sorter: true,
-            width: '25%',
+            width: '35%',
         },
         {
             title: 'Category',
@@ -110,34 +127,14 @@ const Products = ({ onProductSelect }) => {
             dataIndex: 'price',
             sorter: true,
             render: (price) => `$${price}`,
-            width: '15%',
+            width: '20%',
         },
         {
             title: 'Stock',
             dataIndex: 'stock',
             width: '10%',
-        },
-        {
-            title: 'Action',
-            key: 'action',
-            width: '20%',
-            render: (text, record) => (
-                <span>
-                    <Button
-                        type="primary"
-                        size="small"
-                        onClick={() => onProductSelect(record)}
-                    >
-                        Select
-                    </Button>
-                </span>
-            ),
-        },
+        }
     ];
-
-    const convertUrl = (url) => {
-        return url.replace("/media/", "/api/static/");
-    };
 
     const getProductParams = (params) => ({
         page_size: params.pagination?.pageSize,
@@ -217,6 +214,15 @@ const Products = ({ onProductSelect }) => {
                     loading={loading}
                     onChange={handleTableChange}
                 />
+            </div>
+            <div className="col-md-12 mt-3 text-center">
+                <Button
+                    type="primary"
+                    onClick={() => onProductSelect(selectedProduct)}
+                    disabled={selectedProduct.length === 0}
+                >
+                    Confirm Selection
+                </Button>
             </div>
         </div>
     );
