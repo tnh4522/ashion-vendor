@@ -64,6 +64,8 @@ function OrderDetail() {
                 items: response.data.items || [],
                 shipping_address: response.data.shipping_address || "",
                 billing_address: response.data.billing_address || "",
+                created_at: response.data.created_at || "",
+                updated_at: response.data.updated_at || "",
             });
 
             const customerResponse = await API.get(`customer/detail/${response.data.customer}/`, {
@@ -153,6 +155,10 @@ function OrderDetail() {
             dataIndex: 'size',
         },
         {
+            title: 'Color',
+            dataIndex: 'color',
+        },
+        {
             title: 'Quantity',
             dataIndex: 'quantity',
         },
@@ -173,9 +179,13 @@ function OrderDetail() {
                 <form id="formOrderSettings" method="POST" onSubmit={handleSubmit}>
                     <div className="d-flex justify-content-between mt-2 mb-2">
                         <div className="text-start">
-                            <h3 style={{ fontSize: '24px', display: 'flex', alignItems: 'center' }}>Order Details /
+                            <h3 style={{ fontSize: '24px', display: 'flex', alignItems: 'center' }}>
                                 <span style={{color: '#696cff', marginLeft: '5px'}}>#{formData.order_number}</span>
                             </h3>
+                        </div>
+                        {/* status */}
+                        <div className="text-start">
+                            
                         </div>
                         <div className="text-end">
                             <button type="submit" className="btn btn-primary">Save changes</button>
@@ -185,6 +195,66 @@ function OrderDetail() {
                             </Link>
                         </div>
                     </div>
+
+                    <div className="row">
+                        <div className="col-md-3">
+                            {/* Created */}
+                            <p><strong>Created: </strong> {new Date(formData.created_at).toLocaleString()}</p>
+                        </div>
+                        <div className="col-md-3">
+                            {/* Modified */}
+                            <p><strong>Modified: </strong> {new Date(formData.updated_at).toLocaleString()}</p>
+                        </div>
+                    </div>
+
+                    {/* Status */}
+                    <div className="row">
+                        <div className="mb-3 col-md-3">
+                            <label className="form-label" style={{ fontWeight: 'bold' }}>Order Status</label>    
+                            <Select
+                                className="w-100 "
+                                id="status"
+                                name="status"
+                                value={formData.status}
+                                onChange={(value) => handleInputChange({
+                                    target: {
+                                        name: 'status',
+                                        value
+                                        }
+                                })}
+                                required
+                                >
+                                {Object.entries(orderStatus).map(([key, value]) => (
+                                    <Option key={value} value={value}>
+                                        {key.charAt(0) + key.slice(1).toLowerCase()}
+                                    </Option>
+                                ))}
+                            </Select>
+                        </div>
+                        {/* Payment Status */}
+                        <div className="mb-2 col-md-3">
+                            <label className="form-label" style={{ fontWeight: 'bold' }}>Payment Status</label>
+                            <Select
+                                className="w-100"
+                                id="payment_status"
+                                name="payment_status"
+                                value={formData.payment_status}
+                                onChange={(value) => handleInputChange({
+                                    target: {
+                                        name: 'payment_status',
+                                        value
+                                        }
+                                })}
+                            >
+                                {paymentStatus.map(status => (
+                                    <Option key={status.value} value={status.value}>
+                                        {status.label}
+                                    </Option>
+                                ))}
+                            </Select>
+                        </div>
+                    </div>                                                            
+
                     {/* Order Details */}
                     <div className="card mb-4">
                                 <div className="card-body">
@@ -212,7 +282,7 @@ function OrderDetail() {
                                                                 <label className="form-label">Shipping Address</label>
                                                                 {customer ? (
                                                                     <div className="selected-customer-info p-2 ">
-                                                                        <p className="mb-1"><strong style={{ color: '#68798c' }}>City:</strong> {customer.address.city}</p>
+                                                                        <p className="mb-1"><strong style={{ color: '#68798c' }}>Province:</strong> {customer.address.province}</p>
                                                                         <p className="mb-1"><strong style={{ color: '#68798c' }}>Country:</strong> {customer.address.country}</p>
                                                                         <p className="mb-0"><strong style={{ color: '#68798c' }}>Zip Code:</strong> {customer.address.postal_code}</p>
                                                                         <p className="mb-0"><strong style={{ color: '#68798c' }}>Address:</strong> {customer.address.street_address}</p>
@@ -235,57 +305,6 @@ function OrderDetail() {
                                                                 <p>{formData.shipping_method}</p> {/* Hiển thị tên phương thức vận chuyển */}
                                                             </div>
                                                         </div>
-
-                                                        <div className="row">
-                                                            {/* Order Status */}
-                                                            <div className="mb-3 col-md-6">
-                                                                <label className="form-label">Status</label>
-                                                                <Select
-                                                                    className="w-100"
-                                                                    id="status"
-                                                                    name="status"
-                                                                    value={formData.status}
-                                                                    onChange={(value) => handleInputChange({
-                                                                        target: {
-                                                                            name: 'status',
-                                                                            value
-                                                                            }
-                                                                    })}
-                                                                    required
-                                                                >
-                                                                    {Object.entries(orderStatus).map(([key, value]) => (
-                                                                        <Option key={value} value={value}>
-                                                                            {key.charAt(0) + key.slice(1).toLowerCase()}
-                                                                        </Option>
-                                                                    ))}
-                                                                </Select>
-                                                            </div>
-
-                                                            {/* Payment Status */}
-                                                            <div className="mb-3 col-md-6">
-                                                                    <label className="form-label">Payment Status</label>
-                                                                    <Select
-                                                                        className="w-100"
-                                                                        id="payment_status"
-                                                                        name="payment_status"
-                                                                        value={formData.payment_status}
-                                                                        onChange={(value) => handleInputChange({
-                                                                            target: {
-                                                                                name: 'payment_status',
-                                                                                value
-                                                                                }
-                                                                        })}
-                                                                    >
-                                                                        {paymentStatus.map(status => (
-                                                                            <Option key={status.value} value={status.value}>
-                                                                                {status.label}
-                                                                            </Option>
-                                                                        ))}
-                                                                    </Select>
-                                                            </div>
-                                                        </div>
-
-
 
                                                     </div>
                                                 </div>
