@@ -7,7 +7,7 @@ export default defineConfig({
     server: {
         host: true,
         strictPort: true,
-        port: 5173,
+        port: 80,
         proxy: {
             '/ngrok': {
                 target: 'https://sterling-notably-monster.ngrok-free.app',
@@ -18,6 +18,16 @@ export default defineConfig({
                         proxyReq.setHeader('ngrok-skip-browser-warning', 'true');
                     });
                 },
+            },
+            '/api-viva-accounts': {
+                target: 'https://demo-accounts.vivapayments.com',
+                changeOrigin: true,
+                rewrite: (path) => path.replace(/^\/api-viva-accounts/, ''),
+            },
+            '/api-viva-checkout': {
+                target: 'https://demo-api.vivapayments.com',
+                changeOrigin: true,
+                rewrite: (path) => path.replace(/^\/api-viva-checkout/, ''),
             },
         },
     },

@@ -13,6 +13,7 @@ import {getDistrictInformation, getWardInformation, GTTK_TOKEN, SHOP_ID} from ".
 import provincesData from "../../constant/province.json";
 import axios from "axios";
 import formatCurrency from "../../constant/formatCurrency.js";
+import processPayment from "../../constant/processPayment.js";
 
 const {Option} = Select;
 
@@ -227,6 +228,32 @@ const CreateOrder = () => {
         });
     };
 
+    const handlePayment = async (data) => {
+        try {
+            const paymentDetails = {
+                amount: data.total_price,
+                customer: {
+                    email: selectedCustomer.email,
+                    fullName: selectedCustomer.first_name + ' ' + selectedCustomer.last_name,
+                    phone: selectedCustomer.phone_number,
+                    countryCode: 'VN',
+                    requestLang: 'vi-VN',
+                },
+                sourceCode: '4715',
+                merchantTrns: data.order_number,
+            };
+
+            const response = await processPayment(paymentDetails);
+
+            if (response.orderCode) {
+                window.location.href = 'https://demo.vivapayments.com/web2?ref=' + response.orderCode;
+            }
+        } catch (err) {
+            console.error('Error processing payment:', err);
+            openErrorNotification('Error processing payment.');
+        }
+    };
+
     const handleOrderSubmit = async (e) => {
         e.preventDefault();
         try {
@@ -236,8 +263,7 @@ const CreateOrder = () => {
                 },
             });
             if (response.status === 201) {
-                openSuccessNotification('Order created successfully');
-                navigate('/orders');
+                await handlePayment(response.data);
             }
         } catch (error) {
             if (error.response && error.response.status === 401) {
