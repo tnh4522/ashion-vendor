@@ -5,6 +5,9 @@ import useNotificationContext from "../../hooks/useNotificationContext.jsx";
 import { Table, Select } from 'antd';
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { orderStatus, paymentStatus } from '../../utils/Constant';
+import provincesData from "../../constant/province.json";
+import {getDistrictInformation, getWardInformation} from "../../component/Helper.jsx";
+import formatCurrency from "../../constant/formatCurrency.js";
 
 const { Option } = Select;
 
@@ -82,7 +85,7 @@ function OrderDetail() {
                 return { 
                     ...item,
                     product_name: productResponse.data.name,
-                    main_image: productResponse.data.main_image,    
+                    main_image: productResponse.data.images[0].image,
                 };
             };
 
@@ -122,10 +125,6 @@ function OrderDetail() {
         }
     };
 
-    const convertUrl = (url) => {
-        return url.replace("/media/", "/api/static/");
-    };
-
     const columns = [
         {
             title: 'Image',
@@ -135,7 +134,7 @@ function OrderDetail() {
             render: (record) => 
                 record ? (
                     <img
-                        src={convertUrl(record)}
+                        src={record}
                         alt={record.name}
                         style={{ width: '50px', height: '50px', objectFit: 'cover' }}
                     />
@@ -153,18 +152,65 @@ function OrderDetail() {
             dataIndex: 'size',
         },
         {
+            title: 'Color',
+            dataIndex: 'color',
+        },
+        {
             title: 'Quantity',
             dataIndex: 'quantity',
         },
         {
             title: 'Price',
             dataIndex: 'price',
+            render: (record) => formatCurrency(record),
         },
         {
             title: 'Total Price',
             dataIndex: 'total_price',
+            render: (record) => formatCurrency(record),
         },
     ];
+
+    const [provinceName, setProvinceName] = useState('');
+    const [districtName, setDistrictName] = useState('');
+    const [wardName, setWardName] = useState('');
+
+    useEffect(() => {
+        if (customer) {
+            const province = provincesData.data.find(
+                item => item.ProvinceID === parseInt(customer.address.province, 10)
+            );
+            setProvinceName(province ? province.ProvinceName : 'Unknown');
+
+            getDistrictInformation(customer.address.province)
+                .then(districts => {
+                    const district = districts.find(
+                        item => item.DistrictID === parseInt(customer.address.district, 10)
+                    );
+                    setDistrictName(district ? district.DistrictName : 'Unknown');
+                })
+                .catch(err => {
+                    console.error('Error fetching district:', err);
+                    setDistrictName('Unknown');
+                });
+
+            getWardInformation(customer.address.district)
+                .then(wards => {
+                    const ward = wards.find(
+                        item => item.WardCode === customer.address.ward
+                    );
+                    setWardName(ward ? ward.WardName : 'Unknown');
+                })
+                .catch(err => {
+                    console.error('Error fetching ward:', err);
+                    setWardName('Unknown');
+                });
+        } else {
+            setProvinceName('');
+            setDistrictName('');
+            setWardName('');
+        }
+    }, [customer]);
 
     return (
         <div className="container-xxl flex-grow-1 container-p-y">
@@ -191,31 +237,30 @@ function OrderDetail() {
                                     <div className="row">
                                             <div className="col-md-8">
                                                 {/* Order Information */}
-                                                <div className="mb-3 col-md-12">
+                                                <div className="mb-4 col-md-12">
                                                     <h5 className="card-title">Order Information</h5>
                                                     <div className="card p-3">
                                                         <div className="row">
-                                                            <div className="mb-2 col-md-6">
+                                                            <div className="mb-3 col-md-6">
                                                                 <label className="form-label">Customer Information</label>
                                                                 {customer ? (
                                                                     <div className="selected-customer-info p-2 ">
-                                                                        <p className="mb-1"><strong style={{ color: '#68798c' }}>Name:</strong> {customer.first_name} {customer.last_name}</p>
-                                                                        <p className="mb-1"><strong style={{ color: '#68798c' }}>Email:</strong> {customer.email}</p>
-                                                                        <p><strong style={{ color: '#68798c' }}>Phone:</strong> {customer.phone_number}</p>
+                                                                        <p className="mb-2">Name: <strong style={{ color: '#68798c' }}>{customer.first_name} {customer.last_name}</strong></p>
+                                                                        <p className="mb-2">Email: <strong style={{ color: '#68798c' }}>{customer.email}</strong></p>
+                                                                        <p className="mb-0">Phone: <strong style={{ color: '#68798c' }}>{customer.phone_number}</strong></p>
                                                                     </div>
                                                                 ) : (
                                                                     <p>Loading customer information...</p>
                                                                 )}
                                                             </div>
                                                             {/* Address */}
-                                                            <div className="mb-2 col-md-6">
+                                                            <div className="mb-3 col-md-6">
                                                                 <label className="form-label">Shipping Address</label>
                                                                 {customer ? (
                                                                     <div className="selected-customer-info p-2 ">
-                                                                        <p className="mb-1"><strong style={{ color: '#68798c' }}>City:</strong> {customer.address.city}</p>
-                                                                        <p className="mb-1"><strong style={{ color: '#68798c' }}>Country:</strong> {customer.address.country}</p>
-                                                                        <p className="mb-0"><strong style={{ color: '#68798c' }}>Zip Code:</strong> {customer.address.postal_code}</p>
-                                                                        <p className="mb-0"><strong style={{ color: '#68798c' }}>Address:</strong> {customer.address.street_address}</p>
+                                                                        <p className="mb-2">Province: <strong style={{ color: '#68798c' }}>{provinceName}</strong></p>
+                                                                        <p className="mb-2">District: <strong style={{ color: '#68798c' }}>{districtName}</strong></p>
+                                                                        <p className="mb-0">Ward: <strong style={{ color: '#68798c' }}>{wardName}</strong></p>
                                                                     </div>
                                                                 ) : (
                                                                     <p>Loading address information...</p>
@@ -225,14 +270,14 @@ function OrderDetail() {
 
                                                         <div className="row">
                                                             {/* Payment Method */}
-                                                            <div className="mb-3 col-md-6">
+                                                            <div className="mb-2 col-md-6">
                                                                 <label className="form-label">Payment Method</label>
-                                                                <p>{formData.payment_method}</p> {/* Hiển thị tên phương thức thanh toán */}
+                                                                <p><strong>{formData.payment_method}</strong></p>
                                                             </div>
                                                             {/* Shipping Method */}
-                                                            <div className="mb-3 col-md-6">
+                                                            <div className="mb-2 col-md-6">
                                                                 <label className="form-label">Shipping Method</label>
-                                                                <p>{formData.shipping_method}</p> {/* Hiển thị tên phương thức vận chuyển */}
+                                                                <p><strong>{formData.shipping_method}</strong></p>
                                                             </div>
                                                         </div>
 
@@ -284,52 +329,47 @@ function OrderDetail() {
                                                                     </Select>
                                                             </div>
                                                         </div>
-
-
-
                                                     </div>
                                                 </div>
 
                                                 {/* Order Items */}
                                                 <div className="mt-3 mb-3 col-md-12">
-                                                    <h5 className="card-title">Order Items</h5>
+                                                    <h5>Order Items</h5>
                                                     <div className="card">
-                                                        <div className="card-body">
-                                                            <Table
+                                                        <Table
                                                             columns={columns}
                                                             dataSource={formData.items}
                                                             pagination={false}
                                                             rowKey={(record) => record.product_name}
-                                                            />
-                                                        </div>
+                                                        />
                                                     </div>
                                                 </div>
                                             </div>
 
                                             <div className="col-md-4">
                                                 {/* Order Summary */}
-                                                <div className="mb-3">
+                                                <div className="mb-4">
                                                     <h5 className="card-title">Order Summary</h5>
-                                                        <div className="d-flex justify-content-between mb-1">
+                                                        <div className="d-flex justify-content-between mb-2">
                                                             <span>Subtotal:</span>
-                                                            <span>${formData.subtotal_price}</span>
+                                                            <span>{formatCurrency(formData.subtotal_price)}</span>
                                                         </div>
-                                                        <div className="d-flex justify-content-between mb-1">
+                                                        <div className="d-flex justify-content-between mb-2">
                                                             <span>Shipping:</span>
-                                                            <span>${formData.shipping_cost}</span>
+                                                            <span>{formatCurrency(formData.shipping_cost)}</span>
                                                         </div>
-                                                        <div className="d-flex justify-content-between mb-1">
+                                                        <div className="d-flex justify-content-between mb-2">
                                                             <span>Tax:</span>
-                                                            <span>${formData.tax_amount}</span>
+                                                            <span>{formatCurrency(formData.tax_amount)}</span>
                                                         </div>
-                                                        <div className="d-flex justify-content-between mb-1">
+                                                        <div className="d-flex justify-content-between mb-2">
                                                             <span>Discount:</span>
-                                                            <span>${formData.discount_amount}</span>
+                                                            <span>{formatCurrency(formData.discount_amount)}</span>
                                                         </div>
                                                         <hr/>
                                                         <div className="d-flex justify-content-between">
                                                             <strong>Total:</strong>
-                                                            <strong>${formData.total_price}</strong>
+                                                            <strong>{formatCurrency(formData.total_price)}</strong>
                                                         </div>
                                                 </div>
                                                 {/* Note */}
