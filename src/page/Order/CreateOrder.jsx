@@ -12,6 +12,7 @@ import CreateCustomer from "./CreateCustomer.jsx";
 import {getDistrictInformation, getWardInformation, GTTK_TOKEN, SHOP_ID} from "../../component/Helper.jsx";
 import provincesData from "../../constant/province.json";
 import axios from "axios";
+import formatCurrency from "../../constant/formatCurrency.js";
 
 const {Option} = Select;
 
@@ -62,62 +63,63 @@ const CreateOrder = () => {
         ],
     });
 
+
+
     const [shippingTotal, setShippingTotal] = useState(0);
     const [serviceID, setServiceID] = useState(null);
 
     useEffect(() => {
-        const endpoint = 'https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/available-services';
-        axios.get(endpoint, {
-            headers: {
-                'token': GTTK_TOKEN,
-            },
-            params: {
-                shop_id: SHOP_ID,
-                from_district: 1530,
-                to_district: parseInt(shippingAddress.district),
-            },
-        }).then(response => {
-            setServiceID(response.data.data[0].service_id)
-        }).catch(error => {
-            console.error('Error fetching available service:', error);
-        });
+        const haveProduct = orderData.items.some(item => item.product !== '');
 
-        calculateTotals();
-
-    }, [orderData.items]);
-
-
-    const calculateTotals = () => {
         const subtotal = orderData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         const tax = subtotal * 0.1;
         const discount = orderData.discount_amount || 0;
 
-        if (orderData.shipping_method !== 'NONE') {
-            axios.post(
-                'https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee',
-                {
-                    "service_id": serviceID,
-                    "insurance_value": subtotal,
-                    "coupon": null,
-                    "from_district_id": 1530,
-                    "to_district_id": parseInt(shippingAddress.district),
-                    "to_ward_code": shippingAddress.ward,
-                    "height": 15,
-                    "length": 15,
-                    "weight": 1000,
-                    "width": 15
+        if (orderData.shipping_method !== 'NONE' && shippingAddress.district && haveProduct) {
+            axios.get('https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/available-services', {
+                headers: {
+                    'token': GTTK_TOKEN,
                 },
-                {
-                    headers: {
-                        'token': GTTK_TOKEN,
-                        'shop_id': SHOP_ID
-                    }
-                }
-            ).then(response => {
-                setShippingTotal(response.data.data.total)
+                params: {
+                    shop_id: SHOP_ID,
+                    from_district: 1530,
+                    to_district: parseInt(shippingAddress.district),
+                },
+            }).then(response => {
+                setServiceID(response.data.data[0].service_id)
             }).catch(error => {
                 console.error('Error fetching available service:', error);
             });
+
+            if (serviceID) {
+                axios.post(
+                    'https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee',
+                    {
+                        "service_id": serviceID,
+                        "insurance_value": subtotal,
+                        "coupon": null,
+                        "from_district_id": 1530,
+                        "to_district_id": parseInt(shippingAddress.district),
+                        "to_ward_code": shippingAddress.ward,
+                        "height": 10,
+                        "length": 15,
+                        "weight": 200,
+                        "width": 15
+                    },
+                    {
+                        headers: {
+                            'token': GTTK_TOKEN,
+                            'shop_id': SHOP_ID
+                        }
+                    }
+                ).then(response => {
+                    setShippingTotal(response.data.data.total)
+                }).catch(error => {
+                    console.error('Error fetching available service:', error);
+                });
+            }
+        } else {
+            setShippingTotal(0);
         }
 
         setOrderData(prev => ({
@@ -127,7 +129,8 @@ const CreateOrder = () => {
             shipping_cost: shippingTotal,
             total_price: subtotal + tax + shippingTotal - discount
         }));
-    };
+
+    }, [orderData.items, selectedCustomer, orderData.shipping_method, shippingAddress.district, orderData.discount_amount, shippingAddress.ward, serviceID, shippingTotal]);
 
     const showCustomerModal = async () => {
         setIsCustomerModalVisible(true);
@@ -184,13 +187,13 @@ const CreateOrder = () => {
         const result = [];
 
         item.variants.forEach(variant => {
-            if(variant.variant_name) {
+            if (variant.variant_name) {
                 const [size, color] = variant.variant_name.split(' - ');
                 result[size] = [...result[size] || [], color];
             }
         });
 
-        if(type === 'size') {
+        if (type === 'size') {
             return Object.keys(result);
         }
 
@@ -409,6 +412,7 @@ const CreateOrder = () => {
                                                         onChange={(e) => handleItemChange(index, e)}
                                                         required
                                                     >
+                                                        <option value="">Select Size</option>
                                                         {item.variants && renderVariant(item, 'size').map((size, index) => (
                                                             <option key={index} value={size}>{size}</option>
                                                         ))}
@@ -423,6 +427,7 @@ const CreateOrder = () => {
                                                         onChange={(e) => handleItemChange(index, e)}
                                                         required
                                                     >
+
                                                         {item.variants && renderVariant(item, 'color').map((color, index) => (
                                                             <option key={index} value={color}>{color}</option>
                                                         ))}
@@ -554,32 +559,32 @@ const CreateOrder = () => {
                                     {/* Order Summary */}
                                     <div className="col-md-12 m-2">
                                         <div className="row justify-content-end">
-                                            <div className="col-md-6">
+                                            <div className="col-md-6 mt-2">
                                                 <div className="card">
                                                     <div className="card-body">
                                                         <h6 className="card-title">Order Summary</h6>
-                                                        <div className="d-flex justify-content-between mb-1">
+                                                        <div className="d-flex justify-content-between mb-2">
                                                             <span>Subtotal:</span>
-                                                            <span>${orderData.subtotal_price}</span>
+                                                            <span>{formatCurrency(orderData.subtotal_price)}</span>
                                                         </div>
                                                         {orderData.shipping_method !== 'NONE' && (
-                                                            <div className="d-flex justify-content-between mb-1">
+                                                            <div className="d-flex justify-content-between mb-2">
                                                                 <span>Shipping:</span>
-                                                                <span>${orderData.shipping_cost}</span>
+                                                                <span>{formatCurrency(orderData.shipping_cost)}</span>
                                                             </div>)
                                                         }
-                                                        <div className="d-flex justify-content-between mb-1">
+                                                        <div className="d-flex justify-content-between mb-2">
                                                             <span>Tax:</span>
-                                                            <span>${orderData.tax_amount}</span>
+                                                            <span>{formatCurrency(orderData.tax_amount)}</span>
                                                         </div>
-                                                        <div className="d-flex justify-content-between mb-1">
+                                                        <div className="d-flex justify-content-between mb-2">
                                                             <span>Discount:</span>
-                                                            <span>${orderData.discount_amount}</span>
+                                                            <span>{formatCurrency(orderData.discount_amount)}</span>
                                                         </div>
                                                         <hr/>
                                                         <div className="d-flex justify-content-between">
                                                             <strong>Total:</strong>
-                                                            <strong>${orderData.total_price}</strong>
+                                                            <strong>{formatCurrency(orderData.total_price)}</strong>
                                                         </div>
                                                     </div>
                                                 </div>
