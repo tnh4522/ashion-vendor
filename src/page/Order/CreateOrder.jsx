@@ -427,7 +427,7 @@ const CreateOrder = () => {
                                                         onChange={(e) => handleItemChange(index, e)}
                                                         required
                                                     >
-
+                                                        <option value="">Select Color</option>
                                                         {item.variants && renderVariant(item, 'color').map((color, index) => (
                                                             <option key={index} value={color}>{color}</option>
                                                         ))}
