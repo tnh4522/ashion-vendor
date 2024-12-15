@@ -54,14 +54,12 @@ function Account() {
                     return;
                 }
 
+                setUser(response.data);
+
                 if (response.data.profile_picture !== null) {
-                    setProfilePictureFile(convertUrl(response.data.profile_picture));
+                    setProfilePictureFile(response.data.profile_picture);
                 }
 
-                setUser(response.data);
-                if (response.data.profile_picture !== null) {
-                    setProfilePictureFile(convertUrl(response.data.profile_picture));
-                }
                 setFormData({
                     username: response.data.username || "",
                     email: response.data.email || "",
@@ -114,7 +112,7 @@ function Account() {
             });
 
             if (response.data.profile_picture !== null) {
-                setProfilePictureFile(convertUrl(response.data.profile_picture));
+                setProfilePictureFile(response.data.profile_picture);
             }
 
             openSuccessNotification("Profile picture updated successfully!");
@@ -128,12 +126,6 @@ function Account() {
             openErrorNotification("Failed to update profile picture.");
         }
     };
-
-    const convertUrl = (url) => {
-        if (url != '') {
-            return url.replace("/media/", "/api/static/");
-        }
-    }
 
     const handleSubmit = async (e) => {
         e.preventDefault();
