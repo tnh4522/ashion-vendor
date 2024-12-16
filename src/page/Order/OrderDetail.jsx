@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import useUserContext from "../../hooks/useUserContext.jsx";
 import API from "../../service/service.jsx";
 import useNotificationContext from "../../hooks/useNotificationContext.jsx";
@@ -8,8 +8,9 @@ import provincesData from "../../constant/province.json";
 import {getDistrictInformation, getWardInformation} from "../../component/Helper.jsx";
 import formatCurrency from "../../constant/formatCurrency.js";
 import SelectStatus from './CustomSelect/SelectStatus.jsx';
-import { EditOutlined } from '@ant-design/icons';
-
+import { EditOutlined, PrinterOutlined } from '@ant-design/icons';
+import { useReactToPrint } from 'react-to-print';
+import PrintOrder from './PrintOrder/PrintOrder.jsx';
 
 function OrderDetail() {
     const { openSuccessNotification, openErrorNotification } = useNotificationContext();
@@ -260,6 +261,18 @@ function OrderDetail() {
         }
     }, [customer]);
 
+    const [isPrinting, setIsPrinting] = useState(false);
+
+    const handlePrint = useReactToPrint({
+      onAfterPrint: () => setIsPrinting(false),
+    });
+    
+    const callbackRef = useCallback(
+      (node) => {
+        if (node !== null) handlePrint(() => node);
+      },
+      [handlePrint]
+    );
 
     return (
         <div className="container-xxl flex-grow-1 container-p-y">
@@ -290,7 +303,7 @@ function OrderDetail() {
                         <p style={{flex:"0 0 auto", width:"25%", paddingLeft:3}}><strong>Modified : </strong> {new Date(formData.updated_at).toLocaleString()}</p>
                     </div>
 
-                    {/* Status bao gồm order status và payment status*/}
+                    {/* Status */}
                     <div className="row mb-1">
                         <p style={{fontWeight:"bold", flex:"0 0 auto", width:"6.333333%"}}>Status :</p>
                         <div style={{flex:"0 0 auto", width:"7%", paddingRight: 0}}>
@@ -319,6 +332,27 @@ function OrderDetail() {
                         </div>
                         <div style={{ flex:"0 0 auto", width:"1%", paddingLeft:0}}>
                             <Button type="button" onClick={handleOpenStatusModal} icon={<EditOutlined />} /> 
+                        </div>
+                        {/* print order */}
+                        <div className="text-end col-md-9">
+                            {isPrinting && (
+                            <div style={{ display: 'none' }}>
+                                    <PrintOrder
+                                        ref={callbackRef}
+                                        order={formData}
+                                        customer={customer}
+                                        provinceName={provinceName}
+                                        districtName={districtName}
+                                        wardName={wardName}
+                                    />
+                            </div>
+                            )}
+                            <Button 
+                                type="primary" 
+                                onClick={() => setIsPrinting(true)}
+                                icon={<PrinterOutlined />}
+                            >
+                            </Button>
                         </div>
                     </div>                                                            
 
@@ -433,7 +467,7 @@ function OrderDetail() {
                         </div>
                         {/* Status Modal */}
                         <Modal
-                        visible={isStatusModalVisible}
+                        open={isStatusModalVisible} 
                         onCancel={() => setIsStatusModalVisible(false)}
                         footer={null}
                         width={400}

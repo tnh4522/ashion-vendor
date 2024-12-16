@@ -33,9 +33,9 @@ const CreateOrder = () => {
         street_address: '',
     });
     const [billingAddress, setBillingAddress] = useState({
-        city: '',
-        country: 'Vietnam',
-        postal_code: '',
+        province: '',
+        district: '',
+        ward: '',
         street_address: '',
     });
 
@@ -264,6 +264,7 @@ const CreateOrder = () => {
             });
             if (response.status === 201) {
                 await handlePayment(response.data);
+                openSuccessNotification('Order created successfully');
             }
         } catch (error) {
             if (error.response && error.response.status === 401) {
