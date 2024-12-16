@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import {Table, Button, Input, Checkbox} from 'antd';
 import qs from 'qs';
-import API from "../../service/service";
-import useUserContext from "../../hooks/useUserContext";
-import useNotificationContext from "../../hooks/useNotificationContext";
+import API from "../../../service/service";
+import useUserContext from "../../../hooks/useUserContext";
+import useNotificationContext from "../../../hooks/useNotificationContext";
 
 // eslint-disable-next-line react/prop-types
 const Products = ({ onProductSelect }) => {

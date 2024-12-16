@@ -1,15 +1,16 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import useUserContext from "../../hooks/useUserContext.jsx";
 import API from "../../service/service.jsx";
 import useNotificationContext from "../../hooks/useNotificationContext.jsx";
-import { Table, Select } from 'antd';
+import { Table, Button, Tag, Modal } from 'antd';
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { orderStatus, paymentStatus } from '../../utils/Constant';
 import provincesData from "../../constant/province.json";
 import {getDistrictInformation, getWardInformation} from "../../component/Helper.jsx";
 import formatCurrency from "../../constant/formatCurrency.js";
-
-const { Option } = Select;
+import SelectStatus from './CustomSelect/SelectStatus.jsx';
+import { EditOutlined, PrinterOutlined } from '@ant-design/icons';
+import { useReactToPrint } from 'react-to-print';
+import PrintOrder from './PrintOrder/PrintOrder.jsx';
 
 function OrderDetail() {
     const { openSuccessNotification, openErrorNotification } = useNotificationContext();
@@ -19,6 +20,7 @@ function OrderDetail() {
 
     const [order, setOrder] = useState(null);
     const [customer, setCustomer] = useState(null);
+    const [isStatusModalVisible, setIsStatusModalVisible] = useState(false); 
     const [formData, setFormData] = useState({
         order_number: "",
         subtotal_price: "",
@@ -34,7 +36,46 @@ function OrderDetail() {
         items: [],
         shipping_address: "",
         billing_address: "",
+        updated_at: "",
+        created_at:""
     });
+
+    const [currentOrderStatus, setCurrentOrderStatus] = useState(formData.status);
+    const [currentPaymentStatus, setCurrentPaymentStatus] = useState(formData.payment_status);
+    const orderStatuses = ["PENDING", "PROCESSING", "CANCELED", "SHIPPED", "DELIVERED", "RETURNED"];
+    const paymentStatuses = ["UNPAID", "PAID", "REFUNDED"];
+
+    const handleOpenStatusModal = () => {
+        setCurrentOrderStatus(formData.status);
+        setCurrentPaymentStatus(formData.payment_status);
+        setIsStatusModalVisible(true);
+    };
+
+    const handleStatusChange = async (newOrderStatus, newPaymentStatus) => {
+        try {
+            const response = await API.patch(`/orders/${order_id}/`, {
+                status: newOrderStatus,
+                payment_status: newPaymentStatus
+            }, {
+                headers: {
+                    Authorization: `Bearer ${userData.access}`,
+                }
+            });
+
+            if (response.status === 200) {
+                setFormData(prev => ({
+                    ...prev,
+                    status: newOrderStatus,
+                    payment_status: newPaymentStatus
+                }));
+                openSuccessNotification('Status updated successfully');
+                setIsStatusModalVisible(false);
+            }
+        } catch (error) {
+            console.error('Error updating status:', error);
+            openErrorNotification('Failed to update status');
+        }
+    };
 
     useEffect(() => {
         const fetchOrderData = async () => {
@@ -67,6 +108,8 @@ function OrderDetail() {
                 items: response.data.items || [],
                 shipping_address: response.data.shipping_address || "",
                 billing_address: response.data.billing_address || "",
+                created_at: response.data.created_at || "",
+                updated_at: response.data.updated_at || "",
             });
 
             const customerResponse = await API.get(`customer/detail/${response.data.customer}/`, {
@@ -218,25 +261,101 @@ function OrderDetail() {
         }
     }, [customer]);
 
+    const [isPrinting, setIsPrinting] = useState(false);
+
+    const handlePrint = useReactToPrint({
+      onAfterPrint: () => setIsPrinting(false),
+    });
+    
+    const callbackRef = useCallback(
+      (node) => {
+        if (node !== null) handlePrint(() => node);
+      },
+      [handlePrint]
+    );
+
     return (
         <div className="container-xxl flex-grow-1 container-p-y">
             <div className="row">
                 <div className="col-md-12">
                 <form id="formOrderSettings" method="POST" onSubmit={handleSubmit}>
-                    <div className="d-flex justify-content-between mt-2 mb-2">
+                    <div className="d-flex justify-content-between mt-2 mb-1">
                         <div className="text-start">
-                            <h3 style={{ fontSize: '24px', display: 'flex', alignItems: 'center' }}>Order Details /
+                            <h3 style={{ fontSize: '24px', display: 'flex', alignItems: 'center' }}>
                                 <span style={{color: '#696cff', marginLeft: '5px'}}>#{formData.order_number}</span>
                             </h3>
                         </div>
+                        {/* status */}
+                        <div className="text-start">
+                            
+                        </div>
                         <div className="text-end">
-                            <button type="submit" className="btn btn-primary">Save changes</button>
-                            <Link to={"/orders"} className="btn btn-secondary m-2">
+                            <button type="submit" className="btn btn-primary">Save </button>
+                            <Link to={"/orders"} className="btn btn-secondary m-1">
                                 <i className="bx bx-arrow-back me-2"></i>
                                 Back
                             </Link>
                         </div>
                     </div>
+
+                    <div className="row">
+                        <p style={{flex:"0 0 auto", width:"17%"}}><strong>Created : </strong> {new Date(formData.created_at).toLocaleString()}</p>
+                        <p style={{flex:"0 0 auto", width:"25%", paddingLeft:3}}><strong>Modified : </strong> {new Date(formData.updated_at).toLocaleString()}</p>
+                    </div>
+
+                    {/* Status */}
+                    <div className="row mb-1">
+                        <p style={{fontWeight:"bold", flex:"0 0 auto", width:"6.333333%"}}>Status :</p>
+                        <div style={{flex:"0 0 auto", width:"7%", paddingRight: 0}}>
+                            <Tag color={
+                                formData.status === "PENDING" ? 'orange' :
+                                formData.status === "PROCESSING" ? 'blue' :
+                                formData.status === "CANCELED" ? 'red' :
+                                formData.status === "SHIPPED" ? 'green' :
+                                formData.status === "DELIVERED" ? 'green' :
+                                formData.status === "RETURNED" ? 'violet' :
+                                'blue' 
+                            }>
+                                {formData.status}
+                            </Tag>
+                        </div>
+                        <p style={{ flex:"0 0 auto", width:"1%"}}>&</p>
+                        <div style={{flex:"0 0 auto", width:"7%"}}>
+                            <Tag color={
+                                formData.payment_status === 'UNPAID' ? 'gray' :
+                                formData.payment_status === 'PAID' ? 'blue' :
+                                formData.payment_status === 'REFUNDED' ? 'green' :
+                                'default' 
+                            }>
+                                {formData.payment_status}
+                            </Tag>
+                        </div>
+                        <div style={{ flex:"0 0 auto", width:"1%", paddingLeft:0}}>
+                            <Button type="button" onClick={handleOpenStatusModal} icon={<EditOutlined />} /> 
+                        </div>
+                        {/* print order */}
+                        <div className="text-end col-md-9">
+                            {isPrinting && (
+                            <div style={{ display: 'none' }}>
+                                    <PrintOrder
+                                        ref={callbackRef}
+                                        order={formData}
+                                        customer={customer}
+                                        provinceName={provinceName}
+                                        districtName={districtName}
+                                        wardName={wardName}
+                                    />
+                            </div>
+                            )}
+                            <Button 
+                                type="primary" 
+                                onClick={() => setIsPrinting(true)}
+                                icon={<PrinterOutlined />}
+                            >
+                            </Button>
+                        </div>
+                    </div>                                                            
+
                     {/* Order Details */}
                     <div className="card mb-4">
                                 <div className="card-body">
@@ -287,54 +406,6 @@ function OrderDetail() {
                                                             </div>
                                                         </div>
 
-                                                        <div className="row">
-                                                            {/* Order Status */}
-                                                            <div className="mb-3 col-md-6">
-                                                                <label className="form-label">Status</label>
-                                                                <Select
-                                                                    className="w-100"
-                                                                    id="status"
-                                                                    name="status"
-                                                                    value={formData.status}
-                                                                    onChange={(value) => handleInputChange({
-                                                                        target: {
-                                                                            name: 'status',
-                                                                            value
-                                                                            }
-                                                                    })}
-                                                                    required
-                                                                >
-                                                                    {Object.entries(orderStatus).map(([key, value]) => (
-                                                                        <Option key={value} value={value}>
-                                                                            {key.charAt(0) + key.slice(1).toLowerCase()}
-                                                                        </Option>
-                                                                    ))}
-                                                                </Select>
-                                                            </div>
-
-                                                            {/* Payment Status */}
-                                                            <div className="mb-3 col-md-6">
-                                                                    <label className="form-label">Payment Status</label>
-                                                                    <Select
-                                                                        className="w-100"
-                                                                        id="payment_status"
-                                                                        name="payment_status"
-                                                                        value={formData.payment_status}
-                                                                        onChange={(value) => handleInputChange({
-                                                                            target: {
-                                                                                name: 'payment_status',
-                                                                                value
-                                                                                }
-                                                                        })}
-                                                                    >
-                                                                        {paymentStatus.map(status => (
-                                                                            <Option key={status.value} value={status.value}>
-                                                                                {status.label}
-                                                                            </Option>
-                                                                        ))}
-                                                                    </Select>
-                                                            </div>
-                                                        </div>
                                                     </div>
                                                 </div>
 
@@ -394,6 +465,22 @@ function OrderDetail() {
                                         </div>
                                 </div>
                         </div>
+                        {/* Status Modal */}
+                        <Modal
+                        open={isStatusModalVisible} 
+                        onCancel={() => setIsStatusModalVisible(false)}
+                        footer={null}
+                        width={400}
+                        >
+                            <SelectStatus
+                                currentOrderStatus={currentOrderStatus}
+                                currentPaymentStatus={currentPaymentStatus}
+                                orderStatuses={orderStatuses}
+                                paymentStatuses={paymentStatuses}
+                                onSubmitStatus={handleStatusChange}
+                                closeModal={() => setIsStatusModalVisible(false)}
+                            />
+                        </Modal>
                     </form>
                 </div>
             </div>

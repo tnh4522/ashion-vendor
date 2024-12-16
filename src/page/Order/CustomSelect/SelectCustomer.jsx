@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Table, Button, Input } from 'antd';
-import API from '../../service/service';
-import useUserContext from '../../hooks/useUserContext';
-import useNotificationContext from '../../hooks/useNotificationContext';
+import API from '../../../service/service';
+import useUserContext from '../../../hooks/useUserContext';
+import useNotificationContext from '../../../hooks/useNotificationContext';
 
 // eslint-disable-next-line react/prop-types
 const Customers = ({ searchTerm, onCustomerSelect }) => {

@@ -5,8 +5,8 @@ import useNotificationContext from "../../hooks/useNotificationContext.jsx";
 import {useNavigate} from "react-router-dom";
 import {Modal, Button, Select} from 'antd';
 import {PlusOutlined, SearchOutlined} from '@ant-design/icons';
-import SelectProduct from "./SelectProduct.jsx";
-import SelectCustomer from "./SelectCustomer.jsx";
+import SelectProduct from "./CustomSelect/SelectProduct.jsx";
+import SelectCustomer from "./CustomSelect/SelectCustomer.jsx";
 import {paymentMethods, shippingMethods} from '../../utils/Constant';
 import CreateCustomer from "./CreateCustomer.jsx";
 import {getDistrictInformation, getWardInformation, GTTK_TOKEN, SHOP_ID} from "../../component/Helper.jsx";
@@ -33,9 +33,9 @@ const CreateOrder = () => {
         street_address: '',
     });
     const [billingAddress, setBillingAddress] = useState({
-        city: '',
-        country: 'Vietnam',
-        postal_code: '',
+        province: '',
+        district: '',
+        ward: '',
         street_address: '',
     });
 
@@ -264,6 +264,7 @@ const CreateOrder = () => {
             });
             if (response.status === 201) {
                 await handlePayment(response.data);
+                openSuccessNotification('Order created successfully');
             }
         } catch (error) {
             if (error.response && error.response.status === 401) {
@@ -453,7 +454,7 @@ const CreateOrder = () => {
                                                         onChange={(e) => handleItemChange(index, e)}
                                                         required
                                                     >
-
+                                                        <option value="">Select Color</option>
                                                         {item.variants && renderVariant(item, 'color').map((color, index) => (
                                                             <option key={index} value={color}>{color}</option>
                                                         ))}

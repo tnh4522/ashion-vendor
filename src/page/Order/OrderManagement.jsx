@@ -84,12 +84,14 @@ const Orders = () => {
         {
             title: 'Action',
             dataIndex: 'id',
-            render: (id) => (
+            render: (id, record) => (
                 <span>
                     <Link to={`/order-detail/${id}`} style={{ marginRight: '10px' }}>
                         <i className="fa-solid fa-edit" style={{ color: 'blue' }}></i>
                     </Link>
-                    <i className="fa-solid fa-trash" style={{ color: 'red', cursor: 'pointer' }} onClick={() => handleDelete(id)}></i>
+                    {record.status === orderStatus.PENDING && (
+                        <i className="fa-solid fa-trash" style={{ color: 'red', cursor: 'pointer' }} onClick={() => handleDelete(id)}></i>
+                    )}
                 </span>
             ),
         },
