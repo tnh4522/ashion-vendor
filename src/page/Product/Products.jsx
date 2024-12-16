@@ -25,6 +25,7 @@ import {
     ExclamationCircleOutlined
 } from '@ant-design/icons';
 import moment from 'moment';
+import formatCurrency from "../../constant/formatCurrency.js";
 
 const { Text, Title } = Typography;
 const { Option } = Select;
@@ -212,7 +213,7 @@ const Products = () => {
             width: '10%',
             render: (price) => (
                 <Text strong style={{ color: '#52c41a' }}>
-                    ${price}
+                    {formatCurrency(price)}
                 </Text>
             ),
         },

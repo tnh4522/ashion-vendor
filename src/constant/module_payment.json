@@ -6,16 +6,22 @@
     "logo_url": "https://s3-eu-west-1.amazonaws.com/tpd/logos/65cf8f430acd12f4ff464deb/0x0.png",
     "test_mode": "on",
     "id_tpv": "4",
-    "client_id_test": "mk1y177854lzerc71x6tzdpzv00zq3ukg7g1ymn1fzi47.apps.vivapayments.com",
-    "client_secret_test": "8GXoL8nNcx0w47CwPT9JaVvytg3NbJ",
-    "merchant_id_test": "b89caceb-88d2-4762-8beb-068c8674a4be",
-    "cle_api_test": ">R@]s4",
+    "client_id_test": "wtuh9020ukcfz0msyd2x0d1aq8p1figlubbfi2oecq4p3.apps.vivapayments.com",
+    "client_secret_test": "A0UndnD919EuGM8DtToAO8f5urj1kP",
+    "merchant_id_test": "1a598be9-c0e5-4fea-a382-d9c53e295bd5",
+    "cle_api_test": "+hALhj",
     "client_id_prod": "",
     "client_secret_prod": "",
     "merchant_id_prod": "",
     "cle_api_prod": "",
     "site_code_viva": "7633",
     "payment_form_color": "#0f65d7",
-    "platform_url": "https://demo-accounts.vivapayments.com/Account/Login"
+    "platform_url": "https://demo-accounts.vivapayments.com/Account/Login",
+    "connect_token_url_test": "https://demo-accounts.vivapayments.com/connect/token",
+    "connect_token_url_prod": "https://accounts.vivapayments.com/connect/token",
+    "base_url_test": "https://demo-api.vivapayments.com/",
+    "base_url_prod": "https://api.vivapayments.com/",
+    "base_url_test2": "https://demo.vivapayments.com/api/",
+    "base_url_prod2": "https://www.vivapayments.com/api/"
   }
 ]

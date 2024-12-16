@@ -6,6 +6,7 @@ import useNotificationContext from '../../hooks/useNotificationContext';
 import { Link } from 'react-router-dom';
 import { ExclamationCircleFilled } from '@ant-design/icons';
 import { orderStatus } from '../../utils/Constant';
+import formatCurrency from "../../constant/formatCurrency.js";
 
 const Orders = () => {
     const { userData, logout } = useUserContext();
@@ -22,7 +23,15 @@ const Orders = () => {
     const prevTableParams = useRef();
 
     const columns = [
-        { title: 'Order ID', dataIndex: 'order_number', sorter: true },
+        {
+            title: 'Order ID',
+            sorter: true,
+            render: (order) => (
+                <Link to={`/order-detail/${order.id}`} style={{ color: '#1890ff' }}>
+                    <strong>{order.order_number}</strong>
+                </Link>
+            )
+        },
         { 
             title: 'Customer', 
             dataIndex: 'customer_name',
@@ -37,14 +46,15 @@ const Orders = () => {
         { 
             title: 'Total Price', 
             dataIndex: 'total_price', 
-            sorter: true, 
-            render: (price) => {
-                const numericPrice = parseFloat(price);
-                return isNaN(numericPrice) ? 'N/A' : numericPrice.toFixed(2);
-            }
+            sorter: true,
+            render: (price) => (
+                <strong style={{ color: '#52c41a' }}>
+                    {formatCurrency(price)}
+                </strong>
+            ),
         },
         { 
-            title: 'Status', 
+            title: 'Order Status',
             dataIndex: 'status', 
             filters: Object.values(orderStatus).map(status => ({ text: status, value: status })), 
             render: (status) => {

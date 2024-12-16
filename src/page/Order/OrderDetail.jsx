@@ -209,7 +209,13 @@ function OrderDetail() {
         {
             title: 'Total Price',
             dataIndex: 'total_price',
-            render: (record) => formatCurrency(record),
+            render: (record) => {
+                return (
+                    <strong style={{ color: '#52c41a' }}>
+                        {formatCurrency(record)}
+                    </strong>
+                );
+            }
         },
     ];
 
