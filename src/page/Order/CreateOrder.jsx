@@ -246,6 +246,7 @@ const CreateOrder = () => {
             const response = await processPayment(paymentDetails);
 
             if (response.orderCode) {
+                localStorage.setItem('orderCode', response.orderCode);
                 window.location.href = 'https://demo.vivapayments.com/web2?ref=' + response.orderCode;
             }
         } catch (err) {
@@ -263,6 +264,7 @@ const CreateOrder = () => {
                 },
             });
             if (response.status === 201) {
+                localStorage.setItem('order', JSON.stringify(response.data));
                 await handlePayment(response.data);
                 openSuccessNotification('Order created successfully');
             }
