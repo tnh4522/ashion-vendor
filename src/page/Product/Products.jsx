@@ -1,501 +1,694 @@
-// Products.jsx
-import { useEffect, useState } from 'react';
+// EditProduct.jsx
+import React, { useEffect, useState, useMemo } from 'react';
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import {
-    Table,
     Button,
-    Modal,
-    Typography,
+    Tabs,
     Input,
+    Modal,
     Space,
-    Select,
+    Typography,
     Row,
     Col,
-    Form,
-    Slider,
-    Badge
+    Card,
+    Select,
+    message,
 } from 'antd';
-import qs from 'qs';
-import API from "../../service/service";
-import useUserContext from "../../hooks/useUserContext";
-import useNotificationContext from "../../hooks/useNotificationContext";
-import { useNavigate } from 'react-router-dom';
 import {
-    SearchOutlined,
-    ReloadOutlined,
-    ExclamationCircleOutlined
+    ArrowLeftOutlined,
 } from '@ant-design/icons';
-import moment from 'moment';
-import formatCurrency from "../../constant/formatCurrency.js";
+import API from "../../service/service.jsx";
+import useUserContext from "../../hooks/useUserContext.jsx";
+import useNotificationContext from "../../hooks/useNotificationContext.jsx";
 
-const { Text, Title } = Typography;
-const { Option } = Select;
+import BasicInformation from './components/BasicInformation.jsx';
+import InventoryDetails from './components/InventoryDetails.jsx';
+import SalesDetails from './components/SalesDetails.jsx';
+import ImageManagement from './components/ImageManagement.jsx';
+
+const { Title, Text } = Typography;
 const { confirm } = Modal;
+const { Option } = Select;
 
-const Products = () => {
-    const [categories, setCategories] = useState([]);
-    const [data, setData] = useState([]);
-    const [loading, setLoading] = useState(false);
+function customSlugify(str) {
+    return str
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+}
 
-    // State cho bộ lọc nâng cao
-    const [form] = Form.useForm();
-    const [tableParams, setTableParams] = useState({
-        pagination: {
-            current: 1,
-            pageSize: 5,
-        },
-        sortOrder: null,
-        sortField: null,
-        searchName: '',
-        searchCategories: [],
-        filterStatus: '',
-        filterPrice: [0, 1000],
-    });
-
+const EditProduct = () => {
+    const { id } = useParams();
     const { userData, logout } = useUserContext();
     const { openSuccessNotification, openErrorNotification } = useNotificationContext();
     const navigate = useNavigate();
 
-    // State để lưu sp cần decision support
-    const [staleProducts, setStaleProducts] = useState([]);
-    const thresholdDays = 30; // quá 30 ngày chưa update
+    const location = useLocation();
+    const queryParams = new URLSearchParams(location.search);
+    const initialTab = queryParams.get('tab') || '1';
 
-    const fetchData = () => {
-        setLoading(true);
-        const params = qs.stringify(getProductParams(tableParams), { arrayFormat: 'repeat', skipNulls: true });
-        API.get(`product/list/?${params}`, {
-            headers: {
-                'Authorization': `Bearer ${userData.access}`,
-            },
-        })
-            .then((response) => {
-                const { results, count } = response.data;
-                setData(results);
-                setLoading(false);
-                setTableParams(prev => ({
-                    ...prev,
-                    pagination: {
-                        ...prev.pagination,
-                        total: count,
-                    },
-                }));
-                checkStaleProducts(results);
-            })
-            .catch((error) => {
-                setLoading(false);
-                console.error('Error fetching products:', error);
-                if (error.response && error.response.status === 401) {
-                    openErrorNotification('Unauthorized access. Please log in again.');
-                    logout();
-                } else {
-                    openErrorNotification('There was an error fetching the products.');
-                }
-            });
-    };
+    const [activeKey, setActiveKey] = useState(initialTab);
 
-    const fetchCategories = () => {
-        API.get('categories/')
-            .then((response) => {
-                setCategories(response.data.results);
-            })
-            .catch((error) => {
-                console.error('Error fetching categories:', error);
-                openErrorNotification('There was an error fetching the categories.');
-            });
-    };
+    const [loading, setLoading] = useState(false);
+    const [loadingStocks, setLoadingStocks] = useState(true);
+    const [categories, setCategories] = useState([]);
+    const [stocks, setStocks] = useState([]);
+    const [originalSizes, setOriginalSizes] = useState([]);
+    const [originalColors, setOriginalColors] = useState([]);
+    const [productImages, setProductImages] = useState([]);
+    const [variants, setVariants] = useState([]);
+    const [filterSizes, setFilterSizes] = useState([]);
+    const [filterColors, setFilterColors] = useState([]);
+
+    // New state for variant images mapped by color
+    const [variantImages, setVariantImages] = useState({});
+
+    const [formData, setFormData] = useState({
+        name: '',
+        slug: '',
+        sku: '',
+        barcode: '',
+        brand: '',
+        description: '',
+        material: '',
+        care_instructions: '',
+        price: '',
+        sale_price: '',
+        start_sale_date: '',
+        end_sale_date: '',
+        stock: 0,
+        weight: '',
+        dimensions: '',
+        sizes: [],
+        colors: [],
+        status: 'ACTIVE',
+        is_featured: false,
+        is_new_arrival: false,
+        is_on_sale: false,
+        video_url: '',
+        meta_title: '',
+        meta_description: '',
+        category: '',
+    });
 
     useEffect(() => {
-        fetchData();
+        fetchProduct();
         fetchCategories();
+        fetchStocks();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [JSON.stringify(tableParams)]);
+    }, [id, userData.access]);
 
-    const handleEdit = (id) => {
-        navigate(`/edit-product/${id}`);
+    const fetchProduct = async () => {
+        setLoading(true);
+        try {
+            const response = await API.get(`product/detail/${id}/`, {
+                headers: {
+                    'Authorization': `Bearer ${userData.access}`,
+                },
+            });
+            const productData = response.data;
+            const sizes = productData.sizes ? productData.sizes.split(',').map(s => s.trim().toUpperCase()) : [];
+            const colors = productData.colors ? productData.colors.split(',').map(c => c.trim().toUpperCase()) : [];
+
+            setOriginalSizes([...sizes]);
+            setOriginalColors([...colors]);
+
+            const generatedSlug = productData.name ? customSlugify(productData.name) : productData.slug || '';
+
+            setFormData({
+                name: productData.name || '',
+                slug: generatedSlug || '',
+                sku: productData.sku || '',
+                barcode: productData.barcode || '',
+                brand: productData.brand || '',
+                description: productData.description || '',
+                material: productData.material || '',
+                care_instructions: productData.care_instructions || '',
+                price: productData.price || '',
+                sale_price: productData.sale_price || '',
+                start_sale_date: productData.start_sale_date ? productData.start_sale_date.split('T')[0] : '',
+                end_sale_date: productData.end_sale_date ? productData.end_sale_date.split('T')[0] : '',
+                stock: productData.stock || 0,
+                weight: productData.weight || '',
+                dimensions: productData.dimensions || '',
+                sizes: sizes,
+                colors: colors,
+                status: productData.status || 'ACTIVE',
+                is_featured: productData.is_featured || false,
+                is_new_arrival: productData.is_new_arrival || false,
+                is_on_sale: productData.is_on_sale || false,
+                video_url: productData.video_url || '',
+                meta_title: productData.meta_title || '',
+                meta_description: productData.meta_description || '',
+                category: productData.category || '',
+            });
+
+            const imgs = productData.images || [];
+            setProductImages(imgs.map(img => ({
+                id: img.id,
+                url: img.image,
+                newFile: null
+            })));
+
+            const stockVariants = productData.stock_variants || [];
+            const variantsArray = stockVariants.map(variant => {
+                const [size, color] = variant.variant_name.split(' - ');
+                return {
+                    key: variant.id,
+                    variant_id: variant.id,
+                    size: size.trim().toUpperCase(),
+                    color: color.trim().toUpperCase(),
+                    stock_id: variant.stock.id,
+                    stock_name: variant.stock.name,
+                    quantity: variant.quantity,
+                    image: variant.image || null,
+                };
+            });
+            setVariants(variantsArray);
+
+            // Initialize variantImages based on colors
+            const variantImagesMap = {};
+            colors.forEach(color => {
+                const variantWithColorAndImage = stockVariants.find(variant => variant.color.toUpperCase() === color && variant.image);
+                if (variantWithColorAndImage) {
+                    variantImagesMap[color] = {
+                        id: variantWithColorAndImage.image.id,
+                        url: variantWithColorAndImage.image.image,
+                        newFile: null
+                    };
+                }
+            });
+            setVariantImages(variantImagesMap);
+
+        } catch (error) {
+            if (error.response && error.response.status === 401) {
+                openErrorNotification("Unauthorized access");
+                logout();
+                return;
+            }
+            console.error('Error fetching product:', error);
+            openErrorNotification('There was an error fetching the product.');
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleDelete = (id) => {
+    const fetchCategories = async () => {
+        try {
+            const response = await API.get('categories/');
+            setCategories(response.data.results);
+        } catch (error) {
+            console.error('Error fetching categories:', error);
+            openErrorNotification('There was an error fetching the categories.');
+        }
+    };
+
+    const fetchStocks = async () => {
+        try {
+            const response = await API.get('stocks/', {
+                headers: {
+                    'Authorization': `Bearer ${userData.access}`,
+                },
+            });
+            setStocks(response.data.results);
+            setLoadingStocks(false);
+        } catch (error) {
+            console.error('Error fetching stocks:', error);
+            openErrorNotification('There was an error fetching the stock data.');
+            setLoadingStocks(false);
+        }
+    };
+
+    const handleInputChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        let newValue = (type === 'checkbox' ? checked : value);
+
+        if (name === 'name') {
+            const generatedSlug = customSlugify(newValue || '');
+            setFormData(prev => ({
+                ...prev,
+                name: newValue,
+                slug: generatedSlug
+            }));
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                [name]: newValue
+            }));
+        }
+    };
+
+    const handleSizesChange = (newSizes) => {
+        const upperNewSizes = newSizes.map(size => size.toUpperCase());
+        const removedSizes = originalSizes.filter(size => !upperNewSizes.includes(size));
+        if (removedSizes.length > 0) {
+            Modal.confirm({
+                title: 'Xác Nhận Thay Đổi Sizes',
+                content: `Bạn sắp xóa các kích thước: ${removedSizes.join(', ')}. Điều này sẽ xóa các biến thể liên quan khỏi kho.`,
+                okText: 'Xác Nhận',
+                cancelText: 'Hủy',
+                onOk() {
+                    setFormData(prev => ({
+                        ...prev,
+                        sizes: upperNewSizes
+                    }));
+                    setOriginalSizes([...upperNewSizes]);
+                    setVariants(prevVariants => prevVariants.filter(variant => !removedSizes.includes(variant.size)));
+                },
+            });
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                sizes: upperNewSizes
+            }));
+            setOriginalSizes([...upperNewSizes]);
+        }
+    };
+
+    const handleColorsChange = (newColors) => {
+        const upperNewColors = newColors.map(color => color.toUpperCase());
+        const removedColors = originalColors.filter(color => !upperNewColors.includes(color));
+        if (removedColors.length > 0) {
+            Modal.confirm({
+                title: 'Xác Nhận Thay Đổi Colors',
+                content: `Bạn sắp xóa các màu sắc: ${removedColors.join(', ')}. Điều này sẽ xóa các biến thể liên quan khỏi kho.`,
+                okText: 'Xác Nhận',
+                cancelText: 'Hủy',
+                onOk() {
+                    setFormData(prev => ({
+                        ...prev,
+                        colors: upperNewColors
+                    }));
+                    setOriginalColors([...upperNewColors]);
+                    setVariants(prevVariants => prevVariants.filter(variant => !removedColors.includes(variant.color)));
+                    // Also remove variantImages for removed colors
+                    setVariantImages(prev => {
+                        const updated = { ...prev };
+                        removedColors.forEach(color => {
+                            delete updated[color];
+                        });
+                        return updated;
+                    });
+                },
+            });
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                colors: upperNewColors
+            }));
+            setOriginalColors([...upperNewColors]);
+        }
+    };
+
+    const handleReplaceImage = (file, imageId) => {
+        if (!file) return;
+        const updatedImages = productImages.map(img => {
+            if (img.id === imageId) {
+                return { ...img, newFile: file };
+            }
+            return img;
+        });
+        setProductImages(updatedImages);
+        message.success('Image replaced successfully');
+    };
+
+    const handleDeleteImage = (imageId) => {
         confirm({
-            title: 'Are you sure you want to delete this product?',
-            icon: <ExclamationCircleOutlined />,
+            title: 'Are you sure you want to delete this image?',
+            content: 'This action cannot be undone.',
             okText: 'Yes',
             okType: 'danger',
             cancelText: 'No',
-            onOk: () => {
-                API.delete(`product/detail/${id}/`, {
-                    headers: {
-                        'Authorization': `Bearer ${userData.access}`,
-                    },
-                })
-                    .then(() => {
-                        openSuccessNotification('Product deleted successfully');
-                        fetchData();
-                    })
-                    .catch((error) => {
-                        console.error('Error deleting the product:', error);
-                        if (error.response && error.response.status === 403) {
-                            openErrorNotification('You do not have permission to delete this product.');
-                        } else if (error.response && error.response.status === 404) {
-                            openErrorNotification('Product not found.');
-                        } else if (error.response && error.response.status === 401) {
-                            openErrorNotification('Unauthorized access. Please log in again.');
-                            logout();
-                        } else {
-                            openErrorNotification('There was an error deleting the product.');
-                        }
-                    });
+            onOk() {
+                setProductImages(prevImages => prevImages.filter(img => img.id !== imageId));
+                message.success('Image deleted successfully');
             },
         });
     };
 
-    const convertUrl = (url) => {
-        return url;
+    const handleAddImage = (file) => {
+        if (productImages.length >= 5) {
+            openErrorNotification("You can only upload a maximum of 5 images");
+            return false;
+        }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            setProductImages(prev => [...prev, { id: Date.now(), url: e.target.result, newFile: file }]);
+            message.success('Image added successfully');
+        };
+        reader.readAsDataURL(file);
+        return false;
     };
 
-    const columns = [
-        {
-            title: 'Image',
-            key: 'image',
-            width: '10%',
-            render: (text, record) => {
-                const firstImage = record.images && record.images.length > 0 ? record.images[0].image : null;
-                const imageUrl = firstImage ? convertUrl(firstImage) : null;
-                return imageUrl ? (
-                    <img
-                        src={imageUrl}
-                        alt={record.name}
-                        style={{
-                            width: '50px',
-                            height: '50px',
-                            objectFit: 'cover',
-                            borderRadius: '4px',
-                            border: '1px solid #f0f0f0'
-                        }}
-                        onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = 'https://via.placeholder.com/50';
-                        }}
-                    />
-                ) : (
-                    <div style={{
-                        width: '50px',
-                        height: '50px',
-                        backgroundColor: '#f0f0f0',
-                        borderRadius: '4px'
-                    }} />
-                );
-            },
-        },
-        {
-            title: 'Product Name',
-            dataIndex: 'name',
-            sorter: true,
-            width: '20%',
-            render: (text, record) => (
-                <span style={{ color: record.status === 'INACTIVE' ? '#ff4d4f' : 'inherit', fontWeight: '500' }}>
-                    {text}
-                </span>
-            ),
-        },
-        {
-            title: 'Category',
-            dataIndex: 'category',
-            sorter: true,
-            width: '15%',
-            render: (categoryId) => {
-                const category = categories.find((c) => c.id === categoryId);
-                return category ? category.name : '';
-            },
-        },
-        {
-            title: 'Price',
-            dataIndex: 'price',
-            sorter: true,
-            width: '10%',
-            render: (price) => (
-                <Text strong style={{ color: '#52c41a' }}>
-                    {formatCurrency(price)}
-                </Text>
-            ),
-        },
-        {
-            title: 'Quantity',
-            dataIndex: 'stock',
-            sorter: true,
-            width: '10%',
-            render: (stock) => <Text>{stock}</Text>,
-        },
-        {
-            title: 'Status',
-            dataIndex: 'status',
-            sorter: true,
-            width: '10%',
-            render: (status) => (
-                <Badge
-                    status={
-                        status === 'ACTIVE'
-                            ? 'success'
-                            : status === 'INACTIVE'
-                                ? 'error'
-                                : 'processing'
+    // Handlers for variantImages
+    const handleReplaceVariantImage = (file, color) => {
+        if (!file) return;
+        setVariantImages(prev => ({
+            ...prev,
+            [color]: {
+                ...prev[color],
+                newFile: file,
+                url: URL.createObjectURL(file)
+            }
+        }));
+        message.success(`Image for ${color} replaced successfully`);
+    };
+
+    const handleDeleteVariantImage = (color) => {
+        confirm({
+            title: `Are you sure you want to delete the image for ${color}?`,
+            content: 'This action cannot be undone.',
+            okText: 'Yes',
+            okType: 'danger',
+            cancelText: 'No',
+            onOk() {
+                setVariantImages(prev => ({
+                    ...prev,
+                    [color]: {
+                        ...prev[color],
+                        url: '',
+                        newFile: null,
+                        id: null
                     }
-                    text={status.charAt(0) + status.slice(1).toLowerCase()}
+                }));
+                message.success(`Image for ${color} deleted successfully`);
+            },
+        });
+    };
+
+    const handleAddVariantImage = (file, color) => {
+        if (!file) return;
+        setVariantImages(prev => ({
+            ...prev,
+            [color]: {
+                id: Date.now(), // Temporary ID for frontend
+                url: URL.createObjectURL(file),
+                newFile: file
+            }
+        }));
+        message.success(`Image for ${color} added successfully`);
+    };
+
+    const groupedVariants = useMemo(() => {
+        const groupMap = {};
+        variants.forEach(variant => {
+            const key = `${variant.size} - ${variant.color}`;
+            if (!groupMap[key]) {
+                groupMap[key] = {
+                    key,
+                    size: variant.size,
+                    color: variant.color,
+                    totalQuantity: 0,
+                    stocks: [],
+                };
+            }
+            groupMap[key].totalQuantity += variant.quantity;
+            groupMap[key].stocks.push({
+                stock_id: variant.stock_id,
+                stock_name: variant.stock_name,
+                quantity: variant.quantity,
+            });
+        });
+        return Object.values(groupMap);
+    }, [variants]);
+
+    const filteredGroupedVariants = useMemo(() => {
+        return groupedVariants.filter(variant => {
+            const sizeMatch = filterSizes.length > 0 ? filterSizes.includes(variant.size) : true;
+            const colorMatch = filterColors.length > 0 ? filterColors.includes(variant.color) : true;
+            return sizeMatch && colorMatch;
+        });
+    }, [groupedVariants, filterSizes, filterColors]);
+
+    const totalQuantity = useMemo(() => {
+        return filteredGroupedVariants.reduce((acc, variant) => acc + variant.totalQuantity, 0);
+    }, [filteredGroupedVariants]);
+
+    const handleStockQuantityChange = (value, record, parentKey) => {
+        setVariants(prevVariants =>
+            prevVariants.map(variant => {
+                if (
+                    `${variant.size} - ${variant.color}` === parentKey &&
+                    variant.stock_id === record.stock_id
+                ) {
+                    return { ...variant, quantity: value };
+                }
+                return variant;
+            })
+        );
+    };
+
+    const handleSubmit = async () => {
+        setLoading(true);
+        const requiredFields = ['name', 'slug', 'category', 'price', 'status'];
+        for (let field of requiredFields) {
+            if (!formData[field] || formData[field] === '') {
+                openErrorNotification(`${field.charAt(0).toUpperCase() + field.slice(1)} is required.`);
+                setLoading(false);
+                return;
+            }
+        }
+
+        const formDataToSend = new FormData();
+        Object.keys(formData).forEach((key) => {
+            if (key === 'sizes' || key === 'colors') {
+                formDataToSend.append(key, formData[key].join(','));
+            } else if (key === 'tags') {
+                if (formData[key] && formData[key].length > 0) {
+                    formDataToSend.append(key, JSON.stringify(formData[key]));
+                }
+            } else {
+                if (formData[key] !== null && formData[key] !== '') {
+                    formDataToSend.append(key, formData[key]);
+                }
+            }
+        });
+
+        const formattedVariants = groupedVariants.map(group => ({
+            size: group.size,
+            color: group.color,
+            stocks: group.stocks.map(stock => ({
+                stock_id: stock.stock_id,
+                quantity: stock.quantity,
+                // image: variantImages[group.color]?.id || null, // Image handling deferred to ImageManagement
+            })),
+        }));
+        formDataToSend.append('variants', JSON.stringify(formattedVariants));
+
+        // Append product images
+        productImages.forEach((img) => {
+            if (img.newFile && img.id) {
+                formDataToSend.append('images', img.newFile);
+                formDataToSend.append('replaced_image_id', img.id);
+            }
+            if (img.newFile && !img.id) {
+                formDataToSend.append('images', img.newFile);
+            }
+        });
+
+        // Append variant images
+        Object.entries(variantImages).forEach(([color, img]) => {
+            if (img.newFile && img.id) {
+                formDataToSend.append('images', img.newFile);
+                formDataToSend.append('replaced_image_id', img.id);
+                // Optionally, include color information if backend supports it
+                // Example: formDataToSend.append(`variant_images[${color}]`, img.newFile);
+            }
+            if (img.newFile && !img.id) {
+                formDataToSend.append('images', img.newFile);
+                // Optionally, include color information if backend supports it
+            }
+        });
+
+        try {
+            const response = await API.put(`product/detail/${id}/`, formDataToSend, {
+                headers: {
+                    'Authorization': `Bearer ${userData.access}`,
+                    'Content-Type': 'multipart/form-data'
+                },
+            });
+            if (response.status === 200) {
+                // Update variants with new image IDs if applicable
+                // This depends on backend handling
+                openSuccessNotification('Product updated successfully');
+                navigate('/products');
+            }
+        } catch (error) {
+            if (error.response && error.response.status === 401) {
+                openErrorNotification("Unauthorized access");
+                logout();
+                return;
+            }
+            console.error('There was an error updating the product:', error);
+            openErrorNotification('There was an error updating the product.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const isDisabled = formData.status === 'INACTIVE';
+
+    const tabItems = [
+        {
+            key: '1',
+            label: 'Basic Information',
+            children: (
+                <BasicInformation
+                    formData={formData}
+                    handleInputChange={handleInputChange}
+                    handleSizesChange={handleSizesChange}
+                    handleColorsChange={handleColorsChange}
+                    isDisabled={isDisabled}
                 />
             ),
         },
         {
-            title: 'Action',
-            key: 'action',
-            width: '15%',
-            render: (text, record) => (
-                <Space size="middle">
-                    <Button
-                        type="link"
-                        icon={<i className="fa-solid fa-pen-to-square" style={{ color: '#1890ff' }}></i>}
-                        onClick={() => handleEdit(record.id)}
-                    />
-                    <Button
-                        type="link"
-                        danger
-                        icon={<i className="fa-solid fa-trash" style={{ color: '#ff4d4f' }}></i>}
-                        onClick={() => handleDelete(record.id)}
-                    />
-                </Space>
+            key: '2',
+            label: 'Inventory Details',
+            children: (
+                <InventoryDetails
+                    formData={formData}
+                    handleInputChange={handleInputChange}
+                    variants={variants}
+                    setVariants={setVariants}
+                    originalSizes={originalSizes}
+                    originalColors={originalColors}
+                    filterSizes={filterSizes}
+                    setFilterSizes={setFilterSizes}
+                    filterColors={filterColors}
+                    setFilterColors={setFilterColors}
+                    filteredGroupedVariants={filteredGroupedVariants}
+                    totalQuantity={totalQuantity}
+                    handleStockQuantityChange={handleStockQuantityChange}
+                    isDisabled={isDisabled}
+                />
+            ),
+        },
+        {
+            key: '3',
+            label: 'Sales Details',
+            children: (
+                <SalesDetails
+                    formData={formData}
+                    handleInputChange={handleInputChange}
+                    setFormData={setFormData}
+                    isDisabled={isDisabled}
+                />
+            ),
+        },
+        {
+            key: '4',
+            label: 'Image Management',
+            children: (
+                <ImageManagement
+                    productImages={productImages}
+                    handleReplaceImage={handleReplaceImage}
+                    handleDeleteImage={handleDeleteImage}
+                    handleAddImage={handleAddImage}
+                    variantImages={variantImages}
+                    handleReplaceVariantImage={handleReplaceVariantImage}
+                    handleDeleteVariantImage={handleDeleteVariantImage}
+                    handleAddVariantImage={handleAddVariantImage}
+                    originalColors={originalColors}
+                    isDisabled={isDisabled}
+                />
             ),
         },
     ];
 
-    const getProductParams = (params) => {
-        let sortField = params.sortField;
-        if (sortField === 'category') {
-            sortField = 'category__name';
-        }
-
-        const queryObj = {
-            page_size: params.pagination?.pageSize,
-            page: params.pagination?.current,
-            search: params.searchName && params.searchName.trim() !== '' ? params.searchName.trim() : undefined,
-            ordering: sortField ? `${params.sortOrder === 'descend' ? '-' : ''}${sortField}` : undefined,
-        };
-
-        if (params.searchCategories && params.searchCategories.length > 0) {
-            queryObj['categories__name'] = params.searchCategories;
-        }
-
-        if (params.filterStatus && params.filterStatus !== '') {
-            queryObj['status'] = params.filterStatus;
-        }
-
-        // if (params.filterPrice && params.filterPrice.length === 2) {
-        //     const [minPrice, maxPrice] = params.filterPrice;
-        //     if (minPrice !== null && minPrice !== undefined) {
-        //         queryObj['price__gte'] = minPrice;
-        //     }
-        //     if (maxPrice !== null && maxPrice !== undefined) {
-        //         queryObj['price__lte'] = maxPrice;
-        //     }
-        // }
-
-        return queryObj;
-    };
-
-    const handleTableChange = (pagination, filters, sorter) => {
-        setTableParams(prev => ({
-            ...prev,
-            pagination,
-            sortOrder: sorter.order,
-            sortField: sorter.field,
-        }));
-    };
-
-    const onFinish = (values) => {
-        setTableParams(prev => ({
-            ...prev,
-            pagination: { ...prev.pagination, current: 1 },
-            searchName: values.searchName || '',
-            searchCategories: values.searchCategories || [],
-            filterStatus: values.filterStatus || '',
-            filterPrice: values.filterPrice || [0, 1000],
-        }));
-    };
-
-    const onReset = () => {
-        form.resetFields();
-        setTableParams(prev => ({
-            ...prev,
-            pagination: { ...prev.pagination, current: 1 },
-            searchName: '',
-            searchCategories: [],
-            filterStatus: '',
-            filterPrice: [0, 1000],
-        }));
-    };
-
-    // Hàm kiểm tra sp cũ
-    const checkStaleProducts = (products) => {
-        const now = moment();
-        const filtered = products.filter(prod => {
-            if (prod.status !== 'ACTIVE') return false;
-            if (!prod.stock_variants || prod.stock_variants.length === 0) return false;
-
-            const totalQty = prod.stock_variants.reduce((acc, v) => acc + v.quantity, 0);
-            if (totalQty <= 10) return false;
-
-            const oldestUpdate = prod.stock_variants.reduce((oldest, v) => {
-                const variantDate = moment(v.updated_at);
-                if (!oldest || variantDate.isBefore(oldest)) {
-                    return variantDate;
-                }
-                return oldest;
-            }, null);
-
-            if (!oldestUpdate) return false;
-
-            const diffDays = now.diff(oldestUpdate, 'days');
-            return diffDays > thresholdDays;
-        });
-
-        setStaleProducts(filtered);
-    };
-
     return (
         <div className="container-xxl flex-grow-1 container-p-y">
-            <div className="card" style={{ borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-                <h5 className="card-header" style={{ backgroundColor: '#fafafa', borderBottom: '1px solid #f0f0f0' }}>List Products</h5>
-                <div style={{ padding: '20px' }}>
-                    <Form
-                        form={form}
-                        layout="vertical"
-                        onFinish={onFinish}
-                        initialValues={{
-                            searchName: tableParams.searchName,
-                            searchCategories: tableParams.searchCategories,
-                            filterStatus: tableParams.filterStatus,
-                            filterPrice: tableParams.filterPrice,
-                        }}
-                    >
-                        <Row gutter={16}>
-                            <Col xs={24} sm={12} md={6}>
-                                <Form.Item name="searchName" label="Search by Product Name">
+            {loading || loadingStocks ? (
+                <div style={{ textAlign: 'center', padding: '50px' }}>
+                    <Text>Loading...</Text>
+                </div>
+            ) : (
+                <Card bordered={false} style={{ borderRadius: '8px' }}>
+                    <Row justify="space-between" align="middle" style={{ marginBottom: '20px' }}>
+                        <Col>
+                            <Button
+                                type="link"
+                                icon={<ArrowLeftOutlined />}
+                                onClick={() => navigate('/products')}
+                            >
+                                Back
+                            </Button>
+                        </Col>
+                        <Col span={24}>
+                            <Row gutter={[16, 16]} justify="center">
+                                <Col xs={24} sm={24} md={6}>
+                                    <Title level={4}>Product Name<span style={{color: 'red'}}>*</span></Title>
                                     <Input
+                                        value={formData.name}
+                                        name="name"
+                                        onChange={handleInputChange}
                                         placeholder="Enter product name"
-                                        allowClear
-                                        prefix={<SearchOutlined />}
+                                        size="middle"
+                                        disabled={isDisabled}
                                     />
-                                </Form.Item>
-                            </Col>
-                            <Col xs={24} sm={12} md={6}>
-                                <Form.Item name="searchCategories" label="Search by Category">
+                                </Col>
+                                <Col xs={24} sm={24} md={6}>
+                                    <Title level={4}>Slug<span style={{color: 'red'}}>*</span></Title>
+                                    <Input
+                                        value={formData.slug}
+                                        name="slug"
+                                        placeholder="Slug auto-generated"
+                                        size="middle"
+                                        disabled
+                                    />
+                                </Col>
+                                <Col xs={24} sm={24} md={6}>
+                                    <Title level={4}>SKU</Title>
+                                    <Input
+                                        value={formData.sku}
+                                        name="sku"
+                                        onChange={handleInputChange}
+                                        placeholder="Enter SKU (optional)"
+                                        size="middle"
+                                        disabled={isDisabled}
+                                    />
+                                </Col>
+                                <Col xs={24} sm={24} md={6}>
+                                    <Title level={4}>Category<span style={{color: 'red'}}>*</span></Title>
                                     <Select
-                                        mode="multiple"
-                                        allowClear
-                                        placeholder="Select categories"
-                                        showSearch
-                                        optionFilterProp="children"
-                                        filterOption={(input, option) =>
-                                            option.children.toLowerCase().includes(input.toLowerCase())
-                                        }
+                                        value={formData.category}
+                                        onChange={(value) => setFormData({ ...formData, category: value })}
+                                        placeholder="Select Category"
+                                        style={{ width: '100%' }}
+                                        size="middle"
+                                        disabled={isDisabled}
                                     >
-                                        {categories.map(cat => (
-                                            <Option key={cat.id} value={cat.name}>
-                                                {cat.name}
+                                        {categories.map((category) => (
+                                            <Option key={category.id} value={category.id}>
+                                                {category.name}
                                             </Option>
                                         ))}
                                     </Select>
-                                </Form.Item>
-                            </Col>
-                            <Col xs={24} sm={12} md={6}>
-                                <Form.Item name="filterStatus" label="Filter by Status">
-                                    <Select
-                                        allowClear
-                                        placeholder="Select status"
-                                    >
-                                        <Option value="ACTIVE">Active</Option>
-                                        <Option value="INACTIVE">Inactive</Option>
-                                        <Option value="DRAFT">Draft</Option>
-                                    </Select>
-                                </Form.Item>
-                            </Col>
-                            <Col xs={24} sm={12} md={6}>
-                                <Form.Item name="filterPrice" label="Filter by Price Range">
-                                    <Slider
-                                        range
-                                        min={0}
-                                        max={10000}
-                                        step={50}
-                                        marks={{
-                                            0: '$0',
-                                            2500: '$2,500',
-                                            5000: '$5,000',
-                                            7500: '$7,500',
-                                            10000: '$10,000',
-                                        }}
-                                        tipFormatter={(value) => `$${value}`}
-                                        defaultValue={[0, 10000]}
-                                    />
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                        <Row gutter={16} justify="end">
-                            <Col>
-                                <Space>
-                                    <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
-                                        Apply Filters
-                                    </Button>
-                                    <Button onClick={onReset} icon={<ReloadOutlined />}>
-                                        Reset Filters
-                                    </Button>
-                                </Space>
-                            </Col>
-                        </Row>
-                    </Form>
+                                </Col>
+                            </Row>
+                        </Col>
+                    </Row>
 
-                    <div style={{ marginTop: '20px' }}>
-                        <Table
-                            columns={columns}
-                            rowKey={(record) => record.id}
-                            dataSource={data}
-                            pagination={tableParams.pagination}
-                            loading={loading}
-                            onChange={handleTableChange}
-                            onRow={(record) => ({
-                                style: {
-                                    backgroundColor: record.status === 'INACTIVE' ? '#fff1f0' : 'inherit',
-                                },
-                            })}
-                            bordered
-                            scroll={{ x: 'max-content' }}
-                        />
-                    </div>
+                    <Tabs activeKey={activeKey} onChange={(key) => setActiveKey(key)} items={tabItems} />
 
-                    {staleProducts.length > 0 && (
-                        <div style={{ marginTop: 20, padding: 20, background: '#fffbe6', border: '1px solid #ffe58f', borderRadius: '4px' }}>
-                            <Title level={5}>Decision Support</Title>
-                            <Text>
-                                Some products have not been updated for over {thresholdDays} days. Consider applying a discount to boost sales:
-                            </Text>
-                            <ul style={{ marginTop: 10 }}>
-                                {staleProducts.map(p => (
-                                    <li key={p.id} style={{ marginBottom: 10 }}>
-                                        <span>
-                                            <strong>{p.name}</strong> was last updated over {thresholdDays} days ago.
-                                        </span>
-                                        <Button
-                                            type="link"
-                                            style={{ marginLeft: 10 }}
-                                            onClick={() => navigate(`/edit-product/${p.id}?tab=3`)}
-                                        >
-                                            Apply Discount
-                                        </Button>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
-                </div>
-            </div>
-            <hr className="my-5" />
+                    <Row justify="end" style={{ marginTop: '20px' }}>
+                        <Space>
+                            <Button type="primary" onClick={handleSubmit} loading={loading}>
+                                Update Product
+                            </Button>
+                            <Button
+                                type="default"
+                                onClick={() => navigate('/products')}
+                            >
+                                Cancel
+                            </Button>
+                        </Space>
+                    </Row>
+                </Card>
+            )}
         </div>
     );
 };
 
-export default Products;
+export default EditProduct;
