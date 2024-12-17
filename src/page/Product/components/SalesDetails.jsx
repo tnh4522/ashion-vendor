@@ -1,3 +1,5 @@
+
+//componemts/SaleDetails.jsx
 import React from 'react';
 import { Input, Select, message } from 'antd';
 const { TextArea } = Input;
@@ -10,11 +12,9 @@ const SalesDetails = ({ formData, handleInputChange, setFormData, isDisabled }) 
         // parse price và sale_price
         const saleVal = parseFloat(value);
         const priceVal = parseFloat(formData.price);
-        // nếu người dùng chưa nhập price hoặc price = 0, ta cho phép sale_price tự do
-        // nhưng nếu price > 0, sale_price phải < price
+
         if (priceVal > 0 && saleVal >= priceVal) {
             message.error("Sale price must be less than price");
-            // không cập nhật sale_price
             return;
         }
         // sale_price hợp lệ, cập nhật

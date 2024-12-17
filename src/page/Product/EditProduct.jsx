@@ -1,3 +1,4 @@
+// EditProduct.jsx
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import {
@@ -23,12 +24,17 @@ import useNotificationContext from "../../hooks/useNotificationContext.jsx";
 import BasicInformation from './components/BasicInformation.jsx';
 import InventoryDetails from './components/InventoryDetails.jsx';
 import SalesDetails from './components/SalesDetails.jsx';
-import ImageManagement from './components/ImageManagement.jsx';
+import ImageManagement from './components/EditImageManagement.jsx';
 
 const { Title, Text } = Typography;
 const { confirm } = Modal;
 const { Option } = Select;
 
+/**
+ * Custom function to generate a URL-friendly slug from a string.
+ * @param {string} str - The input string.
+ * @returns {string} - The slugified string.
+ */
 function customSlugify(str) {
     return str
         .toLowerCase()
@@ -95,6 +101,9 @@ const EditProduct = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id, userData.access]);
 
+    /**
+     * Fetch product details from the API.
+     */
     const fetchProduct = async () => {
         setLoading(true);
         try {
@@ -104,13 +113,19 @@ const EditProduct = () => {
                 },
             });
             const productData = response.data;
-            const sizes = productData.sizes ? productData.sizes.split(',').map(s => s.trim().toUpperCase()) : [];
-            const colors = productData.colors ? productData.colors.split(',').map(c => c.trim().toUpperCase()) : [];
+            const sizes = productData.sizes
+                ? productData.sizes.split(',').map(s => s.trim().toUpperCase())
+                : [];
+            const colors = productData.colors
+                ? productData.colors.split(',').map(c => c.trim().toUpperCase())
+                : [];
 
             setOriginalSizes([...sizes]);
             setOriginalColors([...colors]);
 
-            const generatedSlug = productData.name ? customSlugify(productData.name) : productData.slug || '';
+            const generatedSlug = productData.name
+                ? customSlugify(productData.name)
+                : productData.slug || '';
 
             setFormData({
                 name: productData.name || '',
@@ -123,8 +138,12 @@ const EditProduct = () => {
                 care_instructions: productData.care_instructions || '',
                 price: productData.price || '',
                 sale_price: productData.sale_price || '',
-                start_sale_date: productData.start_sale_date ? productData.start_sale_date.split('T')[0] : '',
-                end_sale_date: productData.end_sale_date ? productData.end_sale_date.split('T')[0] : '',
+                start_sale_date: productData.start_sale_date
+                    ? productData.start_sale_date.split('T')[0]
+                    : '',
+                end_sale_date: productData.end_sale_date
+                    ? productData.end_sale_date.split('T')[0]
+                    : '',
                 stock: productData.stock || 0,
                 weight: productData.weight || '',
                 dimensions: productData.dimensions || '',
@@ -141,11 +160,13 @@ const EditProduct = () => {
             });
 
             const imgs = productData.images || [];
-            setProductImages(imgs.map(img => ({
-                id: img.id,
-                url: img.image,
-                newFile: null
-            })));
+            setProductImages(
+                imgs.map(img => ({
+                    id: img.id,
+                    url: img.image,
+                    newFile: null,
+                }))
+            );
 
             const stockVariants = productData.stock_variants || [];
             const variantsArray = stockVariants.map(variant => {
@@ -159,6 +180,7 @@ const EditProduct = () => {
                     stock_name: variant.stock.name,
                     quantity: variant.quantity,
                     image: variant.image || null,
+                    newImageFile: null, // Initialize for potential image updates
                 };
             });
             setVariants(variantsArray);
@@ -176,6 +198,9 @@ const EditProduct = () => {
         }
     };
 
+    /**
+     * Fetch categories from the API.
+     */
     const fetchCategories = async () => {
         try {
             const response = await API.get('categories/');
@@ -186,6 +211,9 @@ const EditProduct = () => {
         }
     };
 
+    /**
+     * Fetch stocks from the API.
+     */
     const fetchStocks = async () => {
         try {
             const response = await API.get('stocks/', {
@@ -194,46 +222,54 @@ const EditProduct = () => {
                 },
             });
             setStocks(response.data.results);
-            setLoadingStocks(false);
         } catch (error) {
             console.error('Error fetching stocks:', error);
             openErrorNotification('There was an error fetching the stock data.');
+        } finally {
             setLoadingStocks(false);
         }
     };
 
+    /**
+     * Handle input changes for form fields.
+     * @param {Object} e - The event object.
+     */
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
-        let newValue = (type === 'checkbox' ? checked : value);
+        let newValue = type === 'checkbox' ? checked : value;
 
         if (name === 'name') {
             const generatedSlug = customSlugify(newValue || '');
             setFormData(prev => ({
                 ...prev,
                 name: newValue,
-                slug: generatedSlug
+                slug: generatedSlug,
             }));
         } else {
             setFormData(prev => ({
                 ...prev,
-                [name]: newValue
+                [name]: newValue,
             }));
         }
     };
 
+    /**
+     * Handle changes to the sizes selection.
+     * @param {Array} newSizes - The new sizes selected.
+     */
     const handleSizesChange = (newSizes) => {
         const upperNewSizes = newSizes.map(size => size.toUpperCase());
         const removedSizes = originalSizes.filter(size => !upperNewSizes.includes(size));
         if (removedSizes.length > 0) {
             Modal.confirm({
-                title: 'Xác Nhận Thay Đổi Sizes',
-                content: `Bạn sắp xóa các kích thước: ${removedSizes.join(', ')}. Điều này sẽ xóa các biến thể liên quan khỏi kho.`,
-                okText: 'Xác Nhận',
-                cancelText: 'Hủy',
+                title: 'Confirm Size Changes',
+                content: `You are about to remove the following sizes: ${removedSizes.join(', ')}. This will remove related variants from the stock.`,
+                okText: 'Confirm',
+                cancelText: 'Cancel',
                 onOk() {
                     setFormData(prev => ({
                         ...prev,
-                        sizes: upperNewSizes
+                        sizes: upperNewSizes,
                     }));
                     setOriginalSizes([...upperNewSizes]);
                     setVariants(prevVariants => prevVariants.filter(variant => !removedSizes.includes(variant.size)));
@@ -242,25 +278,29 @@ const EditProduct = () => {
         } else {
             setFormData(prev => ({
                 ...prev,
-                sizes: upperNewSizes
+                sizes: upperNewSizes,
             }));
             setOriginalSizes([...upperNewSizes]);
         }
     };
 
+    /**
+     * Handle changes to the colors selection.
+     * @param {Array} newColors - The new colors selected.
+     */
     const handleColorsChange = (newColors) => {
         const upperNewColors = newColors.map(color => color.toUpperCase());
         const removedColors = originalColors.filter(color => !upperNewColors.includes(color));
         if (removedColors.length > 0) {
             Modal.confirm({
-                title: 'Xác Nhận Thay Đổi Colors',
-                content: `Bạn sắp xóa các màu sắc: ${removedColors.join(', ')}. Điều này sẽ xóa các biến thể liên quan khỏi kho.`,
-                okText: 'Xác Nhận',
-                cancelText: 'Hủy',
+                title: 'Confirm Color Changes',
+                content: `You are about to remove the following colors: ${removedColors.join(', ')}. This will remove related variants from the stock.`,
+                okText: 'Confirm',
+                cancelText: 'Cancel',
                 onOk() {
                     setFormData(prev => ({
                         ...prev,
-                        colors: upperNewColors
+                        colors: upperNewColors,
                     }));
                     setOriginalColors([...upperNewColors]);
                     setVariants(prevVariants => prevVariants.filter(variant => !removedColors.includes(variant.color)));
@@ -269,12 +309,17 @@ const EditProduct = () => {
         } else {
             setFormData(prev => ({
                 ...prev,
-                colors: upperNewColors
+                colors: upperNewColors,
             }));
             setOriginalColors([...upperNewColors]);
         }
     };
 
+    /**
+     * Handle replacing an existing product image.
+     * @param {File} file - The new image file.
+     * @param {number|string} imageId - The ID of the image to replace.
+     */
     const handleReplaceImage = (file, imageId) => {
         if (!file) return;
         const updatedImages = productImages.map(img => {
@@ -287,6 +332,10 @@ const EditProduct = () => {
         message.success('Image replaced successfully');
     };
 
+    /**
+     * Handle deleting a product image.
+     * @param {number|string} imageId - The ID of the image to delete.
+     */
     const handleDeleteImage = (imageId) => {
         confirm({
             title: 'Are you sure you want to delete this image?',
@@ -301,6 +350,11 @@ const EditProduct = () => {
         });
     };
 
+    /**
+     * Handle adding a new image to the product.
+     * @param {File} file - The new image file.
+     * @returns {boolean} - False to prevent automatic upload.
+     */
     const handleAddImage = (file) => {
         if (productImages.length >= 5) {
             openErrorNotification("You can only upload a maximum of 5 images");
@@ -308,13 +362,19 @@ const EditProduct = () => {
         }
         const reader = new FileReader();
         reader.onload = (e) => {
-            setProductImages(prev => [...prev, { id: Date.now(), url: e.target.result, newFile: file }]);
+            setProductImages(prev => [
+                ...prev,
+                { id: Date.now(), url: e.target.result, newFile: file },
+            ]);
             message.success('Image added successfully');
         };
         reader.readAsDataURL(file);
         return false;
     };
 
+    /**
+     * Group variants by size and color.
+     */
     const groupedVariants = useMemo(() => {
         const groupMap = {};
         variants.forEach(variant => {
@@ -333,11 +393,16 @@ const EditProduct = () => {
                 stock_id: variant.stock_id,
                 stock_name: variant.stock_name,
                 quantity: variant.quantity,
+                variant_id: variant.variant_id,
+                image: variant.image,
             });
         });
         return Object.values(groupMap);
     }, [variants]);
 
+    /**
+     * Filter grouped variants based on selected sizes and colors.
+     */
     const filteredGroupedVariants = useMemo(() => {
         return groupedVariants.filter(variant => {
             const sizeMatch = filterSizes.length > 0 ? filterSizes.includes(variant.size) : true;
@@ -346,10 +411,19 @@ const EditProduct = () => {
         });
     }, [groupedVariants, filterSizes, filterColors]);
 
+    /**
+     * Calculate the total quantity of all filtered variants.
+     */
     const totalQuantity = useMemo(() => {
         return filteredGroupedVariants.reduce((acc, variant) => acc + variant.totalQuantity, 0);
     }, [filteredGroupedVariants]);
 
+    /**
+     * Handle changes to the quantity of a specific stock variant.
+     * @param {number} value - The new quantity value.
+     * @param {Object} record - The stock record.
+     * @param {string} parentKey - The key of the parent variant group.
+     */
     const handleStockQuantityChange = (value, record, parentKey) => {
         setVariants(prevVariants =>
             prevVariants.map(variant => {
@@ -364,6 +438,9 @@ const EditProduct = () => {
         );
     };
 
+    /**
+     * Update variant quantities in the backend.
+     */
     const updateVariants = async () => {
         if (variants.length === 0) return;
         const variantsToUpdate = variants.map(variant => ({
@@ -374,7 +451,7 @@ const EditProduct = () => {
             const response = await API.put('product/update_stock_variants/', variantsToUpdate, {
                 headers: {
                     'Authorization': `Bearer ${userData.access}`,
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
                 },
             });
             if (response.status === 200) {
@@ -395,6 +472,9 @@ const EditProduct = () => {
         }
     };
 
+    /**
+     * Update variant images in the backend.
+     */
     const updateVariantImages = async () => {
         const variantsToUpdateImage = variants.filter(v => v.newImageFile);
         for (const variant of variantsToUpdateImage) {
@@ -405,7 +485,7 @@ const EditProduct = () => {
                 await API.put(`product/stock-variants/${variant.variant_id}/`, fd, {
                     headers: {
                         'Authorization': `Bearer ${userData.access}`,
-                        'Content-Type': 'multipart/form-data'
+                        'Content-Type': 'multipart/form-data',
                     },
                 });
             } catch (err) {
@@ -414,6 +494,9 @@ const EditProduct = () => {
         }
     };
 
+    /**
+     * Handle form submission to update the product.
+     */
     const handleSubmit = async () => {
         setLoading(true);
         const requiredFields = ['name', 'slug', 'category', 'price', 'status'];
@@ -464,7 +547,7 @@ const EditProduct = () => {
             const response = await API.put(`product/detail/${id}/`, formDataToSend, {
                 headers: {
                     'Authorization': `Bearer ${userData.access}`,
-                    'Content-Type': 'multipart/form-data'
+                    'Content-Type': 'multipart/form-data',
                 },
             });
             if (response.status === 200) {
@@ -572,7 +655,9 @@ const EditProduct = () => {
                         <Col span={24}>
                             <Row gutter={[16, 16]} justify="center">
                                 <Col xs={24} sm={24} md={6}>
-                                    <Title level={4}>Product Name<span style={{color: 'red'}}>*</span></Title>
+                                    <Title level={4}>
+                                        Product Name<span style={{ color: 'red' }}>*</span>
+                                    </Title>
                                     <Input
                                         value={formData.name}
                                         name="name"
@@ -583,7 +668,9 @@ const EditProduct = () => {
                                     />
                                 </Col>
                                 <Col xs={24} sm={24} md={6}>
-                                    <Title level={4}>Slug<span style={{color: 'red'}}>*</span></Title>
+                                    <Title level={4}>
+                                        Slug<span style={{ color: 'red' }}>*</span>
+                                    </Title>
                                     <Input
                                         value={formData.slug}
                                         name="slug"
@@ -604,7 +691,9 @@ const EditProduct = () => {
                                     />
                                 </Col>
                                 <Col xs={24} sm={24} md={6}>
-                                    <Title level={4}>Category<span style={{color: 'red'}}>*</span></Title>
+                                    <Title level={4}>
+                                        Category<span style={{ color: 'red' }}>*</span>
+                                    </Title>
                                     <Select
                                         value={formData.category}
                                         onChange={(value) => setFormData({ ...formData, category: value })}

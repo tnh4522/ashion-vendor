@@ -1,4 +1,4 @@
-// BasicInformation.jsx
+// components/BasicInformation.jsx
 import React from 'react';
 import { Input, Select } from 'antd';
 
