@@ -299,8 +299,8 @@ function OrderDetail() {
                     </div>
 
                     <div className="row">
-                        <p style={{flex:"0 0 auto", width:"17%"}}><strong>Created : </strong> {new Date(formData.created_at).toLocaleString()}</p>
-                        <p style={{flex:"0 0 auto", width:"25%", paddingLeft:3}}><strong>Modified : </strong> {new Date(formData.updated_at).toLocaleString()}</p>
+                        <p style={{flex:"0 0 auto", width:"20%"}}><strong>Created:</strong> {new Date(formData.created_at).toLocaleString()}</p>
+                        <p style={{flex:"0 0 auto", width:"25%", paddingLeft:3}}><strong>Modified:</strong> {new Date(formData.updated_at).toLocaleString()}</p>
                     </div>
 
                     {/* Status */}
@@ -312,9 +312,9 @@ function OrderDetail() {
                                 formData.status === "PROCESSING" ? 'blue' :
                                 formData.status === "CANCELED" ? 'red' :
                                 formData.status === "SHIPPED" ? 'green' :
-                                formData.status === "DELIVERED" ? 'green' :
+                                formData.status === "DELIVERED" ? 'blue' :
                                 formData.status === "RETURNED" ? 'violet' :
-                                'blue' 
+                                'gray' 
                             }>
                                 {formData.status}
                             </Tag>

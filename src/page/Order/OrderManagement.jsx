@@ -64,7 +64,7 @@ const Orders = () => {
                         color = 'orange';
                         break;
                     case orderStatus.PROCESSING:
-                        color = 'yellow';
+                        color = 'blue';
                         break;
                     case orderStatus.CANCELED:
                         color = 'red';
@@ -74,6 +74,9 @@ const Orders = () => {
                         break;
                     case orderStatus.RETURNED:
                         color = 'violet';
+                        break;
+                    case orderStatus.DELIVERED:
+                        color = 'blue';    
                         break;
                     default:
                         color = 'blue';
