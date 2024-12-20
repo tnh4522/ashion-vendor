@@ -114,7 +114,7 @@ const AddInventoryDetails = ({
                             showUploadList={false}
                             disabled={isDisabled}
                         >
-                            <Button icon={<UploadOutlined />} size="small">Thay Thế</Button>
+                            <Button icon={<UploadOutlined />} size="small">Replace</Button>
                         </Upload>
                         {image ? (
                             <Button
