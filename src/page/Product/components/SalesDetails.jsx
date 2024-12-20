@@ -5,7 +5,6 @@ const { TextArea } = Input;
 const { Option } = Select;
 
 const SalesDetails = ({ formData, handleInputChange, setFormData, isDisabled }) => {
-    // Ta custom logic cho sale_price: phải < price
     const onSalePriceChange = (e) => {
         const value = e.target.value;
         // parse price và sale_price
