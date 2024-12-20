@@ -41,7 +41,7 @@ const AddInventoryDetails = ({
             content: 'This action cannot be redone.',
             okText: 'Yes',
             okType: 'danger',
-            cancelText: 'Không',
+            cancelText: 'No',
             onOk() {
                 const updatedImages = { ...variantImages };
                 delete updatedImages[variant.variant_name];
