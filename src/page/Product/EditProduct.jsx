@@ -1,4 +1,3 @@
-// EditProduct.jsx
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import {
