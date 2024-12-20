@@ -46,7 +46,7 @@ const AddInventoryDetails = ({
                 const updatedImages = { ...variantImages };
                 delete updatedImages[variant.variant_name];
                 setVariantImages(updatedImages);
-                message.success(`Hình ảnh cho biến thể ${variant.variant_name} đã được xóa thành công`);
+                message.success(`Variant's Image ${variant.variant_name} has just deleted successfully!`);
             },
         });
     };
