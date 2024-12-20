@@ -169,7 +169,7 @@ const EditProduct = () => {
                     quantity: variant.quantity,
                     image: variant.image || null,
                 };
-            }).filter(variant => variant !== null); // Bỏ qua các biến thể không hợp lệ
+            }).filter(variant => variant !== null); 
             setVariants(variantsArray);
 
             // Initialize variantImages based on colors
