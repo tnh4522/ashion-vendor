@@ -277,8 +277,8 @@ const EditProduct = () => {
             Modal.confirm({
                 title: 'Confirm Changing Colors',
                 content: `You will delete Colors: ${removedColors.join(', ')}. Điều này sẽ xóa các biến thể liên quan khỏi kho.`,
-                okText: 'Xác Nhận',
-                cancelText: 'Hủy',
+                okText: 'Confirm',
+                cancelText: 'Cancel',
                 onOk() {
                     setFormData(prev => ({
                         ...prev,
