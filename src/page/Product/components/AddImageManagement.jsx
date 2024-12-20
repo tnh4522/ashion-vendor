@@ -66,7 +66,7 @@ const AddImageManagement = ({
                         <Card
                             hoverable
                             style={{ borderStyle: 'dashed', height: '200px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
-                            onClick={() => { /* Do nothing */ }}
+                            onClick={() => { /* ... */ }}
                         >
                             <Upload
                                 beforeUpload={handleAddImage}
