@@ -402,7 +402,7 @@ const AddProduct = () => {
                         </Col>
                     </Row>
 
-                    {/* Luôn hiển thị 4 trường trên cùng */}
+                    {/* 4 field in header ...*/}
                     <Row gutter={[16, 16]} justify="center" style={{ marginBottom: '20px' }}>
                         <Col xs={24} sm={24} md={6}>
                             <Title level={4}>Product Name<span style={{color: 'red'}}>*</span></Title>
