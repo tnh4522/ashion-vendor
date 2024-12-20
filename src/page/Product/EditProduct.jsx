@@ -248,7 +248,7 @@ const EditProduct = () => {
         const removedSizes = originalSizes.filter(size => !upperNewSizes.includes(size));
         if (removedSizes.length > 0) {
             Modal.confirm({
-                title: 'Xác Nhận Thay Đổi Sizes',
+                title: 'Confirm Changing Size',
                 content: `Bạn sắp xóa các kích thước: ${removedSizes.join(', ')}. Điều này sẽ xóa các biến thể liên quan khỏi kho.`,
                 okText: 'Xác Nhận',
                 cancelText: 'Hủy',
