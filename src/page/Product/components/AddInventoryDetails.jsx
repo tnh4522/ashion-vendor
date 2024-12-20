@@ -35,7 +35,6 @@ const AddInventoryDetails = ({
         message.success(`Variant's Image ${variant.variant_name} has just changed successfully!`);
     };
 
-    // Xử lý xóa hình ảnh của một biến thể
     const handleDeleteVariantImage = (variant) => {
         confirm({
             title: `Bạn có chắc chắn muốn xóa hình ảnh cho biến thể ${variant.variant_name}?`,
