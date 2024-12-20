@@ -313,7 +313,7 @@ const EditProduct = () => {
             return img;
         });
         setProductImages(updatedImages);
-        message.success('Hình ảnh đã được thay thế thành công');
+        message.success('Image has been just replaced successfully!');
     };
 
     const handleDeleteImage = (imageId) => {
