@@ -27,7 +27,7 @@ const AddInventoryDetails = ({
         if (!file) return;
         const updatedImages = { ...variantImages };
         updatedImages[variant.variant_name] = {
-            id: variant.id, // Assuming variant has an 'id'
+            id: variant.id,
             file: file,
             url: URL.createObjectURL(file),
         };
