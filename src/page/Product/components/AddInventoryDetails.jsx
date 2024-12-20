@@ -32,7 +32,7 @@ const AddInventoryDetails = ({
             url: URL.createObjectURL(file),
         };
         setVariantImages(updatedImages);
-        message.success(`Hình ảnh cho biến thể ${variant.variant_name} đã được thay thế thành công`);
+        message.success(`Variant's Image ${variant.variant_name} has just changed successfully!`);
     };
 
     // Xử lý xóa hình ảnh của một biến thể
