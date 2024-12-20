@@ -134,7 +134,7 @@ const AddInventoryDetails = ({
                                 showUploadList={false}
                                 disabled={isDisabled}
                             >
-                                <Button icon={<UploadOutlined />} size="small">Thêm</Button>
+                                <Button icon={<UploadOutlined />} size="small">Add</Button>
                             </Upload>
                         )}
                     </div>
