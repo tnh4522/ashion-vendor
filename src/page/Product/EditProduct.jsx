@@ -204,7 +204,7 @@ const EditProduct = () => {
             setCategories(response.data.results);
         } catch (error) {
             console.error('Error fetching categories:', error);
-            openErrorNotification('Có lỗi xảy ra khi lấy danh mục.');
+            openErrorNotification('Error fetching categories.');
         }
     };
 
