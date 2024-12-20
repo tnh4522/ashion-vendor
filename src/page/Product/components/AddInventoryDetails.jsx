@@ -103,7 +103,7 @@ const AddInventoryDetails = ({
                             />
                         ) : (
                             <div style={{ width: '50px', height: '50px', background: '#f0f0f0', display: 'flex', justifyContent: 'center', alignItems: 'center', marginRight: '10px' }}>
-                                <Text type="secondary">Chưa có</Text>
+                                <Text type="secondary">Not Yet</Text>
                             </div>
                         )}
                         <Upload
