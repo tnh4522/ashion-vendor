@@ -74,7 +74,7 @@ const AddInventoryDetails = ({
             render: text => <Text>{text}</Text>,
         },
         {
-            title: 'Số Lượng',
+            title: 'Quantity',
             dataIndex: 'quantity',
             key: 'quantity',
             render: (text, record) => (
