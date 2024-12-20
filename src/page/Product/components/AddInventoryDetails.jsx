@@ -37,7 +37,7 @@ const AddInventoryDetails = ({
 
     const handleDeleteVariantImage = (variant) => {
         confirm({
-            title: `Bạn có chắc chắn muốn xóa hình ảnh cho biến thể ${variant.variant_name}?`,
+            title: `Do you want to delete this image of ${variant.variant_name}?`,
             content: 'Hành động này không thể hoàn tác.',
             okText: 'Có',
             okType: 'danger',
