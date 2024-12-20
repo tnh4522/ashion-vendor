@@ -250,8 +250,8 @@ const EditProduct = () => {
             Modal.confirm({
                 title: 'Confirm Changing Size',
                 content: `You will delete Size ${removedSizes.join(', ')}. This will delete the product variants.`,
-                okText: 'Xác Nhận',
-                cancelText: 'Hủy',
+                okText: 'Confirm',
+                cancelText: 'Cancel',
                 onOk() {
                     setFormData(prev => ({
                         ...prev,
