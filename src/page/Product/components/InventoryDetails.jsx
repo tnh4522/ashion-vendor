@@ -31,9 +31,6 @@ const InventoryDetails = ({
                           }) => {
     const { userData, logout } = useUserContext();
 
-    /**
-     * Columns configuration for the stock detail table.
-     */
     const stockDetailColumns = [
         {
             title: 'Stock Name',
