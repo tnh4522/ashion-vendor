@@ -30,11 +30,6 @@ const { Title, Text } = Typography;
 const { confirm } = Modal;
 const { Option } = Select;
 
-/**
- * Custom function to generate a URL-friendly slug from a string.
- * @param {string} str - The input string.
- * @returns {string} - The slugified string.
- */
 function customSlugify(str) {
     return str
         .toLowerCase()
@@ -65,6 +60,9 @@ const EditProduct = () => {
     const [variants, setVariants] = useState([]);
     const [filterSizes, setFilterSizes] = useState([]);
     const [filterColors, setFilterColors] = useState([]);
+
+    // New state for variant images mapped by color
+    const [variantImages, setVariantImages] = useState({});
 
     const [formData, setFormData] = useState({
         name: '',
@@ -101,9 +99,6 @@ const EditProduct = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id, userData.access]);
 
-    /**
-     * Fetch product details from the API.
-     */
     const fetchProduct = async () => {
         setLoading(true);
         try {
@@ -113,19 +108,13 @@ const EditProduct = () => {
                 },
             });
             const productData = response.data;
-            const sizes = productData.sizes
-                ? productData.sizes.split(',').map(s => s.trim().toUpperCase())
-                : [];
-            const colors = productData.colors
-                ? productData.colors.split(',').map(c => c.trim().toUpperCase())
-                : [];
+            const sizes = productData.sizes ? productData.sizes.split(',').map(s => s.trim().toUpperCase()) : [];
+            const colors = productData.colors ? productData.colors.split(',').map(c => c.trim().toUpperCase()) : [];
 
             setOriginalSizes([...sizes]);
             setOriginalColors([...colors]);
 
-            const generatedSlug = productData.name
-                ? customSlugify(productData.name)
-                : productData.slug || '';
+            const generatedSlug = productData.name ? customSlugify(productData.name) : productData.slug || '';
 
             setFormData({
                 name: productData.name || '',
@@ -138,12 +127,8 @@ const EditProduct = () => {
                 care_instructions: productData.care_instructions || '',
                 price: productData.price || '',
                 sale_price: productData.sale_price || '',
-                start_sale_date: productData.start_sale_date
-                    ? productData.start_sale_date.split('T')[0]
-                    : '',
-                end_sale_date: productData.end_sale_date
-                    ? productData.end_sale_date.split('T')[0]
-                    : '',
+                start_sale_date: productData.start_sale_date ? productData.start_sale_date.split('T')[0] : '',
+                end_sale_date: productData.end_sale_date ? productData.end_sale_date.split('T')[0] : '',
                 stock: productData.stock || 0,
                 weight: productData.weight || '',
                 dimensions: productData.dimensions || '',
@@ -160,17 +145,24 @@ const EditProduct = () => {
             });
 
             const imgs = productData.images || [];
-            setProductImages(
-                imgs.map(img => ({
-                    id: img.id,
-                    url: img.image,
-                    newFile: null,
-                }))
-            );
+            setProductImages(imgs.map(img => ({
+                id: img.id,
+                url: img.image,
+                newFile: null
+            })));
 
             const stockVariants = productData.stock_variants || [];
             const variantsArray = stockVariants.map(variant => {
-                const [size, color] = variant.variant_name.split(' - ');
+                if (!variant.variant_name) {
+                    // Nếu variant_name không tồn tại, bỏ qua biến thể này
+                    return null;
+                }
+                const parts = variant.variant_name.split(' - ');
+                if (parts.length !== 2) {
+                    // Nếu định dạng không đúng, bỏ qua biến thể này
+                    return null;
+                }
+                const [size, color] = parts;
                 return {
                     key: variant.id,
                     variant_id: variant.id,
@@ -180,10 +172,23 @@ const EditProduct = () => {
                     stock_name: variant.stock.name,
                     quantity: variant.quantity,
                     image: variant.image || null,
-                    newImageFile: null, // Initialize for potential image updates
                 };
-            });
+            }).filter(variant => variant !== null); // Bỏ qua các biến thể không hợp lệ
             setVariants(variantsArray);
+
+            // Initialize variantImages based on colors
+            const variantImagesMap = {};
+            colors.forEach(color => {
+                const variantWithColorAndImage = stockVariants.find(variant => variant.variant_name && variant.variant_name.includes(color) && variant.image);
+                if (variantWithColorAndImage) {
+                    variantImagesMap[color] = {
+                        id: variantWithColorAndImage.image.id,
+                        url: variantWithColorAndImage.image.image,
+                        newFile: null
+                    };
+                }
+            });
+            setVariantImages(variantImagesMap);
 
         } catch (error) {
             if (error.response && error.response.status === 401) {
@@ -192,28 +197,22 @@ const EditProduct = () => {
                 return;
             }
             console.error('Error fetching product:', error);
-            openErrorNotification('There was an error fetching the product.');
+            openErrorNotification('Có lỗi xảy ra khi lấy thông tin sản phẩm.');
         } finally {
             setLoading(false);
         }
     };
 
-    /**
-     * Fetch categories from the API.
-     */
     const fetchCategories = async () => {
         try {
             const response = await API.get('categories/');
             setCategories(response.data.results);
         } catch (error) {
             console.error('Error fetching categories:', error);
-            openErrorNotification('There was an error fetching the categories.');
+            openErrorNotification('Có lỗi xảy ra khi lấy danh mục.');
         }
     };
 
-    /**
-     * Fetch stocks from the API.
-     */
     const fetchStocks = async () => {
         try {
             const response = await API.get('stocks/', {
@@ -222,54 +221,46 @@ const EditProduct = () => {
                 },
             });
             setStocks(response.data.results);
+            setLoadingStocks(false);
         } catch (error) {
             console.error('Error fetching stocks:', error);
-            openErrorNotification('There was an error fetching the stock data.');
-        } finally {
+            openErrorNotification('Có lỗi xảy ra khi lấy dữ liệu kho.');
             setLoadingStocks(false);
         }
     };
 
-    /**
-     * Handle input changes for form fields.
-     * @param {Object} e - The event object.
-     */
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
-        let newValue = type === 'checkbox' ? checked : value;
+        let newValue = (type === 'checkbox' ? checked : value);
 
         if (name === 'name') {
             const generatedSlug = customSlugify(newValue || '');
             setFormData(prev => ({
                 ...prev,
                 name: newValue,
-                slug: generatedSlug,
+                slug: generatedSlug
             }));
         } else {
             setFormData(prev => ({
                 ...prev,
-                [name]: newValue,
+                [name]: newValue
             }));
         }
     };
 
-    /**
-     * Handle changes to the sizes selection.
-     * @param {Array} newSizes - The new sizes selected.
-     */
     const handleSizesChange = (newSizes) => {
         const upperNewSizes = newSizes.map(size => size.toUpperCase());
         const removedSizes = originalSizes.filter(size => !upperNewSizes.includes(size));
         if (removedSizes.length > 0) {
             Modal.confirm({
-                title: 'Confirm Size Changes',
-                content: `You are about to remove the following sizes: ${removedSizes.join(', ')}. This will remove related variants from the stock.`,
-                okText: 'Confirm',
-                cancelText: 'Cancel',
+                title: 'Xác Nhận Thay Đổi Sizes',
+                content: `Bạn sắp xóa các kích thước: ${removedSizes.join(', ')}. Điều này sẽ xóa các biến thể liên quan khỏi kho.`,
+                okText: 'Xác Nhận',
+                cancelText: 'Hủy',
                 onOk() {
                     setFormData(prev => ({
                         ...prev,
-                        sizes: upperNewSizes,
+                        sizes: upperNewSizes
                     }));
                     setOriginalSizes([...upperNewSizes]);
                     setVariants(prevVariants => prevVariants.filter(variant => !removedSizes.includes(variant.size)));
@@ -278,48 +269,47 @@ const EditProduct = () => {
         } else {
             setFormData(prev => ({
                 ...prev,
-                sizes: upperNewSizes,
+                sizes: upperNewSizes
             }));
             setOriginalSizes([...upperNewSizes]);
         }
     };
 
-    /**
-     * Handle changes to the colors selection.
-     * @param {Array} newColors - The new colors selected.
-     */
     const handleColorsChange = (newColors) => {
         const upperNewColors = newColors.map(color => color.toUpperCase());
         const removedColors = originalColors.filter(color => !upperNewColors.includes(color));
         if (removedColors.length > 0) {
             Modal.confirm({
-                title: 'Confirm Color Changes',
-                content: `You are about to remove the following colors: ${removedColors.join(', ')}. This will remove related variants from the stock.`,
-                okText: 'Confirm',
-                cancelText: 'Cancel',
+                title: 'Xác Nhận Thay Đổi Colors',
+                content: `Bạn sắp xóa các màu sắc: ${removedColors.join(', ')}. Điều này sẽ xóa các biến thể liên quan khỏi kho.`,
+                okText: 'Xác Nhận',
+                cancelText: 'Hủy',
                 onOk() {
                     setFormData(prev => ({
                         ...prev,
-                        colors: upperNewColors,
+                        colors: upperNewColors
                     }));
                     setOriginalColors([...upperNewColors]);
                     setVariants(prevVariants => prevVariants.filter(variant => !removedColors.includes(variant.color)));
+                    // Xóa hình ảnh biến thể cho các màu đã xóa
+                    setVariantImages(prev => {
+                        const updated = { ...prev };
+                        removedColors.forEach(color => {
+                            delete updated[color];
+                        });
+                        return updated;
+                    });
                 },
             });
         } else {
             setFormData(prev => ({
                 ...prev,
-                colors: upperNewColors,
+                colors: upperNewColors
             }));
             setOriginalColors([...upperNewColors]);
         }
     };
 
-    /**
-     * Handle replacing an existing product image.
-     * @param {File} file - The new image file.
-     * @param {number|string} imageId - The ID of the image to replace.
-     */
     const handleReplaceImage = (file, imageId) => {
         if (!file) return;
         const updatedImages = productImages.map(img => {
@@ -329,52 +319,86 @@ const EditProduct = () => {
             return img;
         });
         setProductImages(updatedImages);
-        message.success('Image replaced successfully');
+        message.success('Hình ảnh đã được thay thế thành công');
     };
 
-    /**
-     * Handle deleting a product image.
-     * @param {number|string} imageId - The ID of the image to delete.
-     */
     const handleDeleteImage = (imageId) => {
         confirm({
-            title: 'Are you sure you want to delete this image?',
-            content: 'This action cannot be undone.',
-            okText: 'Yes',
+            title: 'Bạn có chắc chắn muốn xóa hình ảnh này?',
+            content: 'Hành động này không thể hoàn tác.',
+            okText: 'Có',
             okType: 'danger',
-            cancelText: 'No',
+            cancelText: 'Không',
             onOk() {
                 setProductImages(prevImages => prevImages.filter(img => img.id !== imageId));
-                message.success('Image deleted successfully');
+                message.success('Hình ảnh đã được xóa thành công');
             },
         });
     };
 
-    /**
-     * Handle adding a new image to the product.
-     * @param {File} file - The new image file.
-     * @returns {boolean} - False to prevent automatic upload.
-     */
     const handleAddImage = (file) => {
         if (productImages.length >= 5) {
-            openErrorNotification("You can only upload a maximum of 5 images");
+            openErrorNotification("Bạn chỉ có thể tải lên tối đa 5 hình ảnh.");
             return false;
         }
         const reader = new FileReader();
         reader.onload = (e) => {
-            setProductImages(prev => [
-                ...prev,
-                { id: Date.now(), url: e.target.result, newFile: file },
-            ]);
-            message.success('Image added successfully');
+            setProductImages(prev => [...prev, { id: Date.now(), url: e.target.result, newFile: file }]);
+            message.success('Hình ảnh đã được thêm thành công');
         };
         reader.readAsDataURL(file);
-        return false;
+        return false; // Ngăn không upload tự động
     };
 
-    /**
-     * Group variants by size and color.
-     */
+    // Handlers cho variantImages
+    const handleReplaceVariantImage = (file, variant) => {
+        if (!file) return;
+        setVariantImages(prev => ({
+            ...prev,
+            [variant.variant_name]: {
+                ...prev[variant.variant_name],
+                newFile: file,
+                url: URL.createObjectURL(file)
+            }
+        }));
+        message.success(`Hình ảnh cho ${variant.variant_name} đã được thay thế thành công`);
+    };
+
+    const handleDeleteVariantImage = (variant) => {
+        confirm({
+            title: `Bạn có chắc chắn muốn xóa hình ảnh cho ${variant.variant_name}?`,
+            content: 'Hành động này không thể hoàn tác.',
+            okText: 'Có',
+            okType: 'danger',
+            cancelText: 'Không',
+            onOk() {
+                setVariantImages(prev => ({
+                    ...prev,
+                    [variant.variant_name]: {
+                        ...prev[variant.variant_name],
+                        url: '',
+                        newFile: null,
+                        id: null
+                    }
+                }));
+                message.success(`Hình ảnh cho ${variant.variant_name} đã được xóa thành công`);
+            },
+        });
+    };
+
+    const handleAddVariantImage = (file, variant) => {
+        if (!file) return;
+        setVariantImages(prev => ({
+            ...prev,
+            [variant.variant_name]: {
+                id: Date.now(), // Temporary ID for frontend
+                url: URL.createObjectURL(file),
+                newFile: file
+            }
+        }));
+        message.success(`Hình ảnh cho ${variant.variant_name} đã được thêm thành công`);
+    };
+
     const groupedVariants = useMemo(() => {
         const groupMap = {};
         variants.forEach(variant => {
@@ -393,16 +417,11 @@ const EditProduct = () => {
                 stock_id: variant.stock_id,
                 stock_name: variant.stock_name,
                 quantity: variant.quantity,
-                variant_id: variant.variant_id,
-                image: variant.image,
             });
         });
         return Object.values(groupMap);
     }, [variants]);
 
-    /**
-     * Filter grouped variants based on selected sizes and colors.
-     */
     const filteredGroupedVariants = useMemo(() => {
         return groupedVariants.filter(variant => {
             const sizeMatch = filterSizes.length > 0 ? filterSizes.includes(variant.size) : true;
@@ -411,19 +430,10 @@ const EditProduct = () => {
         });
     }, [groupedVariants, filterSizes, filterColors]);
 
-    /**
-     * Calculate the total quantity of all filtered variants.
-     */
     const totalQuantity = useMemo(() => {
         return filteredGroupedVariants.reduce((acc, variant) => acc + variant.totalQuantity, 0);
     }, [filteredGroupedVariants]);
 
-    /**
-     * Handle changes to the quantity of a specific stock variant.
-     * @param {number} value - The new quantity value.
-     * @param {Object} record - The stock record.
-     * @param {string} parentKey - The key of the parent variant group.
-     */
     const handleStockQuantityChange = (value, record, parentKey) => {
         setVariants(prevVariants =>
             prevVariants.map(variant => {
@@ -438,71 +448,12 @@ const EditProduct = () => {
         );
     };
 
-    /**
-     * Update variant quantities in the backend.
-     */
-    const updateVariants = async () => {
-        if (variants.length === 0) return;
-        const variantsToUpdate = variants.map(variant => ({
-            id: variant.variant_id,
-            quantity: variant.quantity,
-        }));
-        try {
-            const response = await API.put('product/update_stock_variants/', variantsToUpdate, {
-                headers: {
-                    'Authorization': `Bearer ${userData.access}`,
-                    'Content-Type': 'application/json',
-                },
-            });
-            if (response.status === 200) {
-                message.success('Variants updated successfully.');
-            }
-        } catch (error) {
-            console.error('Error updating variants:', error);
-            if (error.response && error.response.data) {
-                const filteredErrors = error.response.data.filter(err => {
-                    return !err.id || !err.id.includes("StockVariant with this ID does not exist.");
-                });
-                if (filteredErrors.length > 0) {
-                    message.error(`Error: ${JSON.stringify(filteredErrors)}`);
-                }
-            } else {
-                message.error('There was an error updating the variants.');
-            }
-        }
-    };
-
-    /**
-     * Update variant images in the backend.
-     */
-    const updateVariantImages = async () => {
-        const variantsToUpdateImage = variants.filter(v => v.newImageFile);
-        for (const variant of variantsToUpdateImage) {
-            const fd = new FormData();
-            fd.append('image', variant.newImageFile);
-            fd.append('quantity', variant.quantity);
-            try {
-                await API.put(`product/stock-variants/${variant.variant_id}/`, fd, {
-                    headers: {
-                        'Authorization': `Bearer ${userData.access}`,
-                        'Content-Type': 'multipart/form-data',
-                    },
-                });
-            } catch (err) {
-                console.error('Error updating variant image:', err);
-            }
-        }
-    };
-
-    /**
-     * Handle form submission to update the product.
-     */
     const handleSubmit = async () => {
         setLoading(true);
         const requiredFields = ['name', 'slug', 'category', 'price', 'status'];
         for (let field of requiredFields) {
             if (!formData[field] || formData[field] === '') {
-                openErrorNotification(`${field.charAt(0).toUpperCase() + field.slice(1)} is required.`);
+                openErrorNotification(`${field.charAt(0).toUpperCase() + field.slice(1)} là bắt buộc.`);
                 setLoading(false);
                 return;
             }
@@ -529,10 +480,12 @@ const EditProduct = () => {
             stocks: group.stocks.map(stock => ({
                 stock_id: stock.stock_id,
                 quantity: stock.quantity,
+                // image: variantImages[group.color]?.id || null, // Image handling deferred to ImageManagement
             })),
         }));
         formDataToSend.append('variants', JSON.stringify(formattedVariants));
 
+        // Append hình ảnh sản phẩm
         productImages.forEach((img) => {
             if (img.newFile && img.id) {
                 formDataToSend.append('images', img.newFile);
@@ -543,17 +496,31 @@ const EditProduct = () => {
             }
         });
 
+        // Append hình ảnh biến thể
+        Object.entries(variantImages).forEach(([variantName, img]) => {
+            if (img.newFile && img.id) {
+                formDataToSend.append('images', img.newFile);
+                formDataToSend.append('replaced_image_id', img.id);
+                // Optionally, include color information if backend supports it
+                // Example: formDataToSend.append(`variant_images[${color}]`, img.newFile);
+            }
+            if (img.newFile && !img.id) {
+                formDataToSend.append('images', img.newFile);
+                // Optionally, include color information if backend supports it
+            }
+        });
+
         try {
             const response = await API.put(`product/detail/${id}/`, formDataToSend, {
                 headers: {
                     'Authorization': `Bearer ${userData.access}`,
-                    'Content-Type': 'multipart/form-data',
+                    'Content-Type': 'multipart/form-data'
                 },
             });
             if (response.status === 200) {
-                await updateVariants();
-                await updateVariantImages();
-                openSuccessNotification('Product updated successfully');
+                // Update variants with new image IDs if applicable
+                // This depends on backend handling
+                openSuccessNotification('Sản phẩm đã được cập nhật thành công');
                 navigate('/products');
             }
         } catch (error) {
@@ -562,8 +529,8 @@ const EditProduct = () => {
                 logout();
                 return;
             }
-            console.error('There was an error updating the product:', error);
-            openErrorNotification('There was an error updating the product.');
+            console.error('Có lỗi xảy ra khi cập nhật sản phẩm:', error);
+            openErrorNotification('Có lỗi xảy ra khi cập nhật sản phẩm.');
         } finally {
             setLoading(false);
         }
@@ -574,7 +541,7 @@ const EditProduct = () => {
     const tabItems = [
         {
             key: '1',
-            label: 'Basic Information',
+            label: 'Thông Tin Cơ Bản',
             children: (
                 <BasicInformation
                     formData={formData}
@@ -587,7 +554,7 @@ const EditProduct = () => {
         },
         {
             key: '2',
-            label: 'Inventory Details',
+            label: 'Chi Tiết Kho Hàng',
             children: (
                 <InventoryDetails
                     formData={formData}
@@ -609,7 +576,7 @@ const EditProduct = () => {
         },
         {
             key: '3',
-            label: 'Sales Details',
+            label: 'Chi Tiết Bán Hàng',
             children: (
                 <SalesDetails
                     formData={formData}
@@ -621,13 +588,18 @@ const EditProduct = () => {
         },
         {
             key: '4',
-            label: 'Image Management',
+            label: 'Quản Lý Hình Ảnh',
             children: (
                 <ImageManagement
                     productImages={productImages}
                     handleReplaceImage={handleReplaceImage}
                     handleDeleteImage={handleDeleteImage}
                     handleAddImage={handleAddImage}
+                    variantImages={variantImages}
+                    handleReplaceVariantImage={handleReplaceVariantImage}
+                    handleDeleteVariantImage={handleDeleteVariantImage}
+                    handleAddVariantImage={handleAddVariantImage}
+                    originalColors={originalColors}
                     isDisabled={isDisabled}
                 />
             ),
@@ -649,32 +621,28 @@ const EditProduct = () => {
                                 icon={<ArrowLeftOutlined />}
                                 onClick={() => navigate('/products')}
                             >
-                                Back
+                                Quay lại
                             </Button>
                         </Col>
                         <Col span={24}>
                             <Row gutter={[16, 16]} justify="center">
                                 <Col xs={24} sm={24} md={6}>
-                                    <Title level={4}>
-                                        Product Name<span style={{ color: 'red' }}>*</span>
-                                    </Title>
+                                    <Title level={4}>Tên Sản Phẩm<span style={{color: 'red'}}>*</span></Title>
                                     <Input
                                         value={formData.name}
                                         name="name"
                                         onChange={handleInputChange}
-                                        placeholder="Enter product name"
+                                        placeholder="Nhập tên sản phẩm"
                                         size="middle"
                                         disabled={isDisabled}
                                     />
                                 </Col>
                                 <Col xs={24} sm={24} md={6}>
-                                    <Title level={4}>
-                                        Slug<span style={{ color: 'red' }}>*</span>
-                                    </Title>
+                                    <Title level={4}>Slug<span style={{color: 'red'}}>*</span></Title>
                                     <Input
                                         value={formData.slug}
                                         name="slug"
-                                        placeholder="Slug auto-generated"
+                                        placeholder="Slug được tự động tạo"
                                         size="middle"
                                         disabled
                                     />
@@ -685,19 +653,17 @@ const EditProduct = () => {
                                         value={formData.sku}
                                         name="sku"
                                         onChange={handleInputChange}
-                                        placeholder="Enter SKU (optional)"
+                                        placeholder="Nhập SKU (tùy chọn)"
                                         size="middle"
                                         disabled={isDisabled}
                                     />
                                 </Col>
                                 <Col xs={24} sm={24} md={6}>
-                                    <Title level={4}>
-                                        Category<span style={{ color: 'red' }}>*</span>
-                                    </Title>
+                                    <Title level={4}>Danh Mục<span style={{color: 'red'}}>*</span></Title>
                                     <Select
                                         value={formData.category}
                                         onChange={(value) => setFormData({ ...formData, category: value })}
-                                        placeholder="Select Category"
+                                        placeholder="Chọn Danh Mục"
                                         style={{ width: '100%' }}
                                         size="middle"
                                         disabled={isDisabled}
@@ -718,13 +684,13 @@ const EditProduct = () => {
                     <Row justify="end" style={{ marginTop: '20px' }}>
                         <Space>
                             <Button type="primary" onClick={handleSubmit} loading={loading}>
-                                Update Product
+                                Cập Nhật Sản Phẩm
                             </Button>
                             <Button
                                 type="default"
                                 onClick={() => navigate('/products')}
                             >
-                                Cancel
+                                Hủy
                             </Button>
                         </Space>
                     </Row>
@@ -732,6 +698,7 @@ const EditProduct = () => {
             )}
         </div>
     );
+
 };
 
 export default EditProduct;

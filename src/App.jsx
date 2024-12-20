@@ -9,6 +9,7 @@ import Register from "./page/Authentication/Register.jsx";
 import Products from "./page/Product/Products.jsx";
 import AddProduct from "./page/Product/AddProduct.jsx";
 import EditProduct from "./page/Product/EditProduct.jsx";
+import ImageSearch from "./page/Product/ImageSearch.jsx"
 import Categories from "./page/Category/Categories.jsx";
 import Customers from "./page/Customer/Customers.jsx";
 import Users from "./page/User/Users.jsx";
@@ -87,6 +88,7 @@ function App() {
                                     <Route path="/add-customer" element={<ProtectedRoute><AddCustomer/></ProtectedRoute>}/>
                                     <Route path="/customer/:id" element={<ProtectedRoute><CustomerDetail/></ProtectedRoute>}/>
                                     <Route path="/add-product" element={<ProtectedRoute><AddProduct/></ProtectedRoute>}/>
+                                    <Route path="/products/image-search" element={<ImageSearch />} />
                                     <Route path="/edit-product/:id" element={<ProtectedRoute><EditProduct/></ProtectedRoute>}/>
                                     <Route path="/categories" element={<ProtectedRoute><Categories/></ProtectedRoute>}/>
                                     <Route path="/edit-category/:id" element={<ProtectedRoute><EditCategory/></ProtectedRoute>}/>

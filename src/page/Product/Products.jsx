@@ -1,4 +1,4 @@
-// Products.jsx
+// src/components/Products/Products.jsx
 import { useEffect, useState } from 'react';
 import {
     Table,
@@ -22,7 +22,9 @@ import { useNavigate } from 'react-router-dom';
 import {
     SearchOutlined,
     ReloadOutlined,
-    ExclamationCircleOutlined
+    ExclamationCircleOutlined,
+    PlusOutlined,
+    UploadOutlined, // Thêm biểu tượng UploadOutlined
 } from '@ant-design/icons';
 import moment from 'moment';
 import formatCurrency from "../../constant/formatCurrency.js";
@@ -285,16 +287,6 @@ const Products = () => {
             queryObj['status'] = params.filterStatus;
         }
 
-        // if (params.filterPrice && params.filterPrice.length === 2) {
-        //     const [minPrice, maxPrice] = params.filterPrice;
-        //     if (minPrice !== null && minPrice !== undefined) {
-        //         queryObj['price__gte'] = minPrice;
-        //     }
-        //     if (maxPrice !== null && maxPrice !== undefined) {
-        //         queryObj['price__lte'] = maxPrice;
-        //     }
-        // }
-
         return queryObj;
     };
 
@@ -360,7 +352,34 @@ const Products = () => {
     return (
         <div className="container-xxl flex-grow-1 container-p-y">
             <div className="card" style={{ borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-                <h5 className="card-header" style={{ backgroundColor: '#fafafa', borderBottom: '1px solid #f0f0f0' }}>List Products</h5>
+                <div
+                    className="card-header"
+                    style={{
+                        backgroundColor: '#fafafa',
+                        borderBottom: '1px solid #f0f0f0',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                    }}
+                >
+                    <Title level={5} style={{ margin: 0 }}>List Products</Title>
+                    <Space>
+                        <Button
+                            type="primary"
+                            icon={<PlusOutlined />}
+                            onClick={() => navigate('/add-product')}
+                        >
+                            Add Product
+                        </Button>
+                        <Button
+                            type="default"
+                            icon={<UploadOutlined />}
+                            onClick={() => navigate('/products/image-search')}
+                        >
+                            Image Search
+                        </Button>
+                    </Space>
+                </div>
                 <div style={{ padding: '20px' }}>
                     <Form
                         form={form}
