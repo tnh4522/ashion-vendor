@@ -249,7 +249,7 @@ const EditProduct = () => {
         if (removedSizes.length > 0) {
             Modal.confirm({
                 title: 'Confirm Changing Size',
-                content: `You will delete Size ${removedSizes.join(', ')}. This will delete the product variants.`,
+                content: `You will delete Size: ${removedSizes.join(', ')}. This will delete the product variants.`,
                 okText: 'Confirm',
                 cancelText: 'Cancel',
                 onOk() {
@@ -276,7 +276,7 @@ const EditProduct = () => {
         if (removedColors.length > 0) {
             Modal.confirm({
                 title: 'Confirm Changing Colors',
-                content: `Bạn sắp xóa các màu sắc: ${removedColors.join(', ')}. Điều này sẽ xóa các biến thể liên quan khỏi kho.`,
+                content: `You will delete Colors: ${removedColors.join(', ')}. Điều này sẽ xóa các biến thể liên quan khỏi kho.`,
                 okText: 'Xác Nhận',
                 cancelText: 'Hủy',
                 onOk() {
