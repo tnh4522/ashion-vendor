@@ -172,7 +172,6 @@ const EditProduct = () => {
             }).filter(variant => variant !== null); 
             setVariants(variantsArray);
 
-            // Initialize variantImages based on colors
             const variantImagesMap = {};
             colors.forEach(color => {
                 const variantWithColorAndImage = stockVariants.find(variant => variant.variant_name && variant.variant_name.includes(color) && variant.image);
