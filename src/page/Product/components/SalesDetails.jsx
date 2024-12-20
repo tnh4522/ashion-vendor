@@ -7,7 +7,6 @@ const { Option } = Select;
 const SalesDetails = ({ formData, handleInputChange, setFormData, isDisabled }) => {
     const onSalePriceChange = (e) => {
         const value = e.target.value;
-        // parse price và sale_price
         const saleVal = parseFloat(value);
         const priceVal = parseFloat(formData.price);
 
