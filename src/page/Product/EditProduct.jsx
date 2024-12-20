@@ -156,7 +156,6 @@ const EditProduct = () => {
                 }
                 const parts = variant.variant_name.split(' - ');
                 if (parts.length !== 2) {
-                    // Nếu định dạng không đúng, bỏ qua biến thể này
                     return null;
                 }
                 const [size, color] = parts;
