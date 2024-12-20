@@ -13,7 +13,6 @@ const AddInventoryDetails = ({
                                  isDisabled,
                              }) => {
 
-    // Xử lý thay đổi số lượng cho một biến thể cụ thể
     const handleQuantityChange = (value, record) => {
         const updatedVariants = variants.map(variant => {
             if (variant.id === record.id) {
