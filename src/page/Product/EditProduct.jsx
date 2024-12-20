@@ -249,7 +249,7 @@ const EditProduct = () => {
         if (removedSizes.length > 0) {
             Modal.confirm({
                 title: 'Confirm Changing Size',
-                content: `Bạn sắp xóa các kích thước: ${removedSizes.join(', ')}. Điều này sẽ xóa các biến thể liên quan khỏi kho.`,
+                content: `You will delete Size ${removedSizes.join(', ')}. This will delete the product variants.`,
                 okText: 'Xác Nhận',
                 cancelText: 'Hủy',
                 onOk() {
