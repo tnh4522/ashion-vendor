@@ -87,7 +87,7 @@ const AddInventoryDetails = ({
             ),
         },
         {
-            title: 'Hình Ảnh Biến Thể',
+            title: 'Variatn Image',
             dataIndex: 'variant_image',
             key: 'variant_image',
             render: (text, record) => {
