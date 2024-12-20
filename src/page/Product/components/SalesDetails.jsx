@@ -19,7 +19,6 @@ const SalesDetails = ({ formData, handleInputChange, setFormData, isDisabled }) 
 
     const onPriceChange = (e) => {
         handleInputChange(e);
-        // Khi giá thay đổi, kiểm tra sale_price
         const newPrice = parseFloat(e.target.value);
         const saleVal = parseFloat(formData.sale_price || 0);
         if (newPrice > 0 && saleVal >= newPrice) {
