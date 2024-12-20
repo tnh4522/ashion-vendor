@@ -22,7 +22,6 @@ const SalesDetails = ({ formData, handleInputChange, setFormData, isDisabled }) 
         const newPrice = parseFloat(e.target.value);
         const saleVal = parseFloat(formData.sale_price || 0);
         if (newPrice > 0 && saleVal >= newPrice) {
-            // reset sale_price hoặc báo lỗi
             message.warn("Sale price no longer valid, adjusting sale price.");
             // reset sale_price về rỗng hoặc giá trị thấp hơn
             setFormData(prev => ({ ...prev, sale_price: '' }));
