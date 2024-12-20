@@ -1,4 +1,3 @@
-// components/AddInventoryDetails.jsx
 import React from 'react';
 import { Table, InputNumber, Typography, Button, Upload, Image, Modal, message } from 'antd';
 import { UploadOutlined, DeleteOutlined } from '@ant-design/icons';
