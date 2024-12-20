@@ -152,7 +152,6 @@ const EditProduct = () => {
             const stockVariants = productData.stock_variants || [];
             const variantsArray = stockVariants.map(variant => {
                 if (!variant.variant_name) {
-                    // Nếu variant_name không tồn tại, bỏ qua biến thể này
                     return null;
                 }
                 const parts = variant.variant_name.split(' - ');
