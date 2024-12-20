@@ -192,7 +192,7 @@ const EditProduct = () => {
                 return;
             }
             console.error('Error fetching product:', error);
-            openErrorNotification('Có lỗi xảy ra khi lấy thông tin sản phẩm.');
+            openErrorNotification('Error fetching product.');
         } finally {
             setLoading(false);
         }
