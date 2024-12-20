@@ -53,7 +53,7 @@ const AddInventoryDetails = ({
 
     const handleAddVariantImage = (file, variant) => {
         if (variantImages[variant.variant_name]) {
-            message.error(`Biến thể ${variant.variant_name} đã có hình ảnh. Vui lòng thay thế hình ảnh hiện tại.`);
+            message.error(`Please replace the current image of Variant ${variant.variant_name}!`);
             return;
         }
         const updatedImages = { ...variantImages };
