@@ -109,7 +109,7 @@ const AddInventoryDetails = ({
                         <Upload
                             beforeUpload={(file) => {
                                 handleReplaceVariantImage(file, record);
-                                return false; // Ngăn không upload tự động
+                                return false; 
                             }}
                             showUploadList={false}
                             disabled={isDisabled}
