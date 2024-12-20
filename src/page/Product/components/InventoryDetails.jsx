@@ -1,4 +1,3 @@
-// InventoryDetails.jsx
 import React from 'react';
 import { Input, Row, Col, Select, Typography, Table, InputNumber, Upload, Button, message } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
