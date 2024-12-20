@@ -286,7 +286,6 @@ const EditProduct = () => {
                     }));
                     setOriginalColors([...upperNewColors]);
                     setVariants(prevVariants => prevVariants.filter(variant => !removedColors.includes(variant.color)));
-                    // Xóa hình ảnh biến thể cho các màu đã xóa
                     setVariantImages(prev => {
                         const updated = { ...prev };
                         removedColors.forEach(color => {
