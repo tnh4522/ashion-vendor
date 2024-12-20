@@ -82,7 +82,6 @@ const AddImageManagement = ({
                 )}
             </Row>
 
-            {/* Variant Images */}
             <Row justify="center" align="middle" gutter={[16, 16]}>
                 <Col span={24}>
                     <Text strong>Variant Images</Text>
