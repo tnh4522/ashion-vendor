@@ -275,7 +275,7 @@ const EditProduct = () => {
         const removedColors = originalColors.filter(color => !upperNewColors.includes(color));
         if (removedColors.length > 0) {
             Modal.confirm({
-                title: 'Xác Nhận Thay Đổi Colors',
+                title: 'Confirm Changing Colors',
                 content: `Bạn sắp xóa các màu sắc: ${removedColors.join(', ')}. Điều này sẽ xóa các biến thể liên quan khỏi kho.`,
                 okText: 'Xác Nhận',
                 cancelText: 'Hủy',
