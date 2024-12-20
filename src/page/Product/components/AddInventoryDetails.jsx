@@ -39,7 +39,7 @@ const AddInventoryDetails = ({
         confirm({
             title: `Do you want to delete this image of ${variant.variant_name}?`,
             content: 'This action cannot be redone.',
-            okText: 'Có',
+            okText: 'Yes',
             okType: 'danger',
             cancelText: 'Không',
             onOk() {
