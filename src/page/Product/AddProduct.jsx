@@ -120,7 +120,6 @@ const AddProduct = () => {
         const { name, value, type, checked } = e.target;
         let newValue = (type === 'checkbox' ? checked : value);
 
-        // Nếu field name thay đổi, tự sinh slug từ name
         if (name === 'name') {
             const generatedSlug = customSlugify(newValue || '');
             setFormData(prev => ({
