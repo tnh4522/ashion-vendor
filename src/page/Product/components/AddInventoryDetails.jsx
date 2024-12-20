@@ -51,7 +51,6 @@ const AddInventoryDetails = ({
         });
     };
 
-    // Xử lý thêm hình ảnh cho một biến thể (nếu chưa có)
     const handleAddVariantImage = (file, variant) => {
         if (variantImages[variant.variant_name]) {
             message.error(`Biến thể ${variant.variant_name} đã có hình ảnh. Vui lòng thay thế hình ảnh hiện tại.`);
