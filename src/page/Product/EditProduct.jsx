@@ -60,7 +60,6 @@ const EditProduct = () => {
     const [filterSizes, setFilterSizes] = useState([]);
     const [filterColors, setFilterColors] = useState([]);
 
-    // New state for variant images mapped by color
     const [variantImages, setVariantImages] = useState({});
 
     const [formData, setFormData] = useState({
