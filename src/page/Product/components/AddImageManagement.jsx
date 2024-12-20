@@ -19,7 +19,6 @@ const AddImageManagement = ({
                             }) => {
     return (
         <div className="row">
-            {/* General Product Images */}
             <Row justify="center" align="middle" gutter={[16, 16]} style={{ marginBottom: '40px' }}>
                 <Col span={24}>
                     <Text strong>Product Images</Text>
