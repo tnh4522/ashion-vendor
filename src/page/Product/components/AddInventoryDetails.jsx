@@ -23,7 +23,6 @@ const AddInventoryDetails = ({
         setVariants(updatedVariants);
     };
 
-    // Xử lý thay đổi hình ảnh của một biến thể
     const handleReplaceVariantImage = (file, variant) => {
         if (!file) return;
         const updatedImages = { ...variantImages };
