@@ -63,7 +63,7 @@ const AddInventoryDetails = ({
             url: URL.createObjectURL(file),
         };
         setVariantImages(updatedImages);
-        message.success(`Hình ảnh cho biến thể ${variant.variant_name} đã được thêm thành công`);
+        message.success(`Variant's Image ${variant.variant_name} has just added successfully!`);
     };
 
     const columns = [
