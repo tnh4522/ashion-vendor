@@ -1,5 +1,4 @@
 
-//componemts/SaleDetails.jsx
 import React from 'react';
 import { Input, Select, message } from 'antd';
 const { TextArea } = Input;
