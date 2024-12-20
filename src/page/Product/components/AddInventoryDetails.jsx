@@ -68,7 +68,7 @@ const AddInventoryDetails = ({
 
     const columns = [
         {
-            title: 'Tên Biến Thể',
+            title: 'Variant Name',
             dataIndex: 'variant_name',
             key: 'variant_name',
             render: text => <Text>{text}</Text>,
