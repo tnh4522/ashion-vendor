@@ -219,7 +219,7 @@ const EditProduct = () => {
             setLoadingStocks(false);
         } catch (error) {
             console.error('Error fetching stocks:', error);
-            openErrorNotification('Có lỗi xảy ra khi lấy dữ liệu kho.');
+            openErrorNotification('Error fetching stocks.');
             setLoadingStocks(false);
         }
     };
