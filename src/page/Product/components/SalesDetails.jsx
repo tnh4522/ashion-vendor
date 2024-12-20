@@ -14,7 +14,6 @@ const SalesDetails = ({ formData, handleInputChange, setFormData, isDisabled }) 
             message.error("Sale price must be less than price");
             return;
         }
-        // sale_price hợp lệ, cập nhật
         handleInputChange(e);
     };
 
