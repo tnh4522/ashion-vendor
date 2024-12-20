@@ -23,7 +23,6 @@ const SalesDetails = ({ formData, handleInputChange, setFormData, isDisabled }) 
         const saleVal = parseFloat(formData.sale_price || 0);
         if (newPrice > 0 && saleVal >= newPrice) {
             message.warn("Sale price no longer valid, adjusting sale price.");
-            // reset sale_price về rỗng hoặc giá trị thấp hơn
             setFormData(prev => ({ ...prev, sale_price: '' }));
         }
     };
