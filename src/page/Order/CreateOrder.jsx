@@ -265,7 +265,9 @@ const CreateOrder = () => {
             });
             if (response.status === 201) {
                 localStorage.setItem('order', JSON.stringify(response.data));
-                await handlePayment(response.data);
+                if(orderData.payment_method === 'CREDIT_CARD') {
+                    await handlePayment(response.data);
+                }
                 openSuccessNotification('Order created successfully');
             }
         } catch (error) {
