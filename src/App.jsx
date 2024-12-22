@@ -46,6 +46,7 @@ import ActivityDetail from "./page/Activity/ActivityDetail.jsx";
 import DeliveryManager from "./page/Delivery/DeliveryManager.jsx";
 import PaymentManagement from "./page/Payment/PaymentManagement.jsx";
 import EditPaymentMethod from "./page/Payment/EditPaymentMethod.jsx";
+import StockDetail from "./page/Stock/StockDetail.jsx";
 
 
 function App() {
@@ -104,6 +105,7 @@ function App() {
                                     <Route path="/stocks" element={<ProtectedRoute><Stocks/></ProtectedRoute>}/>
                                     <Route path="/add-stock" element={<ProtectedRoute><CreateStock/></ProtectedRoute>}/>
                                     <Route path="/edit-stock/:id" element={<ProtectedRoute><EditStock/></ProtectedRoute>}/>
+                                    <Route path="/stock/detail/:id" element={<ProtectedRoute><StockDetail/></ProtectedRoute>}/>
                                     <Route path="/orders" element={<ProtectedRoute><OrderManagement/></ProtectedRoute>}/>
                                     <Route path="/add-order" element={<ProtectedRoute><CreateOrder/></ProtectedRoute>}/>
                                     <Route path='/order-detail/:id' element={<ProtectedRoute><OrderDetail/></ProtectedRoute>}/>

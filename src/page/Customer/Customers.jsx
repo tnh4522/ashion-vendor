@@ -189,8 +189,7 @@ const Customers = () => {
     return (
         <div className="container-xxl flex-grow-1 container-p-y">
             <div className="card">
-                <div className="card-header"
-                     style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                <div className="card-header" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                     <h4 className="card-title" style={{color: '#696cff'}}>Customers Management</h4>
                     <button className="btn btn-primary" onClick={() => navigate('/add-customer')}>
                         Create Customer

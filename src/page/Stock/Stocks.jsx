@@ -104,10 +104,19 @@ const Stocks = () => {
 
     const columns = [
         {
+            title: 'ID',
+            dataIndex: 'id',
+            sorter: true,
+            width: '10%',
+        },
+        {
             title: 'Stock Name',
             dataIndex: 'name',
             sorter: true,
             width: '30%',
+            render: (name, record) => (
+                <Link to={`/stock/detail/${record.id}`}>{name}</Link>
+            ),
         },
         {
             title: 'Description',
@@ -117,7 +126,7 @@ const Stocks = () => {
         {
             title: 'Location',
             dataIndex: 'location',
-            width: '30%',
+            width: '20%',
             render: (location) => location || 'N/A',
         },
         {
@@ -228,8 +237,10 @@ const Stocks = () => {
                         </div>
                         {/* Buttons */}
                         <div className="col-md-4">
+                            <label className="form-label">&nbsp;</label>
                             <div className="col-md-6 d-flex">
-                                <Button type="default" onClick={handleResetFilters} style={{marginRight: '10px'}}>Reset Filters</Button>
+                                <Button type="default" onClick={handleResetFilters} style={{marginRight: '10px'}}>Reset
+                                    Filters</Button>
                                 <Button type="primary" onClick={handleSearch}>Perform Search</Button>
                             </div>
                         </div>
