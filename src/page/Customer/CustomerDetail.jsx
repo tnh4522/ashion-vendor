@@ -146,12 +146,6 @@ function CustomerDetail() {
                                 <div className="card-body">
                                     {customer.address ? (
                                         <Descriptions bordered column={1}>
-                                            <Descriptions.Item label="Full Name">
-                                                {customer.address.full_name || "N/A"}
-                                            </Descriptions.Item>
-                                            <Descriptions.Item label="Phone Number">
-                                                {customer.address.phone_number || "N/A"}
-                                            </Descriptions.Item>
                                             <Descriptions.Item label="Street Address">
                                                 {customer.address.street_address || "N/A"}
                                             </Descriptions.Item>
