@@ -1,45 +1,77 @@
 import {useState} from 'react';
-import API from '../../service/service';
-import useUserContext from '../../hooks/useUserContext';
-import useNotificationContext from '../../hooks/useNotificationContext';
-import {useNavigate} from "react-router-dom";
 import {Tabs} from 'antd';
-import RaiseEvent from "../../utils/RaiseEvent.jsx";
+import {useNavigate} from 'react-router-dom';
+
+import SelectProvince from '../../component/SelectProvince.jsx';
+import SelectDistrict from '../../component/SelectDistrict.jsx';
+import SelectWard from '../../component/SelectWard.jsx';
+import API from '../../service/service.jsx';
+import RaiseEvent from '../../utils/RaiseEvent.jsx';
+import useUserContext from '../../hooks/useUserContext.jsx';
+import useNotificationContext from '../../hooks/useNotificationContext.jsx';
 
 function AddCustomer() {
     const {userData} = useUserContext();
     const {openSuccessNotification, openErrorNotification} = useNotificationContext();
+    const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
+
     const [formData, setFormData] = useState({
         first_name: '',
         last_name: '',
         email: '',
         phone_number: '',
     });
+
     const [addressData, setAddressData] = useState({
         full_name: '',
         phone_number: '',
         street_address: '',
-        city: '',
+        ward: '',
+        district: '',
         province: '',
+        city: '',
         postal_code: '',
         country: 'Vietnam',
     });
-    const [loading, setLoading] = useState(false);
-    const navigator = useNavigate();
 
     const handleInputChange = (e) => {
         const {name, value} = e.target;
-        setFormData(prevState => ({
+        setFormData((prevState) => ({
             ...prevState,
-            [name]: value
+            [name]: value,
         }));
     };
 
     const handleAddressChange = (e) => {
         const {name, value} = e.target;
-        setAddressData(prevState => ({
+        setAddressData((prevState) => ({
             ...prevState,
-            [name]: value
+            [name]: value,
+        }));
+    };
+
+    const onSelectProvince = (province) => {
+        setAddressData((prev) => ({
+            ...prev,
+            province,
+            district: '',
+            ward: '',
+        }));
+    };
+
+    const onSelectDistrict = (district) => {
+        setAddressData((prev) => ({
+            ...prev,
+            district,
+            ward: '',
+        }));
+    };
+
+    const onSelectWard = (ward) => {
+        setAddressData((prev) => ({
+            ...prev,
+            ward,
         }));
     };
 
@@ -55,22 +87,31 @@ function AddCustomer() {
 
         try {
             const customerData = {
-                first_name: formData.first_name,
-                last_name: formData.last_name,
-                email: formData.email,
-                phone_number: formData.phone_number,
-                address: addressData,
-            }
+                ...formData,
+                address: {
+                    full_name: addressData.full_name,
+                    phone_number: addressData.phone_number,
+                    street_address: addressData.street_address,
+                    ward: addressData.ward,
+                    district: addressData.district,
+                    province: addressData.province,
+                    city: addressData.city,
+                    postal_code: addressData.postal_code,
+                    country: addressData.country,
+                },
+            };
+
             const customerResponse = await API.post('customer/create/', customerData, {
                 headers: {
-                    'Authorization': `Bearer ${userData.access}`,
+                    Authorization: `Bearer ${userData.access}`,
                     'Content-Type': 'application/json',
-                }
+                },
             });
 
             if (customerResponse.status === 201) {
-                RaiseEvent(userData, '201', 'CREATE', 'CUSTOMER', 'Create new customer', customerData);
+                await RaiseEvent(userData, '201', 'CREATE', 'CUSTOMER', 'Create new customer', customerData);
                 openSuccessNotification('Customer created successfully');
+
                 setFormData({
                     first_name: '',
                     last_name: '',
@@ -81,18 +122,23 @@ function AddCustomer() {
                     full_name: '',
                     phone_number: '',
                     street_address: '',
-                    city: '',
+                    ward: '',
+                    district: '',
                     province: '',
+                    city: '',
                     postal_code: '',
                     country: 'Vietnam',
                 });
-                navigator('/customers');
+
+                navigate('/customers');
             }
         } catch (error) {
             console.error('Error creating customer:', error);
             if (error.response && error.response.data) {
                 const errorMessages = Object.entries(error.response.data)
-                    .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(' ') : messages}`)
+                    .map(([field, messages]) =>
+                        `${field}: ${Array.isArray(messages) ? messages.join(' ') : messages}`
+                    )
                     .join(' ');
                 openErrorNotification(errorMessages);
             } else {
@@ -103,6 +149,27 @@ function AddCustomer() {
         }
     };
 
+    const handleCancel = () => {
+        setFormData({
+            first_name: '',
+            last_name: '',
+            email: '',
+            phone_number: '',
+        });
+        setAddressData({
+            full_name: '',
+            phone_number: '',
+            street_address: '',
+            ward: '',
+            district: '',
+            province: '',
+            city: '',
+            postal_code: '',
+            country: 'Vietnam',
+        });
+        navigate('/customers');
+    };
+
     return (
         <div className="container-xxl flex-grow-1 container-p-y">
             <div className="row">
@@ -110,15 +177,10 @@ function AddCustomer() {
                     <div className="card mb-4">
                         <div className="card-body">
                             <form id="formCustomerSettings" method="POST" onSubmit={handleSubmit}>
-                                <Tabs
-                                    defaultActiveKey="1"
-                                    type="card"
-                                    size="large"
-                                    style={{marginBottom: '1.5rem'}}
-                                >
+                                <Tabs defaultActiveKey="1" type="card" size="large" style={{ marginBottom: '1.5rem' }}>
+                                    {/* TAB 1: Customer Information */}
                                     <Tabs.TabPane tab="Customer Information" key="1">
                                         <div className="row">
-                                            {/* First Name */}
                                             <div className="mb-3 col-md-6">
                                                 <label htmlFor="first_name" className="form-label">First Name</label>
                                                 <input
@@ -130,7 +192,6 @@ function AddCustomer() {
                                                     onChange={handleInputChange}
                                                 />
                                             </div>
-                                            {/* Last Name */}
                                             <div className="mb-3 col-md-6">
                                                 <label htmlFor="last_name" className="form-label">Last Name</label>
                                                 <input
@@ -142,7 +203,6 @@ function AddCustomer() {
                                                     onChange={handleInputChange}
                                                 />
                                             </div>
-                                            {/* Email */}
                                             <div className="mb-3 col-md-6">
                                                 <label htmlFor="email" className="form-label">Email</label>
                                                 <input
@@ -154,10 +214,8 @@ function AddCustomer() {
                                                     onChange={handleInputChange}
                                                 />
                                             </div>
-                                            {/* Phone Number */}
                                             <div className="mb-3 col-md-6">
-                                                <label htmlFor="phone_number" className="form-label">Phone
-                                                    Number</label>
+                                                <label htmlFor="phone_number" className="form-label">Phone Number</label>
                                                 <input
                                                     className="form-control"
                                                     type="text"
@@ -169,9 +227,10 @@ function AddCustomer() {
                                             </div>
                                         </div>
                                     </Tabs.TabPane>
+
+                                    {/* TAB 2: Address Information */}
                                     <Tabs.TabPane tab="Address Information" key="2">
                                         <div className="row">
-                                            {/* Full Name */}
                                             <div className="mb-3 col-md-6">
                                                 <label htmlFor="full_name" className="form-label">Full Name</label>
                                                 <input
@@ -183,10 +242,10 @@ function AddCustomer() {
                                                     onChange={handleAddressChange}
                                                 />
                                             </div>
-                                            {/* Phone Number */}
                                             <div className="mb-3 col-md-6">
-                                                <label htmlFor="address_phone_number" className="form-label">Phone
-                                                    Number</label>
+                                                <label htmlFor="address_phone_number" className="form-label">
+                                                    Phone Number (Address)
+                                                </label>
                                                 <input
                                                     className="form-control"
                                                     type="text"
@@ -196,10 +255,8 @@ function AddCustomer() {
                                                     onChange={handleAddressChange}
                                                 />
                                             </div>
-                                            {/* Street Address */}
                                             <div className="mb-3 col-md-12">
-                                                <label htmlFor="street_address" className="form-label">Street
-                                                    Address</label>
+                                                <label htmlFor="street_address" className="form-label">Street Address</label>
                                                 <input
                                                     className="form-control"
                                                     type="text"
@@ -209,7 +266,34 @@ function AddCustomer() {
                                                     onChange={handleAddressChange}
                                                 />
                                             </div>
-                                            {/* City */}
+                                            {/* Province, District, Ward (Select components) */}
+                                            <div className="mb-3 col-md-4">
+                                                <label htmlFor="province" className="form-label">Province</label>
+                                                <SelectProvince
+                                                    id="province"
+                                                    selectedProvince={addressData.province}
+                                                    onSelectProvince={onSelectProvince}
+                                                />
+                                            </div>
+                                            <div className="mb-3 col-md-4">
+                                                <label htmlFor="district" className="form-label">District</label>
+                                                <SelectDistrict
+                                                    id="district"
+                                                    province_id={addressData.province}
+                                                    selectedDistrict={addressData.district}
+                                                    onSelectDistrict={onSelectDistrict}
+                                                />
+                                            </div>
+                                            <div className="mb-3 col-md-4">
+                                                <label htmlFor="ward" className="form-label">Ward</label>
+                                                <SelectWard
+                                                    id="ward"
+                                                    district_id={addressData.district}
+                                                    selectedWard={addressData.ward}
+                                                    onSelectWard={onSelectWard}
+                                                />
+                                            </div>
+                                            {/* Optional city/postal_code fields if needed */}
                                             <div className="mb-3 col-md-6">
                                                 <label htmlFor="city" className="form-label">City</label>
                                                 <input
@@ -221,19 +305,6 @@ function AddCustomer() {
                                                     onChange={handleAddressChange}
                                                 />
                                             </div>
-                                            {/* Province */}
-                                            <div className="mb-3 col-md-6">
-                                                <label htmlFor="province" className="form-label">Province</label>
-                                                <input
-                                                    className="form-control"
-                                                    type="text"
-                                                    id="province"
-                                                    name="province"
-                                                    value={addressData.province}
-                                                    onChange={handleAddressChange}
-                                                />
-                                            </div>
-                                            {/* Postal Code */}
                                             <div className="mb-3 col-md-6">
                                                 <label htmlFor="postal_code" className="form-label">Postal Code</label>
                                                 <input
@@ -245,7 +316,6 @@ function AddCustomer() {
                                                     onChange={handleAddressChange}
                                                 />
                                             </div>
-                                            {/* Country */}
                                             <div className="mb-3 col-md-6">
                                                 <label htmlFor="country" className="form-label">Country</label>
                                                 <input
@@ -263,28 +333,11 @@ function AddCustomer() {
 
                                 <div className="mt-2 text-end">
                                     <button
-                                        type="reset"
+                                        type="button"
                                         className="btn btn-outline-secondary me-2"
-                                        onClick={() => {
-                                            setFormData({
-                                                first_name: '',
-                                                last_name: '',
-                                                email: '',
-                                                phone_number: '',
-                                            });
-                                            setAddressData({
-                                                full_name: '',
-                                                phone_number: '',
-                                                street_address: '',
-                                                city: '',
-                                                province: '',
-                                                postal_code: '',
-                                                country: 'Vietnam',
-                                            });
-                                            navigator('/customers');
-                                        }}
+                                        onClick={handleCancel}
                                     >
-                                        Turn Back
+                                        Cancel
                                     </button>
                                     <button type="submit" className="btn btn-primary" disabled={loading}>
                                         {loading ? 'Loading...' : 'Create Customer'}
