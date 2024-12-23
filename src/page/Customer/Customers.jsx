@@ -4,13 +4,12 @@ import {ExclamationCircleFilled} from "@ant-design/icons";
 import API from '../../service/service';
 import useUserContext from '../../hooks/useUserContext';
 import useNotificationContext from '../../hooks/useNotificationContext';
-import {Link, useNavigate} from "react-router-dom";
+import {Link} from "react-router-dom";
+import CreateCustomer from './modal/CreateCustomer';
 
 const {confirm} = Modal;
 
 const Customers = () => {
-    const navigate = useNavigate();
-
     const {userData, logout} = useUserContext();
     const {openSuccessNotification, openErrorNotification} = useNotificationContext();
 
@@ -28,9 +27,10 @@ const Customers = () => {
         sorter: {},
     });
 
+    const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
+
     const fetchData = async () => {
         setLoading(true);
-
         try {
             const params = {
                 page: tableParams.pagination.current,
@@ -38,7 +38,9 @@ const Customers = () => {
             };
 
             if (tableParams.sorter.field) {
-                params.ordering = tableParams.sorter.order === 'ascend' ? tableParams.sorter.field : `-${tableParams.sorter.field}`;
+                params.ordering = tableParams.sorter.order === 'ascend'
+                    ? tableParams.sorter.field
+                    : `-${tableParams.sorter.field}`;
             }
 
             if (searchParams.searchText) {
@@ -77,7 +79,8 @@ const Customers = () => {
         if (userData.access) {
             fetchData();
         }
-    }, [userData.access, JSON.stringify(tableParams)]); // Track changes in tableParams
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [userData.access, JSON.stringify(tableParams)]);
 
     const handleDelete = (id) => {
         confirm({
@@ -136,10 +139,14 @@ const Customers = () => {
             width: '10%',
             render: (id) => (
                 <span>
-                    <Link to={`/customer/${id}`}><i className="fa-solid fa-pen-to-square"
-                                                           style={{marginRight: '10px'}}></i></Link>
-                    <i className="fa-solid fa-trash" style={{cursor: 'pointer', color: 'red'}}
-                       onClick={() => handleDelete(id)}></i>
+                    <Link to={`/customer/${id}`}>
+                        <i className="fa-solid fa-eye" style={{marginRight: '10px'}}/>
+                    </Link>
+                    <i
+                        className="fa-solid fa-trash"
+                        style={{cursor: 'pointer', color: 'red'}}
+                        onClick={() => handleDelete(id)}
+                    />
                 </span>
             ),
         }
@@ -186,13 +193,28 @@ const Customers = () => {
         fetchData();
     };
 
+    const showCreateModal = () => {
+        setIsCreateModalVisible(true);
+    };
+
+    const onCustomerAdd = (newCustomer) => {
+        setIsCreateModalVisible(false);
+        fetchData();
+    };
+
+    const closeModal = () => {
+        setIsCreateModalVisible(false);
+    };
+
     return (
         <div className="container-xxl flex-grow-1 container-p-y">
             <div className="card">
-                <div className="card-header"
-                     style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                <div
+                    className="card-header"
+                    style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}
+                >
                     <h4 className="card-title" style={{color: '#696cff'}}>Customers Management</h4>
-                    <button className="btn btn-primary" onClick={() => navigate('/add-customer')}>
+                    <button className="btn btn-primary" onClick={showCreateModal}>
                         Create Customer
                     </button>
                 </div>
@@ -234,6 +256,17 @@ const Customers = () => {
                     />
                 </div>
             </div>
+
+            <Modal
+                title="Create Customer"
+                visible={isCreateModalVisible}
+                onCancel={closeModal}
+                footer={null}
+                destroyOnClose
+                width={800}
+            >
+                <CreateCustomer onCustomerAdd={onCustomerAdd} closeModal={closeModal}/>
+            </Modal>
         </div>
     );
 };

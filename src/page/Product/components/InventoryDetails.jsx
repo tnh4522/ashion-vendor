@@ -7,6 +7,12 @@ import useUserContext from "../../../hooks/useUserContext.jsx";
 const { Text } = Typography;
 const { Option } = Select;
 
+/**
+ * InventoryDetails Component
+ * Manages the inventory details of the product, including variants and stock.
+ *
+ * @param {Object} props - Component props.
+ */
 const InventoryDetails = ({
                               formData,
                               handleInputChange,
@@ -23,9 +29,8 @@ const InventoryDetails = ({
                               handleStockQuantityChange,
                               isDisabled
                           }) => {
-    // Trong cột Quantity, disabled = isDisabled
-    // Trong cột Upload, nếu isDisabled thì ẩn nút upload
-    console.log(filteredGroupedVariants);
+    const { userData, logout } = useUserContext();
+
     const stockDetailColumns = [
         {
             title: 'Stock Name',
@@ -90,35 +95,35 @@ const InventoryDetails = ({
     ];
 
     return (
-        <div className="row">
-            <div className="mb-3 col-md-6">
-                <label htmlFor="weight" className="form-label">Weight</label>
-                <Input
-                    className="form-control"
-                    type="number"
-                    step="0.01"
-                    id="weight"
-                    name="weight"
-                    value={formData.weight}
-                    onChange={handleInputChange}
-                    placeholder="Enter weight"
-                    disabled={isDisabled}
-                />
-            </div>
-            <div className="mb-3 col-md-6">
-                <label htmlFor="dimensions" className="form-label">Dimensions</label>
-                <Input
-                    className="form-control"
-                    type="text"
-                    id="dimensions"
-                    name="dimensions"
-                    value={formData.dimensions}
-                    onChange={handleInputChange}
-                    placeholder="Enter dimensions"
-                    disabled={isDisabled}
-                />
-            </div>
-            <div className="mb-3 col-md-12">
+        <div>
+            <Row gutter={[16, 16]} style={{ marginBottom: '20px' }}>
+                <Col xs={24} sm={12}>
+                    <label htmlFor="weight" className="form-label">Weight</label>
+                    <Input
+                        type="number"
+                        step="0.01"
+                        id="weight"
+                        name="weight"
+                        value={formData.weight}
+                        onChange={handleInputChange}
+                        placeholder="Enter weight"
+                        disabled={isDisabled}
+                    />
+                </Col>
+                <Col xs={24} sm={12}>
+                    <label htmlFor="dimensions" className="form-label">Dimensions</label>
+                    <Input
+                        type="text"
+                        id="dimensions"
+                        name="dimensions"
+                        value={formData.dimensions}
+                        onChange={handleInputChange}
+                        placeholder="Enter dimensions"
+                        disabled={isDisabled}
+                    />
+                </Col>
+            </Row>
+            <div>
                 <label className="form-label">Product Variants</label>
                 <Row gutter={[16, 16]} style={{ marginBottom: '16px' }}>
                     <Col xs={24} sm={12} md={6}>
@@ -197,7 +202,7 @@ const InventoryDetails = ({
                                     ...stockItem,
                                     parentKey: record.key,
                                     variant_id: foundVariant ? foundVariant.variant_id : null,
-                                    image: foundVariant ? foundVariant.image : null
+                                    image: foundVariant ? foundVariant.image : null,
                                 };
                             });
 

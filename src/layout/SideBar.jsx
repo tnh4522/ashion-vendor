@@ -40,20 +40,8 @@ function SideBar() {
         },
         {
             key: 'sub2',
-            label: 'Product',
+            label: <Link to="/products">Products</Link>,
             icon: <i className="menu-icon tf-icons fa-solid fa-bag-shopping"></i>,
-            children: [
-                {
-                    key: 'layout1',
-                    label: <Link to="/products">Search Product</Link>,
-                    icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>
-                },
-                {
-                    key: 'layout2',
-                    label: <Link to="/add-product">Add Product</Link>,
-                    icon: <i className="menu-icon tf-icons fa-solid fa-plus"></i>
-                }
-            ],
         },
         {
             key: 'stock',

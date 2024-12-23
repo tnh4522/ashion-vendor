@@ -10,7 +10,7 @@ export default defineConfig({
         port: 80,
         proxy: {
             '/ngrok': {
-                target: 'https://sterling-notably-monster.ngrok-free.app',
+                target: 'https://included-sheepdog-slowly.ngrok-free.app',
                 changeOrigin: true,
                 rewrite: (path) => path.replace(/^\/ngrok/, ''),
                 configure: (proxy) => {

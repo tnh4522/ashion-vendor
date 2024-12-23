@@ -9,6 +9,7 @@ import Register from "./page/Authentication/Register.jsx";
 import Products from "./page/Product/Products.jsx";
 import AddProduct from "./page/Product/AddProduct.jsx";
 import EditProduct from "./page/Product/EditProduct.jsx";
+import ImageSearch from "./page/Product/ImageSearch.jsx"
 import Categories from "./page/Category/Categories.jsx";
 import Customers from "./page/Customer/Customers.jsx";
 import Users from "./page/User/Users.jsx";
@@ -32,7 +33,7 @@ import Brands from "./page/Brand/BrandManagement.jsx";
 import BrandDetail from "./page/Brand/BrandDetail.jsx";
 import RoleDetail from "./page/Authorization/RoleDetail.jsx";
 import AddCustomer from "./page/Customer/AddCustomer.jsx";
-import CustomerDetail from "./page/Customer/CustomerDetail.jsx";
+import EditCustomer from "./page/Customer/EditCustomer.jsx";
 import Addresses from "./page/Address/Addresses.jsx";
 import CreateAddress from "./page/Address/CreateAddress.jsx";
 import OrderDetail from "./page/Order/OrderDetail.jsx";
@@ -45,6 +46,8 @@ import ActivityDetail from "./page/Activity/ActivityDetail.jsx";
 import DeliveryManager from "./page/Delivery/DeliveryManager.jsx";
 import PaymentManagement from "./page/Payment/PaymentManagement.jsx";
 import EditPaymentMethod from "./page/Payment/EditPaymentMethod.jsx";
+import StockDetail from "./page/Stock/StockDetail.jsx";
+import CustomerDetail from "./page/Customer/CustomerDetail.jsx";
 
 
 function App() {
@@ -84,9 +87,10 @@ function App() {
                                     <Route path="/account" element={<ProtectedRoute><Account/></ProtectedRoute>}/>
                                     <Route path="/products" element={<ProtectedRoute><Products/></ProtectedRoute>}/>
                                     <Route path="/customers" element={<ProtectedRoute><Customers/></ProtectedRoute>}/>
-                                    <Route path="/add-customer" element={<ProtectedRoute><AddCustomer/></ProtectedRoute>}/>
+                                    <Route path="/edit-customer/:id" element={<ProtectedRoute><EditCustomer/></ProtectedRoute>}/>
                                     <Route path="/customer/:id" element={<ProtectedRoute><CustomerDetail/></ProtectedRoute>}/>
                                     <Route path="/add-product" element={<ProtectedRoute><AddProduct/></ProtectedRoute>}/>
+                                    <Route path="/products/image-search" element={<ImageSearch />} />
                                     <Route path="/edit-product/:id" element={<ProtectedRoute><EditProduct/></ProtectedRoute>}/>
                                     <Route path="/categories" element={<ProtectedRoute><Categories/></ProtectedRoute>}/>
                                     <Route path="/edit-category/:id" element={<ProtectedRoute><EditCategory/></ProtectedRoute>}/>
@@ -102,6 +106,7 @@ function App() {
                                     <Route path="/stocks" element={<ProtectedRoute><Stocks/></ProtectedRoute>}/>
                                     <Route path="/add-stock" element={<ProtectedRoute><CreateStock/></ProtectedRoute>}/>
                                     <Route path="/edit-stock/:id" element={<ProtectedRoute><EditStock/></ProtectedRoute>}/>
+                                    <Route path="/stock/detail/:id" element={<ProtectedRoute><StockDetail/></ProtectedRoute>}/>
                                     <Route path="/orders" element={<ProtectedRoute><OrderManagement/></ProtectedRoute>}/>
                                     <Route path="/add-order" element={<ProtectedRoute><CreateOrder/></ProtectedRoute>}/>
                                     <Route path='/order-detail/:id' element={<ProtectedRoute><OrderDetail/></ProtectedRoute>}/>

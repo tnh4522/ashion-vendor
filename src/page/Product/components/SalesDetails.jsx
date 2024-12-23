@@ -1,35 +1,28 @@
+
 import React from 'react';
 import { Input, Select, message } from 'antd';
 const { TextArea } = Input;
 const { Option } = Select;
 
 const SalesDetails = ({ formData, handleInputChange, setFormData, isDisabled }) => {
-    // Ta custom logic cho sale_price: phải < price
     const onSalePriceChange = (e) => {
         const value = e.target.value;
-        // parse price và sale_price
         const saleVal = parseFloat(value);
         const priceVal = parseFloat(formData.price);
-        // nếu người dùng chưa nhập price hoặc price = 0, ta cho phép sale_price tự do
-        // nhưng nếu price > 0, sale_price phải < price
+
         if (priceVal > 0 && saleVal >= priceVal) {
             message.error("Sale price must be less than price");
-            // không cập nhật sale_price
             return;
         }
-        // sale_price hợp lệ, cập nhật
         handleInputChange(e);
     };
 
     const onPriceChange = (e) => {
         handleInputChange(e);
-        // Khi giá thay đổi, kiểm tra sale_price
         const newPrice = parseFloat(e.target.value);
         const saleVal = parseFloat(formData.sale_price || 0);
         if (newPrice > 0 && saleVal >= newPrice) {
-            // reset sale_price hoặc báo lỗi
             message.warn("Sale price no longer valid, adjusting sale price.");
-            // reset sale_price về rỗng hoặc giá trị thấp hơn
             setFormData(prev => ({ ...prev, sale_price: '' }));
         }
     };

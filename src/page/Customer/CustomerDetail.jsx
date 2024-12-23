@@ -1,34 +1,30 @@
-import { useEffect, useState } from "react";
+import React, {useEffect, useState} from "react";
+import {Tabs, Descriptions, Spin, Alert} from 'antd';
+import {Link, useNavigate, useParams} from "react-router-dom";
+
 import useUserContext from "../../hooks/useUserContext.jsx";
-import API from "../../service/service.jsx";
 import useNotificationContext from "../../hooks/useNotificationContext.jsx";
-import { Tabs } from 'antd';
-import { Link, useNavigate, useParams } from "react-router-dom";
-import RaiseEvent from "../../utils/RaiseEvent.jsx";
+import API from "../../service/service.jsx";
+
+import provincesData from "../../constant/province.json";
+import {getDistrictInformation, getWardInformation} from "../../component/Helper.jsx";
+
+import StatisticTab from './chart/StatisticTab';
+import OrderCustomer from "./component/OrderCustomer.jsx"; // Import StatisticTab
 
 function CustomerDetail() {
-    const { openSuccessNotification, openErrorNotification } = useNotificationContext();
-    const { userData, logout } = useUserContext();
-    const navigator = useNavigate();
-    const customer_id = useParams().id;
+    const {openErrorNotification} = useNotificationContext();
+    const {userData, logout} = useUserContext();
+    const navigate = useNavigate();
+    const {id: customer_id} = useParams();
 
     const [customer, setCustomer] = useState(null);
-    const [formData, setFormData] = useState({
-        first_name: "",
-        last_name: "",
-        email: "",
-        phone_number: "",
-    });
-    const [addressData, setAddressData] = useState({
-        id: null,
-        full_name: '',
-        phone_number: '',
-        street_address: '',
-        city: '',
-        province: '',
-        postal_code: '',
-        country: 'Vietnam',
-    });
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    const [provinceName, setProvinceName] = useState("");
+    const [districtName, setDistrictName] = useState("");
+    const [wardName, setWardName] = useState("");
 
     useEffect(() => {
         const fetchCustomerData = async () => {
@@ -39,37 +35,47 @@ function CustomerDetail() {
                     },
                 });
 
-                if (response.status === 401 || response.code === 'token_not_valid') {
+                if (response.status === 401 || response.data.code === "token_not_valid") {
                     openErrorNotification("Unauthorized access");
                     logout();
                     return;
                 }
 
                 setCustomer(response.data);
-                setFormData({
-                    first_name: response.data.first_name || "",
-                    last_name: response.data.last_name || "",
-                    email: response.data.email || "",
-                    phone_number: response.data.phone_number || "",
-                });
+
+                // Fetch address details if available
                 if (response.data.address) {
-                    setAddressData({
-                        id: response.data.address.id || null,
-                        full_name: response.data.address.full_name || '',
-                        phone_number: response.data.address.phone_number || '',
-                        street_address: response.data.address.street_address || '',
-                        city: response.data.address.city || '',
-                        province: response.data.address.province || '',
-                        postal_code: response.data.address.postal_code || '',
-                        country: response.data.address.country || 'Vietnam',
-                    });
+                    const {province: provinceId, district: districtId, ward: wardCode} = response.data.address;
+
+                    // Find Province Name
+                    const provinceObj = provincesData.data.find(
+                        (item) => item.ProvinceID === parseInt(provinceId, 10)
+                    );
+                    setProvinceName(provinceObj ? provinceObj.ProvinceName : "Unknown");
+
+                    // Find District Name
+                    const districts = await getDistrictInformation(provinceId);
+                    const districtObj = districts.find(
+                        (item) => item.DistrictID === parseInt(districtId, 10)
+                    );
+                    setDistrictName(districtObj ? districtObj.DistrictName : "Unknown");
+
+                    // Find Ward Name
+                    const wards = await getWardInformation(districtId);
+                    const wardObj = wards.find(
+                        (item) => item.WardCode === wardCode
+                    );
+                    setWardName(wardObj ? wardObj.WardName : "Unknown");
                 }
+
+                setLoading(false);
             } catch (error) {
                 console.error("Error fetching customer data:", error);
-                if (error.status === 401) {
+                setError("Failed to load customer details.");
+                setLoading(false);
+                if (error.response && error.response.status === 401) {
                     openErrorNotification("Unauthorized access");
                     logout();
-                    return;
                 }
             }
         };
@@ -77,237 +83,122 @@ function CustomerDetail() {
         if (userData.access) {
             fetchCustomerData();
         }
-    }, [userData.access]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [userData.access, customer_id]);
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
-    };
+    if (loading) {
+        return (
+            <div className="container-xxl flex-grow-1 container-p-y text-center">
+                <Spin size="large"/>
+            </div>
+        );
+    }
 
-    const handleAddressChange = (e) => {
-        const { name, value } = e.target;
-        setAddressData(prevState => ({
-            ...prevState,
-            [name]: value
-        }));
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            const formDataToSend = {
-                ...formData,
-                address: addressData,
-            };
-
-            if (addressData.id) {
-                await API.put(`/address/detail/${addressData.id}/`, addressData, {
-                    headers: {
-                        Authorization: `Bearer ${userData.access}`,
-                        "Content-Type": "application/json",
-                    },
-                });
-            } else {
-                const addressResponse = await API.post(`/address/create`, addressData, {
-                    headers: {
-                        Authorization: `Bearer ${userData.access}`,
-                        "Content-Type": "application/json",
-                    },
-                });
-                formDataToSend.address = addressResponse.data;
-            }
-
-            const response = await API.put(`/customer/detail/${customer_id}/`, formDataToSend, {
-                headers: {
-                    Authorization: `Bearer ${userData.access}`,
-                    "Content-Type": "application/json",
-                },
-            });
-
-            if (response.status === 401 || response.code === 'token_not_valid') {
-                openErrorNotification("Unauthorized access");
-                logout();
-                return;
-            }
-
-            if(response.status === 400) {
-                openErrorNotification("Failed to update customer.");
-                return;
-            }
-
-            if(response.status === 404) {
-                openErrorNotification("Customer not found.");
-                return;
-            }
-
-            if(response.status === 500) {
-                openErrorNotification("Internal server error.");
-                return;
-            }
-
-            if(response.status === 200 || response.status === 201) {
-                await RaiseEvent(userData, '201', 'UPDATE', 'CUSTOMER', 'Update customer', response.data);
-                setCustomer(response.data);
-                openSuccessNotification("Customer updated successfully!");
-                navigator("/customers");
-            }
-        } catch (error) {
-            console.error("Error updating customer data:", error);
-            openErrorNotification("Failed to update customer.");
-        }
-    };
+    if (error) {
+        return (
+            <div className="container-xxl flex-grow-1 container-p-y">
+                <Alert message="Error" description={error} type="error" showIcon/>
+                <Link to="/customers" className="btn btn-primary mt-3">
+                    Back to Customers
+                </Link>
+            </div>
+        );
+    }
 
     return (
         <div className="container-xxl flex-grow-1 container-p-y">
             <div className="row">
                 <div className="col-md-12">
-                    <Link to={"/customers"} className="btn btn-primary mb-4">
-                        <i className="bx bx-arrow-back me-2"></i>
-                        Back to Customers
-                    </Link>
-                    {/* Customer Details */}
                     <div className="card mb-4">
+                        <div className="card-header d-flex justify-content-between align-items-center">
+                            <h4 className="card-title">Customer: <strong style={{color: '#696cff'}}>{customer.first_name} {customer.last_name}</strong></h4>
+                            <div className="card-options">
+                                <button
+                                    className="btn btn-secondary mx-1"
+                                    onClick={() => navigate("/customers")}
+                                >
+                                    <i className="bx bx-arrow-back me-2"></i> Back to Customers
+                                </button>
+                                <button
+                                    className="btn btn-primary"
+                                    onClick={() => navigate(`/edit-customer/${customer_id}`)}
+                                >
+                                    Edit Customer
+                                </button>
+                            </div>
+                        </div>
                         <Tabs
                             defaultActiveKey="1"
                             type="card"
                             size="large"
-                            style={{ margin: '1.5rem 1rem' }}
+                            style={{margin: '1.5rem 1rem'}}
                         >
+                            {/* TAB 1: Customer Details */}
                             <Tabs.TabPane tab="Customer Details" key="1">
                                 <div className="card-body">
-                                    <form id="formCustomerSettings" method="POST" onSubmit={handleSubmit}>
-                                        <div className="row">
-                                            {/* First Name */}
-                                            <div className="mb-3 col-md-6">
-                                                <label htmlFor="first_name" className="form-label">First Name</label>
-                                                <input
-                                                    className="form-control"
-                                                    type="text"
-                                                    id="first_name"
-                                                    name="first_name"
-                                                    value={formData.first_name}
-                                                    onChange={handleInputChange}
-                                                    required
-                                                />
-                                            </div>
-                                            {/* Last Name */}
-                                            <div className="mb-3 col-md-6">
-                                                <label htmlFor="last_name" className="form-label">Last Name</label>
-                                                <input
-                                                    className="form-control"
-                                                    type="text"
-                                                    id="last_name"
-                                                    name="last_name"
-                                                    value={formData.last_name}
-                                                    onChange={handleInputChange}
-                                                    required
-                                                />
-                                            </div>
-                                            {/* Email */}
-                                            <div className="mb-3 col-md-6">
-                                                <label htmlFor="email" className="form-label">Email</label>
-                                                <input
-                                                    className="form-control"
-                                                    type="email"
-                                                    id="email"
-                                                    name="email"
-                                                    value={formData.email}
-                                                    onChange={handleInputChange}
-                                                    required
-                                                />
-                                            </div>
-                                            {/* Phone Number */}
-                                            <div className="mb-3 col-md-6">
-                                                <label htmlFor="phone_number" className="form-label">Phone Number</label>
-                                                <input
-                                                    className="form-control"
-                                                    type="text"
-                                                    id="phone_number"
-                                                    name="phone_number"
-                                                    value={formData.phone_number}
-                                                    onChange={handleInputChange}
-                                                />
-                                            </div>
-                                        </div>
-                                    </form>
+                                    <Descriptions bordered column={1}>
+                                        <Descriptions.Item label="First Name">
+                                            {customer.first_name || "N/A"}
+                                        </Descriptions.Item>
+                                        <Descriptions.Item label="Last Name">
+                                            {customer.last_name || "N/A"}
+                                        </Descriptions.Item>
+                                        <Descriptions.Item label="Email">
+                                            {customer.email || "N/A"}
+                                        </Descriptions.Item>
+                                        <Descriptions.Item label="Phone Number">
+                                            {customer.phone_number || "N/A"}
+                                        </Descriptions.Item>
+                                    </Descriptions>
                                 </div>
                             </Tabs.TabPane>
+
+                            {/* TAB 2: Address Information */}
                             <Tabs.TabPane tab="Address Information" key="2">
                                 <div className="card-body">
-                                    <div className="row">
-                                        {/* Street Address */}
-                                        <div className="mb-3 col-md-12">
-                                            <label htmlFor="street_address" className="form-label">Street Address</label>
-                                            <input
-                                                className="form-control"
-                                                type="text"
-                                                id="street_address"
-                                                name="street_address"
-                                                value={addressData.street_address}
-                                                onChange={handleAddressChange}
-                                                required
-                                            />
-                                        </div>
-                                        {/* City */}
-                                        <div className="mb-3 col-md-6">
-                                            <label htmlFor="city" className="form-label">City</label>
-                                            <input
-                                                className="form-control"
-                                                type="text"
-                                                id="city"
-                                                name="city"
-                                                value={addressData.city}
-                                                onChange={handleAddressChange}
-                                                required
-                                            />
-                                        </div>
-                                        {/* Province */}
-                                        <div className="mb-3 col-md-6">
-                                            <label htmlFor="province" className="form-label">Province</label>
-                                            <input
-                                                className="form-control"
-                                                type="text"
-                                                id="province"
-                                                name="province"
-                                                value={addressData.province}
-                                                onChange={handleAddressChange}
-                                                required
-                                            />
-                                        </div>
-                                        {/* Postal Code */}
-                                        <div className="mb-3 col-md-6">
-                                            <label htmlFor="postal_code" className="form-label">Postal Code</label>
-                                            <input
-                                                className="form-control"
-                                                type="text"
-                                                id="postal_code"
-                                                name="postal_code"
-                                                value={addressData.postal_code}
-                                                onChange={handleAddressChange}
-                                                required
-                                            />
-                                        </div>
-                                        {/* Country */}
-                                        <div className="mb-3 col-md-6">
-                                            <label htmlFor="country" className="form-label">Country</label>
-                                            <input
-                                                className="form-control"
-                                                type="text"
-                                                id="country"
-                                                name="country"
-                                                value={addressData.country}
-                                                onChange={handleAddressChange}
-                                                required
-                                            />
-                                        </div>
-                                    </div>
+                                    {customer.address ? (
+                                        <Descriptions bordered column={1}>
+                                            <Descriptions.Item label="Street Address">
+                                                {customer.address.street_address || "N/A"}
+                                            </Descriptions.Item>
+                                            <Descriptions.Item label="Province">
+                                                {provinceName}
+                                            </Descriptions.Item>
+                                            <Descriptions.Item label="District">
+                                                {districtName}
+                                            </Descriptions.Item>
+                                            <Descriptions.Item label="Ward">
+                                                {wardName}
+                                            </Descriptions.Item>
+                                            <Descriptions.Item label="Postal Code">
+                                                {customer.address.postal_code || "N/A"}
+                                            </Descriptions.Item>
+                                            <Descriptions.Item label="Country">
+                                                {customer.address.country || "Vietnam"}
+                                            </Descriptions.Item>
+                                        </Descriptions>
+                                    ) : (
+                                        <Alert
+                                            message="No Address Information"
+                                            type="info"
+                                            showIcon
+                                        />
+                                    )}
+                                </div>
+                            </Tabs.TabPane>
+
+                            {/* TAB 3: Statistic */}
+                            <Tabs.TabPane tab="Statistic" key="3">
+                                <StatisticTab customer_id={customer_id}/>
+                            </Tabs.TabPane>
+
+                            {/* TAB 4: Orders */}
+                            <Tabs.TabPane tab="Orders" key="4">
+                                <div className="card-body">
+                                    <OrderCustomer customer_id={customer_id}/>
                                 </div>
                             </Tabs.TabPane>
                         </Tabs>
-                        <div className="m-3 text-end">
-                            <button type="reset" className="btn btn-outline-secondary me-2" onClick={() => navigator('/customers')}>Cancel</button>
-                            <button type="submit" className="btn btn-primary" onClick={handleSubmit}>Save changes</button>
-                        </div>
                     </div>
                 </div>
             </div>
