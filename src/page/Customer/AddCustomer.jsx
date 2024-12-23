@@ -32,7 +32,7 @@ function AddCustomer() {
         province: '',
         city: '',
         postal_code: '',
-        country: 'Vietnam',
+        country: '',
     });
 
     const handleInputChange = (e) => {

@@ -22,13 +22,14 @@ const CreateCustomer = ({onCustomerAdd, closeModal}) => {
             district: '',
             province: '',
             country: 'Vietnam',
+            postal_code: '',
         }
     });
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
 
-        if (name === "street_address") {
+        if (name === "street_address" || name === "ward" || name === "district" || name === "province" || name === "country" || name === "postal_code") {
             setFormData({
                 ...formData,
                 address: {
@@ -211,6 +212,30 @@ const CreateCustomer = ({onCustomerAdd, closeModal}) => {
                             id="street_address"
                             name="street_address"
                             value={formData.address.street_address}
+                            onChange={handleInputChange}
+                        />
+                    </div>
+                    {/* Country */}
+                    <div className="mb-3 col-md-6">
+                        <label htmlFor="country" className="form-label">Country</label>
+                        <input
+                            className="form-control"
+                            type="text"
+                            id="country"
+                            name="country"
+                            value={formData.address.country}
+                            disabled
+                        />
+                    </div>
+                    {/* Postal Code */}
+                    <div className="mb-3 col-md-6">
+                        <label htmlFor="postal_code" className="form-label">Postal Code</label>
+                        <input
+                            className="form-control"
+                            type="text"
+                            id="postal_code"
+                            name="postal_code"
+                            value={formData.address.postal_code}
                             onChange={handleInputChange}
                         />
                     </div>

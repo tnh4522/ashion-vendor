@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {Tabs, Descriptions, Spin, Alert} from 'antd';
 import {Link, useNavigate, useParams} from "react-router-dom";
 
@@ -109,12 +109,24 @@ function CustomerDetail() {
         <div className="container-xxl flex-grow-1 container-p-y">
             <div className="row">
                 <div className="col-md-12">
-                    <Link to="/customers" className="btn btn-primary mb-4">
-                        <i className="bx bx-arrow-back me-2"></i>
-                        Back to Customers
-                    </Link>
-
                     <div className="card mb-4">
+                        <div className="card-header d-flex justify-content-between align-items-center">
+                            <h4 className="card-title">Customer: <strong style={{color: '#696cff'}}>{customer.first_name} {customer.last_name}</strong></h4>
+                            <div className="card-options">
+                                <button
+                                    className="btn btn-secondary mx-1"
+                                    onClick={() => navigate("/customers")}
+                                >
+                                    <i className="bx bx-arrow-back me-2"></i> Back to Customers
+                                </button>
+                                <button
+                                    className="btn btn-primary"
+                                    onClick={() => navigate(`/edit-customer/${customer_id}`)}
+                                >
+                                    Edit Customer
+                                </button>
+                            </div>
+                        </div>
                         <Tabs
                             defaultActiveKey="1"
                             type="card"

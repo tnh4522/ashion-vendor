@@ -238,11 +238,6 @@ function EditCustomer() {
         <div className="container-xxl flex-grow-1 container-p-y">
             <div className="row">
                 <div className="col-md-12">
-                    <Link to={"/customers"} className="btn btn-primary mb-4">
-                        <i className="bx bx-arrow-back me-2"></i>
-                        Back to Customers
-                    </Link>
-
                     <div className="card mb-4">
                         <Tabs
                             defaultActiveKey="1"

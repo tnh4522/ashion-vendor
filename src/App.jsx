@@ -87,7 +87,7 @@ function App() {
                                     <Route path="/account" element={<ProtectedRoute><Account/></ProtectedRoute>}/>
                                     <Route path="/products" element={<ProtectedRoute><Products/></ProtectedRoute>}/>
                                     <Route path="/customers" element={<ProtectedRoute><Customers/></ProtectedRoute>}/>
-                                    <Route path="/edit-customer" element={<ProtectedRoute><EditCustomer/></ProtectedRoute>}/>
+                                    <Route path="/edit-customer/:id" element={<ProtectedRoute><EditCustomer/></ProtectedRoute>}/>
                                     <Route path="/customer/:id" element={<ProtectedRoute><CustomerDetail/></ProtectedRoute>}/>
                                     <Route path="/add-product" element={<ProtectedRoute><AddProduct/></ProtectedRoute>}/>
                                     <Route path="/products/image-search" element={<ImageSearch />} />
