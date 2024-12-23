@@ -85,7 +85,7 @@ const Customers = () => {
     const handleDelete = (id) => {
         confirm({
             title: 'Do you want to delete this customer?',
-            icon: <ExclamationCircleFilled />,
+            icon: <ExclamationCircleFilled/>,
             content: 'Confirm to delete this customer, this action cannot be undone.',
             okText: 'Confirm',
             okType: 'danger',
@@ -103,7 +103,8 @@ const Customers = () => {
                         console.error('Error deleting customer:', error);
                     });
             },
-            onCancel() {},
+            onCancel() {
+            },
         });
     };
 
@@ -139,7 +140,7 @@ const Customers = () => {
             render: (id) => (
                 <span>
                     <Link to={`/customer/${id}`}>
-                        <i className="fa-solid fa-pen-to-square" style={{marginRight: '10px'}} />
+                        <i className="fa-solid fa-eye" style={{marginRight: '10px'}}/>
                     </Link>
                     <i
                         className="fa-solid fa-trash"
@@ -264,7 +265,7 @@ const Customers = () => {
                 destroyOnClose
                 width={800}
             >
-                <CreateCustomer onCustomerAdd={onCustomerAdd} closeModal={closeModal} />
+                <CreateCustomer onCustomerAdd={onCustomerAdd} closeModal={closeModal}/>
             </Modal>
         </div>
     );
