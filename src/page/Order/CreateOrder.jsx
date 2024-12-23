@@ -73,7 +73,7 @@ const CreateOrder = () => {
         const haveProduct = orderData.items.some(item => item.product !== '');
 
         const subtotal = orderData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        const tax = subtotal * 0.1;
+        const tax = (subtotal * 0.1);
         const discount = orderData.discount_amount || 0;
 
         if (orderData.shipping_method !== 'NONE' && shippingAddress.district && haveProduct) {
@@ -258,6 +258,7 @@ const CreateOrder = () => {
     const handleOrderSubmit = async (e) => {
         e.preventDefault();
         try {
+            orderData.tax_amount = formatTaxAmount(orderData.tax_amount);
             const response = await API.post('orders/create/', orderData, {
                 headers: {
                     'Authorization': `Bearer ${userData.access}`,
@@ -267,6 +268,8 @@ const CreateOrder = () => {
                 localStorage.setItem('order', JSON.stringify(response.data));
                 if(orderData.payment_method === 'CREDIT_CARD') {
                     await handlePayment(response.data);
+                } else {
+                    navigate('/orders');
                 }
                 openSuccessNotification('Order created successfully');
             }
@@ -327,6 +330,19 @@ const CreateOrder = () => {
             setWardName('');
         }
     }, [selectedCustomer, shippingAddress.province, shippingAddress.district, shippingAddress.ward]);
+
+    function formatTaxAmount(taxAmount) {
+        const numericValue = parseFloat(taxAmount);
+
+        if (isNaN(numericValue)) {
+            throw new Error("Invalid tax amount");
+        }
+
+        return numericValue.toLocaleString("en-US", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
 
     return (
         <div className="container-xxl flex-grow-1 container-p-y">

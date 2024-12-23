@@ -1,34 +1,49 @@
 import { useEffect, useState } from "react";
-import useUserContext from "../../hooks/useUserContext.jsx";
-import API from "../../service/service.jsx";
-import useNotificationContext from "../../hooks/useNotificationContext.jsx";
 import { Tabs } from 'antd';
 import { Link, useNavigate, useParams } from "react-router-dom";
+
+import useUserContext from "../../hooks/useUserContext.jsx";
+import useNotificationContext from "../../hooks/useNotificationContext.jsx";
+import API from "../../service/service.jsx";
 import RaiseEvent from "../../utils/RaiseEvent.jsx";
+
+
+import provincesData from "../../constant/province.json";
+import { getDistrictInformation, getWardInformation } from "../../component/Helper.jsx";
+import SelectProvince from "../../component/SelectProvince.jsx";
+import SelectDistrict from "../../component/SelectDistrict.jsx";
+import SelectWard from "../../component/SelectWard.jsx";
 
 function CustomerDetail() {
     const { openSuccessNotification, openErrorNotification } = useNotificationContext();
     const { userData, logout } = useUserContext();
-    const navigator = useNavigate();
-    const customer_id = useParams().id;
+    const navigate = useNavigate();
+    const { id: customer_id } = useParams();
 
     const [customer, setCustomer] = useState(null);
+
     const [formData, setFormData] = useState({
         first_name: "",
         last_name: "",
         email: "",
         phone_number: "",
     });
+
     const [addressData, setAddressData] = useState({
         id: null,
-        full_name: '',
-        phone_number: '',
-        street_address: '',
-        city: '',
-        province: '',
-        postal_code: '',
-        country: 'Vietnam',
+        full_name: "",
+        phone_number: "",
+        street_address: "",
+        province: "",
+        district: "",
+        ward: "",
+        postal_code: "",
+        country: "Vietnam",
     });
+
+    const [provinceName, setProvinceName] = useState("");
+    const [districtName, setDistrictName] = useState("");
+    const [wardName, setWardName] = useState("");
 
     useEffect(() => {
         const fetchCustomerData = async () => {
@@ -39,7 +54,7 @@ function CustomerDetail() {
                     },
                 });
 
-                if (response.status === 401 || response.code === 'token_not_valid') {
+                if (response.status === 401 || response.code === "token_not_valid") {
                     openErrorNotification("Unauthorized access");
                     logout();
                     return;
@@ -52,16 +67,19 @@ function CustomerDetail() {
                     email: response.data.email || "",
                     phone_number: response.data.phone_number || "",
                 });
+
                 if (response.data.address) {
                     setAddressData({
                         id: response.data.address.id || null,
-                        full_name: response.data.address.full_name || '',
-                        phone_number: response.data.address.phone_number || '',
-                        street_address: response.data.address.street_address || '',
-                        city: response.data.address.city || '',
-                        province: response.data.address.province || '',
-                        postal_code: response.data.address.postal_code || '',
-                        country: response.data.address.country || 'Vietnam',
+                        full_name: response.data.address.full_name || "",
+                        phone_number: response.data.address.phone_number || "",
+                        street_address: response.data.address.street_address || "",
+                        province: response.data.address.province || "",   // ID (int/string)
+                        district: response.data.address.district || "",   // ID (int/string)
+                        ward: response.data.address.ward || "",           // WardCode
+                        city: response.data.address.city || "",
+                        postal_code: response.data.address.postal_code || "",
+                        country: response.data.address.country || "Vietnam",
                     });
                 }
             } catch (error) {
@@ -69,7 +87,6 @@ function CustomerDetail() {
                 if (error.status === 401) {
                     openErrorNotification("Unauthorized access");
                     logout();
-                    return;
                 }
             }
         };
@@ -77,19 +94,57 @@ function CustomerDetail() {
         if (userData.access) {
             fetchCustomerData();
         }
-    }, [userData.access]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [userData.access, customer_id]);
+
+    useEffect(() => {
+        if (customer && addressData.province) {
+            const province = provincesData.data.find(
+                (item) => item.ProvinceID === parseInt(addressData.province, 10)
+            );
+            setProvinceName(province ? province.ProvinceName : "Unknown");
+
+            getDistrictInformation(addressData.province)
+                .then((districts) => {
+                    const district = districts.find(
+                        (item) => item.DistrictID === parseInt(addressData.district, 10)
+                    );
+                    setDistrictName(district ? district.DistrictName : "Unknown");
+                })
+                .catch((err) => {
+                    console.error("Error fetching district:", err);
+                    setDistrictName("Unknown");
+                });
+
+            getWardInformation(addressData.district)
+                .then((wards) => {
+                    const ward = wards.find((item) => item.WardCode === addressData.ward);
+                    setWardName(ward ? ward.WardName : "Unknown");
+                })
+                .catch((err) => {
+                    console.error("Error fetching ward:", err);
+                    setWardName("Unknown");
+                });
+        } else {
+            setProvinceName("");
+            setDistrictName("");
+            setWardName("");
+        }
+    }, [
+        customer,
+        addressData.province,
+        addressData.district,
+        addressData.ward,
+    ]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
+        setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
     const handleAddressChange = (e) => {
         const { name, value } = e.target;
-        setAddressData(prevState => ({
-            ...prevState,
-            [name]: value
-        }));
+        setAddressData((prev) => ({ ...prev, [name]: value }));
     };
 
     const handleSubmit = async (e) => {
@@ -124,37 +179,59 @@ function CustomerDetail() {
                 },
             });
 
-            if (response.status === 401 || response.code === 'token_not_valid') {
+            if (response.status === 401 || response.code === "token_not_valid") {
                 openErrorNotification("Unauthorized access");
                 logout();
                 return;
             }
 
-            if(response.status === 400) {
+            if (response.status === 400) {
                 openErrorNotification("Failed to update customer.");
                 return;
             }
-
-            if(response.status === 404) {
+            if (response.status === 404) {
                 openErrorNotification("Customer not found.");
                 return;
             }
-
-            if(response.status === 500) {
+            if (response.status === 500) {
                 openErrorNotification("Internal server error.");
                 return;
             }
 
-            if(response.status === 200 || response.status === 201) {
-                await RaiseEvent(userData, '201', 'UPDATE', 'CUSTOMER', 'Update customer', response.data);
+            if (response.status === 200 || response.status === 201) {
+                await RaiseEvent(userData, "201", "UPDATE", "CUSTOMER", "Update customer", response.data);
                 setCustomer(response.data);
                 openSuccessNotification("Customer updated successfully!");
-                navigator("/customers");
+                navigate("/customers");
             }
         } catch (error) {
             console.error("Error updating customer data:", error);
             openErrorNotification("Failed to update customer.");
         }
+    };
+
+    const onSelectProvince = (province) => {
+        setAddressData((prev) => ({
+            ...prev,
+            province,
+            district: '',
+            ward: '',
+        }));
+    };
+
+    const onSelectDistrict = (district) => {
+        setAddressData((prev) => ({
+            ...prev,
+            district,
+            ward: '',
+        }));
+    };
+
+    const onSelectWard = (ward) => {
+        setAddressData((prev) => ({
+            ...prev,
+            ward,
+        }));
     };
 
     return (
@@ -165,7 +242,7 @@ function CustomerDetail() {
                         <i className="bx bx-arrow-back me-2"></i>
                         Back to Customers
                     </Link>
-                    {/* Customer Details */}
+
                     <div className="card mb-4">
                         <Tabs
                             defaultActiveKey="1"
@@ -173,6 +250,7 @@ function CustomerDetail() {
                             size="large"
                             style={{ margin: '1.5rem 1rem' }}
                         >
+                            {/* TAB 1: Thông tin Khách hàng */}
                             <Tabs.TabPane tab="Customer Details" key="1">
                                 <div className="card-body">
                                     <form id="formCustomerSettings" method="POST" onSubmit={handleSubmit}>
@@ -232,11 +310,16 @@ function CustomerDetail() {
                                     </form>
                                 </div>
                             </Tabs.TabPane>
+
+                            {/* TAB 2: Thông tin Địa chỉ */}
                             <Tabs.TabPane tab="Address Information" key="2">
                                 <div className="card-body">
+                                    {/* Bạn có thể gộp chung form với tab 1,
+                      ở đây ta tách để code rõ ràng.
+                      Khi submit vẫn gọi handleSubmit() */}
                                     <div className="row">
                                         {/* Street Address */}
-                                        <div className="mb-3 col-md-12">
+                                        <div className="mb-3 col-md-6">
                                             <label htmlFor="street_address" className="form-label">Street Address</label>
                                             <input
                                                 className="form-control"
@@ -248,30 +331,33 @@ function CustomerDetail() {
                                                 required
                                             />
                                         </div>
-                                        {/* City */}
-                                        <div className="mb-3 col-md-6">
-                                            <label htmlFor="city" className="form-label">City</label>
-                                            <input
-                                                className="form-control"
-                                                type="text"
-                                                id="city"
-                                                name="city"
-                                                value={addressData.city}
-                                                onChange={handleAddressChange}
-                                                required
-                                            />
-                                        </div>
                                         {/* Province */}
                                         <div className="mb-3 col-md-6">
                                             <label htmlFor="province" className="form-label">Province</label>
-                                            <input
-                                                className="form-control"
-                                                type="text"
+                                            <SelectProvince
                                                 id="province"
-                                                name="province"
-                                                value={addressData.province}
-                                                onChange={handleAddressChange}
-                                                required
+                                                selectedProvince={addressData.province}
+                                                onSelectProvince={onSelectProvince}
+                                            />
+                                        </div>
+                                        {/* District */}
+                                        <div className="mb-3 col-md-6">
+                                            <label htmlFor="district" className="form-label">District</label>
+                                            <SelectDistrict
+                                                id="district"
+                                                province_id={addressData.province}
+                                                selectedDistrict={addressData.district}
+                                                onSelectDistrict={onSelectDistrict}
+                                            />
+                                        </div>
+                                        {/* Ward */}
+                                        <div className="mb-3 col-md-6">
+                                            <label htmlFor="ward" className="form-label">Ward</label>
+                                            <SelectWard
+                                                id="ward"
+                                                district_id={addressData.district}
+                                                selectedWard={addressData.ward}
+                                                onSelectWard={onSelectWard}
                                             />
                                         </div>
                                         {/* Postal Code */}
@@ -304,9 +390,23 @@ function CustomerDetail() {
                                 </div>
                             </Tabs.TabPane>
                         </Tabs>
+
+                        {/* Footer: nút lưu/cancel */}
                         <div className="m-3 text-end">
-                            <button type="reset" className="btn btn-outline-secondary me-2" onClick={() => navigator('/customers')}>Cancel</button>
-                            <button type="submit" className="btn btn-primary" onClick={handleSubmit}>Save changes</button>
+                            <button
+                                type="reset"
+                                className="btn btn-outline-secondary me-2"
+                                onClick={() => navigate("/customers")}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                className="btn btn-primary"
+                                onClick={handleSubmit}
+                            >
+                                Save changes
+                            </button>
                         </div>
                     </div>
                 </div>
