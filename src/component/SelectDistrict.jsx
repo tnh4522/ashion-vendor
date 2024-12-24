@@ -24,6 +24,7 @@ function SelectDistrict({ province_id, selectedDistrict, onSelectDistrict = () =
             className="form-select"
             value={selectedDistrict || ""}
             onChange={(e) => onSelectDistrict(e.target.value)}
+            required
         >
             <option value="" disabled>
                 Please select a district
