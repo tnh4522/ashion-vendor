@@ -1,174 +1,132 @@
-import {useEffect, useState} from 'react';
-import {Button, Input, Select, Table} from 'antd';
-import API from '../../service/service';
-import useUserContext from '../../hooks/useUserContext';
+import { useEffect, useState } from 'react';
+import { Button, Input, Select, Table, Space } from 'antd';
+import { ReloadOutlined, SearchOutlined } from '@ant-design/icons';
 import useNotificationContext from '../../hooks/useNotificationContext';
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 
-const {Option} = Select;
+const { Option } = Select;
 
 const ActivityLog = () => {
     const navigate = useNavigate();
-    const {userData, logout} = useUserContext();
-    const {openErrorNotification} = useNotificationContext();
+    const { openErrorNotification } = useNotificationContext();
 
     const [logs, setLogs] = useState([]);
-    const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
     const [searchParams, setSearchParams] = useState({
         searchText: '',
         status: '',
         model: '',
     });
-    const [tableParams, setTableParams] = useState({
-        pagination: {
-            current: 1,
-            pageSize: 10,
-        },
-        filters: {},
-        sorter: {},
+
+    const [pagination, setPagination] = useState({
+        current: 1,
+        pageSize: 10,
+        showSizeChanger: true,
+        pageSizeOptions: ['10', '20', '50', '100'],
     });
 
     useEffect(() => {
+        setLoading(true);
         const eventSource = new EventSource(`http://localhost:8000/api/activity/log-stream/`);
 
         eventSource.onmessage = (event) => {
             const newLog = JSON.parse(event.data);
-            console.log('New log:', newLog);
             setLogs((prevLogs) => [newLog, ...prevLogs]);
+            setLoading(false);
         };
 
         eventSource.onerror = (error) => {
-            console.error("SSE connection error:", error);
+            console.error('SSE connection error:', error);
+            openErrorNotification('Error', 'Failed to connect to the server');
             eventSource.close();
+            setLoading(false);
         };
 
         return () => {
             eventSource.close();
         };
-    }, []);
+    }, [openErrorNotification]);
 
-
-
-    const fetchData = async () => {
-        setLoading(true);
-        try {
-            const params = {
-                page: tableParams.pagination.current,
-                page_size: tableParams.pagination.pageSize,
-            };
-
-            if (tableParams.sorter.field) {
-                params.ordering = tableParams.sorter.order === 'ascend'
-                    ? tableParams.sorter.field
-                    : `-${tableParams.sorter.field}`;
-            }
-
-            if (searchParams.searchText) {
-                params.search = searchParams.searchText;
-            }
-            if (searchParams.status) {
-                params.status = searchParams.status;
-            }
-            if (searchParams.model) {
-                params.model = searchParams.model;
-            }
-
-            const response = await API.get('activity/list/', {
-                headers: {
-                    'Authorization': `Bearer ${userData.access}`,
-                },
-                params,
-            });
-
-            setData(response.data.results);
-            setTableParams({
-                ...tableParams,
-                pagination: {
-                    ...tableParams.pagination,
-                    total: response.data.count,
-                },
-            });
-        } catch (error) {
-            console.error('Error fetching activity logs:', error);
-            openErrorNotification('Error fetching activity logs.');
-            if (error.response && error.response.status === 401) {
-                openErrorNotification("Unauthorized access");
-                logout();
-                return;
-            }
-        } finally {
-            setLoading(false);
-        }
-    };
+    // Optional: Limit the number of logs stored to prevent excessive memory usage
+    const MAX_LOGS = 1000; // Adjust as needed
 
     useEffect(() => {
-        if (userData.access) {
-            fetchData();
+        if (logs.length > MAX_LOGS) {
+            setLogs((prevLogs) => prevLogs.slice(0, MAX_LOGS));
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [userData.access, JSON.stringify(tableParams)]);
+    }, [logs]);
 
     const columns = [
         {
             title: 'User',
-            dataIndex: ['user', 'username'],
-            sorter: true,
+            dataIndex: 'user',
+            sorter: (a, b) => a.user.localeCompare(b.user),
             width: '10%',
         },
         {
             title: 'Status',
             dataIndex: 'status',
-            sorter: true,
+            sorter: (a, b) => a.status.localeCompare(b.status),
             width: '10%',
+            filters: [
+                { text: 'Success', value: 'success' },
+                { text: 'Failed', value: 'failed' },
+            ],
+            onFilter: (value, record) => record.status === value,
+            render: (status) => (
+                <span style={{ color: status === 'success' ? 'green' : 'red' }}>
+                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                </span>
+            ),
         },
         {
             title: 'Action',
             dataIndex: 'action',
-            sorter: true,
-            width: '10%',
+            sorter: (a, b) => a.action.localeCompare(b.action),
+            width: '15%',
         },
         {
             title: 'Model',
             dataIndex: 'model',
-            sorter: true,
-            width: '15%',
+            sorter: (a, b) => a.model.localeCompare(b.model),
+            width: '10%',
         },
         {
             title: 'Context',
             dataIndex: 'context',
-            sorter: false,
-            width: '25%',
+            sorter: (a, b) => a.context.localeCompare(b.context),
+            width: '15%',
+            ellipsis: true,
         },
         {
             title: 'Data',
-            dataIndex: 'data',
-            width: '15%',
+            dataIndex: 'details',
+            width: '20%',
             render: (value) => {
                 const text = JSON.stringify(value);
                 if (!text) return '';
-                return text.length > 20 ? text.substring(0, 20) + '...' : text;
+                return text.length > 30 ? `${text.substring(0, 30)}...` : text;
             },
         },
         {
             title: 'Time',
-            dataIndex: 'created_at',
-            sorter: true,
+            dataIndex: 'timestamp',
+            sorter: (a, b) => new Date(a.timestamp) - new Date(b.timestamp),
             width: '15%',
-            render: (text) => new Date(text).toLocaleString(),
         },
     ];
 
-    const handleTableChange = (pagination, filters, sorter) => {
-        setTableParams({
-            pagination,
-            filters,
-            sorter,
+    const handleTableChange = (newPagination, filters, sorter) => {
+        setPagination({
+            ...newPagination,
+            // Maintain current page size options
+            showSizeChanger: true,
+            pageSizeOptions: ['10', '20', '50', '100'],
         });
     };
 
     const handleInputChange = (e) => {
-        const {name, value} = e.target;
+        const { name, value } = e.target;
         setSearchParams((prev) => ({
             ...prev,
             [name]: value,
@@ -183,14 +141,10 @@ const ActivityLog = () => {
     };
 
     const handleSearch = () => {
-        setTableParams({
-            ...tableParams,
-            pagination: {
-                ...tableParams.pagination,
-                current: 1,
-            },
+        setPagination({
+            ...pagination,
+            current: 1,
         });
-        fetchData();
     };
 
     const handleResetFilters = () => {
@@ -199,69 +153,83 @@ const ActivityLog = () => {
             status: '',
             model: '',
         });
-        setTableParams({
-            ...tableParams,
-            pagination: {
-                ...tableParams.pagination,
-                current: 1,
-            },
+        setPagination({
+            ...pagination,
+            current: 1,
         });
-        fetchData();
     };
+
+    // Apply filters and search to the logs
+    const filteredLogs = logs.filter((log) => {
+        const { searchText, status, model } = searchParams;
+        const matchesSearchText =
+            searchText === '' ||
+            log.user.toLowerCase().includes(searchText.toLowerCase()) ||
+            log.action.toLowerCase().includes(searchText.toLowerCase()) ||
+            log.model.toLowerCase().includes(searchText.toLowerCase()) ||
+            log.context.toLowerCase().includes(searchText.toLowerCase());
+        const matchesStatus = status === '' || log.status === status;
+        const matchesModel = model === '' || log.model.toLowerCase().includes(model.toLowerCase());
+
+        return matchesSearchText && matchesStatus && matchesModel;
+    });
 
     return (
         <div className="container-xxl flex-grow-1 container-p-y">
             <div className="card">
-                <div className="card-header"
-                     style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                    <h4 className="card-title" style={{color: '#696cff'}}>Activity Logs</h4>
+                <div
+                    className="card-header"
+                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                >
+                    <h4 className="card-title" style={{ color: '#696cff' }}>
+                        Activity Logs
+                    </h4>
                 </div>
                 <div className="card-body">
-                    <div className="row mb-4">
-                        <div className="col-md-4">
-                            <Select
-                                id="status"
-                                name="status"
-                                value={searchParams.status}
-                                onChange={(value) => handleFilterChange(value, 'status')}
-                                placeholder="Filter by status"
-                                style={{width: '100%'}}
-                                allowClear
-                            >
-                                <Option value="">Select Status</Option>
-                                <Option value="200">200 - Success</Option>
-                                <Option value="201">201 - Created</Option>
-                                <Option value="400">400 - Bad Request</Option>
-                                <Option value="401">401 - Unauthorized</Option>
-                                <Option value="403">403 - Forbidden</Option>
-                                <Option value="404">404 - Not Found</Option>
-                                <Option value="500">500 - Internal Server Error</Option>
-                            </Select>
-                        </div>
-                        <div className="col-md-4">
-                            <Input
-                                id="model"
-                                name="model"
-                                value={searchParams.model}
-                                onChange={handleInputChange}
-                                placeholder="Filter by model"
-                            />
-                        </div>
-                        <div className="col-md-4">
-                            <Button
-                                type="default"
-                                onClick={handleResetFilters}
-                                style={{marginRight: '10px'}}
-                            >
-                                Reset Filters
-                            </Button>
-                            <Button type="primary" onClick={handleSearch}>
-                                Perform Search
-                            </Button>
-                        </div>
-                    </div>
+                    <Space direction="horizontal" size="middle" style={{ marginBottom: 16 }}>
+                        <Select
+                            id="status"
+                            name="status"
+                            value={searchParams.status || undefined}
+                            onChange={(value) => handleFilterChange(value, 'status')}
+                            placeholder="Filter by status"
+                            style={{ width: 200 }}
+                            allowClear
+                        >
+                            <Option value="success">Success</Option>
+                            <Option value="failed">Failed</Option>
+                        </Select>
+                        <Input
+                            id="model"
+                            name="model"
+                            value={searchParams.model}
+                            onChange={handleInputChange}
+                            placeholder="Filter by model"
+                            style={{ width: 200 }}
+                        />
+                        <Input
+                            id="searchText"
+                            name="searchText"
+                            value={searchParams.searchText}
+                            onChange={handleInputChange}
+                            placeholder="Search..."
+                            prefix={<SearchOutlined />}
+                            style={{ width: 300 }}
+                        />
+                        <Button
+                            type="default"
+                            onClick={handleResetFilters}
+                            icon={<ReloadOutlined />}
+                            style={{ marginRight: '10px' }}
+                        >
+                            Reset Filters
+                        </Button>
+                        <Button type="primary" onClick={handleSearch} icon={<SearchOutlined />}>
+                            Perform Search
+                        </Button>
+                    </Space>
                 </div>
-                <div className="table-responsive text-nowrap" style={{padding: '0 20px 20px'}}>
+                <div className="table-responsive text-nowrap" style={{ padding: '0 20px 20px' }}>
                     <Table
                         onRow={(record) => {
                             return {
@@ -272,30 +240,21 @@ const ActivityLog = () => {
                         }}
                         columns={columns}
                         rowKey={(record) => record.id}
-                        dataSource={data}
-                        pagination={tableParams.pagination}
+                        dataSource={filteredLogs}
+                        pagination={pagination}
                         loading={loading}
                         onChange={handleTableChange}
                         rowClassName={(record) => {
                             switch (record.status) {
-                                case '201':
+                                case 'success':
                                     return 'status-success';
-                                case '200':
-                                    return 'status-success';
-                                case '400':
-                                    return 'status-error';
-                                case '401':
-                                    return 'status-warning';
-                                case '403':
-                                    return 'status-warning';
-                                case '404':
-                                    return 'status-warning';
-                                case '500':
+                                case 'failed':
                                     return 'status-error';
                                 default:
                                     return '';
                             }
                         }}
+                        scroll={{ y: 500 }} // Optional: Set a fixed height with scroll
                     />
                 </div>
             </div>
