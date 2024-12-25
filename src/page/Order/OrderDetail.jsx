@@ -53,7 +53,7 @@ function OrderDetail() {
 
     const handleStatusChange = async (newOrderStatus, newPaymentStatus) => {
         try {
-            const response = await API.patch(`/orders/${order_id}/`, {
+            const response = await API.patch(`/orders/detail/${order_id}/`, {
                 status: newOrderStatus,
                 payment_status: newPaymentStatus
             }, {
@@ -79,7 +79,7 @@ function OrderDetail() {
 
     useEffect(() => {
         const fetchOrderData = async () => {
-            const response = await API.get(`orders/${order_id}/`, {
+            const response = await API.get(`orders/detail/${order_id}/`, {
                 headers: {
                     Authorization: `Bearer ${userData.access}`,
                 },
@@ -153,7 +153,7 @@ function OrderDetail() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await API.put(`/orders/${order_id}/`, formData, {
+            const response = await API.put(`/orders/detail/${order_id}/`, formData, {
                 headers: {
                     Authorization: `Bearer ${userData.access}`,
                 },

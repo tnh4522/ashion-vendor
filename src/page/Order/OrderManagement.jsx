@@ -121,7 +121,7 @@ const Orders = () => {
                 ordering: tableParams.sorter.order === 'ascend' ? tableParams.sorter.field : `-${tableParams.sorter.field}`,
                 search: searchText,
             };
-            const response = await API.get('orders/', {
+            const response = await API.get('orders/list/', {
                 headers: { 'Authorization': `Bearer ${userData.access}` },
                 params,
             });
@@ -176,7 +176,7 @@ const Orders = () => {
             okText: 'Confirm',
             okType: 'danger',
             onOk() {
-                return API.delete(`orders/${id}/`, {
+                return API.delete(`orders/detail/${id}/`, {
                     headers: {
                         'Authorization': `Bearer ${userData.access}`,
                     }
