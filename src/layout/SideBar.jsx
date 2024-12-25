@@ -1,188 +1,180 @@
+import {useContext} from 'react';
 import {Menu} from 'antd';
 import {Link} from 'react-router-dom';
 import LogoAdmin from "../component/LogoAdmin.jsx";
-import useUserContext from "../hooks/useUserContext.jsx";
+import {UserContext} from "../context/UserContext.jsx";
+import {hasPermission} from '../constant/permissions.js';
+import {
+    DashboardOutlined,
+    UserOutlined,
+    SettingOutlined,
+    ShoppingCartOutlined,
+    AppstoreOutlined,
+    WalletOutlined,
+    CarryOutOutlined,
+    ProfileOutlined,
+    TeamOutlined,
+    AuditOutlined,
+    FolderOpenOutlined,
+    FileTextOutlined,
+    LogoutOutlined,
+    QuestionCircleOutlined
+} from '@ant-design/icons';
 
-function SideBar() {
-    const {logout} = useUserContext();
-    const items = [
+const SideBar = () => {
+    const {userData, logout} = useContext(UserContext);
+    if(!userData) return null;
+    const scope = userData.scope;
+
+    const menuItems = [
         {
-            key: 'sub1',
+            key: 'dashboard',
+            icon: <i className="menu-icon fa-solid fa-house"></i>,
             label: <Link to="/">Dashboard</Link>,
-            icon: <i className="menu-icon fa-solid fa-house"></i>
+            permission: 'dashboard:read'
         },
         {
-            key: 'store',
-            label: <Link to="/my-store">My Store</Link>,
+            key: 'my-store',
             icon: <i className="menu-icon tf-icons fa-solid fa-store"></i>,
-            // children: [
-            //     {
-            //         key: 'stores',
-            //         label: <Link to="/stores">List Store</Link>,
-            //         icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>
-            //     },
-            //     {
-            //         key: 'add-store',
-            //         label: <Link to="/add-store">Add Store</Link>,
-            //         icon: <i className="menu-icon tf-icons fa-solid fa-plus"></i>
-            //     }
-            // ]
+            label: <Link to="/my-store">My Store</Link>,
+            permission: 'store:read'
         },
         {
-            key: 'acitvity',
-            label: <Link to="/activity">Activity Log</Link>,
+            key: 'activity',
             icon: <i className="menu-icon tf-icons fa-solid fa-font-awesome"></i>,
+            label: <Link to="/activity">Activity Log</Link>,
+            permission: 'activity:read'
         },
         {
-            key: 'category',
-            label: <Link to="/categories">Categories</Link>,
+            key: 'categories',
             icon: <i className="menu-icon tf-icons fa-solid fa-layer-group"></i>,
+            label: <Link to="/categories">Categories</Link>,
+            permission: 'category:read'
         },
         {
-            key: 'sub2',
-            label: <Link to="/products">Products</Link>,
+            key: 'products',
             icon: <i className="menu-icon tf-icons fa-solid fa-bag-shopping"></i>,
+            label: <Link to="/products">Products</Link>,
+            permission: 'product:read'
         },
         {
-            key: 'stock',
-            label: <Link to="/stocks">Stock</Link>,
+            key: 'stocks',
             icon: <i className="menu-icon tf-icons fa-solid fa-boxes-stacked"></i>,
-            // children: [
-            //     {
-            //         key: 'stocks',
-            //         label: <Link to="/stocks">List Stock</Link>,
-            //         icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>
-            //     },
-            //     {
-            //         key: 'add-stock',
-            //         label: <Link to="/add-stock">Add Stock</Link>,
-            //         icon: <i className="menu-icon tf-icons fa-solid fa-plus"></i>
-            //     }
-            // ],
+            label: <Link to="/stocks">Stock</Link>,
+            permission: 'stock:read'
         },
-        // {
-        //     key: 'brand',
-        //     label: 'Brand Management',
-        //     icon: <i className="menu-icon tf-icons fa-solid fa-tags"></i>,
-        //     children: [
-        //         {
-        //             key: 'listBrand',
-        //             label: <Link to="/brands">List Brand</Link>,
-        //             icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>
-        //         },
-        //         {
-        //             key: 'addBrand',
-        //             label: <Link to="/add-brand">Add Brand</Link>,
-        //             icon: <i className="menu-icon tf-icons fa-solid fa-plus"></i>
-        //         }
-        //     ],
-        // },
         {
             key: 'customers',
-            label: <Link to="/customers">Customer</Link>,
             icon: <i className="menu-icon tf-icons fa-solid fa-address-book"></i>,
-            // children: [
-            //     {
-            //         key: 'list-customer',
-            //         label: <Link to="/customers">List Customer</Link>,
-            //         icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>
-            //     },
-            //     {
-            //         key: 'add-customer',
-            //         label: <Link to="/add-customer">Add Customer</Link>,
-            //         icon: <i className="menu-icon tf-icons fa-solid fa-plus"></i>
-            //     }
-            // ],
+            label: <Link to="/customers">Customer</Link>,
+            permission: 'customer:read'
         },
         {
             key: 'orders',
-            label: <Link to="/orders">Order</Link>,
             icon: <i className="menu-icon tf-icons fa-solid fa-cart-shopping"></i>,
-            // children: [
-            //     {
-            //         key: 'orders',
-            //         label: <Link to="/orders">List Orders</Link>,
-            //         icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>
-            //     },
-            //     {
-            //         key: 'add-order',
-            //         label: <Link to="/add-order">Add Order</Link>,
-            //         icon: <i className="menu-icon tf-icons fa-solid fa-plus"></i>
-            //     }
-            // ],
+            label: <Link to="/orders">Order</Link>,
+            permission: 'order:read'
         },
         {
             key: 'delivery',
-            label: <Link to="/delivey">Delivery</Link>,
             icon: <i className="menu-icon tf-icons fa-solid fa-truck"></i>,
+            label: <Link to="/delivery">Delivery</Link>,
+            permission: 'delivery:read'
         },
         {
             key: 'payment',
-            label: <Link to="/payment">Payment</Link>,
             icon: <i className="menu-icon tf-icons fa-solid fa-credit-card"></i>,
+            label: <Link to="/payment">Payment</Link>,
+            permission: 'payment:read'
         },
         {
             key: 'users',
-            label: <Link to="/users">User</Link>,
             icon: <i className="menu-icon tf-icons fa-solid fa-users"></i>,
-            // children: [
-            //     {
-            //         key: 'list-user',
-            //         label: <Link to="/users">List User</Link>,
-            //         icon: <i className="menu-icon tf-icons fa-solid fa-list"></i>,
-            //     },
-            //     {
-            //         key: 'add-user',
-            //         label: <Link to="/add-user">Add User</Link>,
-            //         icon: <i className="menu-icon tf-icons fa-solid fa-plus"></i>
-            //     }
-            // ],
+            label: <Link to="/users">User</Link>,
+            permission: 'user:read'
         },
         {
-            key: 'sub4',
-            label: 'Authorization',
+            key: 'authorization',
             icon: <i className="menu-icon fa-solid fa-lock"></i>,
+            label: 'Authorization',
+            permission: 'authorization:read',
             children: [
                 {
                     key: 'roleManagement',
+                    icon: <AuditOutlined/>,
                     label: <Link to="/roles">Role Management</Link>,
-                    icon: <i className="menu-icon fa-solid fa-user-tie"></i>
+                    permission: 'role_permission:assign'
                 },
                 {
                     key: 'roleDefault',
+                    icon: <SettingOutlined/>,
                     label: <Link to="/role-default">Role Default</Link>,
-                    icon: <i className="menu-icon fa-solid fa-shield-halved"></i>
+                    permission: 'role:read'
                 },
                 {
                     key: 'permissionManagement',
+                    icon: <AuditOutlined/>,
                     label: <Link to="/permissions">Permission Management</Link>,
-                    icon: <i className="menu-icon fa-solid fa-briefcase"></i>
+                    permission: 'permissions:read'
                 }
             ]
         },
         {
-            key: 'sub3',
-            label: <Link to="/account">Account Settings</Link>,
+            key: 'account',
             icon: <i className="menu-icon tf-icons fa-solid fa-address-card"></i>,
+            label: <Link to="/account">Account Settings</Link>,
+            permission: 'account:read'
         },
         {
             key: 'support',
-            label: <Link to="https://github.com/themeselection/sneat-html-admin-template-free/issues"
-                         target="_blank">Support</Link>,
             icon: <i className="menu-icon tf-icons fa-solid fa-headset"></i>,
+            label: <a href="https://github.com/themeselection/sneat-html-admin-template-free/issues" target="_blank"
+                      rel="noopener noreferrer">Support</a>,
+            permission: null // Không yêu cầu quyền, luôn hiển thị
         },
         {
             key: 'documentation',
-            label: <Link to="https://themeselection.com/demo/sneat-bootstrap-html-admin-template/documentation/"
-                         target="_blank">Documentation</Link>,
             icon: <i className="menu-icon tf-icons fa-solid fa-file-invoice"></i>,
+            label: <a href="https://themeselection.com/demo/sneat-bootstrap-html-admin-template/documentation/"
+                      target="_blank" rel="noopener noreferrer">Documentation</a>,
+            permission: null
         },
         {
             key: 'logout',
-            label: <Link to="#" onClick={logout}>Log Out</Link>,
             icon: <i className="menu-icon fa-solid fa-power-off"></i>,
+            label: <span onClick={logout} style={{cursor: 'pointer'}}>Log Out</span>,
+            permission: null
         }
     ];
+
+    const filterMenuItems = (items) => {
+        if (userData.role === 'ADMIN') {
+            return items;
+        } else {
+            return items.reduce((acc, item) => {
+                if (!item.permission) {
+                    acc.push(item);
+                    return acc;
+                }
+
+                if (hasPermission(scope, item.permission) || item.children) {
+                    if (item.children && item.children.length > 0) {
+                        const filteredChildren = filterMenuItems(item.children);
+                        if (filteredChildren.length > 0) {
+                            acc.push({...item, children: filteredChildren});
+                        }
+                    } else {
+                        acc.push(item);
+                    }
+                }
+
+                return acc;
+            }, []);
+        }
+    };
+
+    const filteredMenuItems = filterMenuItems(menuItems);
+
     return (
         <aside id="layout-menu" className="layout-menu menu-vertical menu bg-menu-theme">
             <LogoAdmin/>
@@ -190,17 +182,13 @@ function SideBar() {
             <div className="menu-inner-shadow"></div>
 
             <Menu
-                style={{
-                    width: "100%",
-                    marginTop: 16,
-                }}
-                defaultSelectedKeys={['1']}
-                defaultOpenKeys={['sub1']}
                 mode="inline"
-                items={items}
+                defaultSelectedKeys={['dashboard']}
+                defaultOpenKeys={['authorization']}
+                items={filteredMenuItems}
             />
         </aside>
-    )
+    );
 }
 
 export default SideBar;
