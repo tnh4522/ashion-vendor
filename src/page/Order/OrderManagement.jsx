@@ -1,9 +1,9 @@
 import { useEffect, useState, useRef } from 'react';
-import { Table, Tag, Input, Button, Modal } from 'antd';
+import { Table, Tag, Input, Button, Modal, message } from 'antd';
 import API from '../../service/service';
 import useUserContext from '../../hooks/useUserContext';
 import useNotificationContext from '../../hooks/useNotificationContext';
-import { Link } from 'react-router-dom';
+import { Link,  useNavigate } from 'react-router-dom';
 import { ExclamationCircleFilled } from '@ant-design/icons';
 import { orderStatus } from '../../utils/Constant';
 import formatCurrency from "../../constant/formatCurrency.js";
@@ -14,11 +14,13 @@ const Orders = () => {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
     const [searchText, setSearchText] = useState('');
+    const [selectedRowKeys, setSelectedRowKeys] = useState([]); 
     const [tableParams, setTableParams] = useState({
         pagination: { current: 1, pageSize: 10 },
         filters: {},
         sorter: {},
     });
+    const navigate = useNavigate();
 
     const prevTableParams = useRef();
 
@@ -27,21 +29,13 @@ const Orders = () => {
             title: 'Order ID',
             sorter: true,
             render: (order) => (
-                <Link to={`/order-detail/${order.id}`} style={{ color: '#1890ff' }}>
-                    <strong>{order.order_number}</strong>
-                </Link>
+                    <strong style={{ color: '#1890ff' }}>{order.order_number}</strong>
             )
         },
         { 
             title: 'Customer', 
             dataIndex: 'customer_name',
             sorter: true 
-        },
-        { 
-            title: 'Order Date', 
-            dataIndex: 'created_at', 
-            sorter: true, 
-            render: date => new Date(date).toLocaleDateString() 
         },
         { 
             title: 'Total Price', 
@@ -53,8 +47,55 @@ const Orders = () => {
                 </strong>
             ),
         },
+        {
+            title: 'Payment Status',
+            dataIndex: 'payment_status',
+            sorter: true,
+            render: (payment_status) => {
+                let color = '';
+                switch(payment_status) {
+                    case 'UNPAID':
+                        color = 'gray';
+                        break;
+                    case 'PAID':
+                        color = 'green';
+                        break;
+                    case 'REFUNDED':
+                        color = 'blue';
+                        break;
+                    default:
+                        color = 'N/A';
+                }
+                return <Tag color={color}>{payment_status}</Tag>;
+            }
+        },
+        {
+            title: 'Payment Method',
+            dataIndex: 'payment_method',
+            sorter: true,
+            render: (payment_method) => {
+                let label;
+                switch(payment_method) {
+                    case 'COD':
+                        label = 'COD';
+                        break;
+                    case 'BANK_TRANSFER':
+                        label = 'Bank Transfer';
+                        break;
+                    case 'CREDIT_CARD':
+                        label = 'Credit Card';
+                        break;
+                    case 'PAYPAL':
+                        label = 'PayPal';
+                        break;
+                    default:
+                        label = 'N/A';
+                }
+                return <span>{label}</span>;
+            }
+        },
         { 
-            title: 'Order Status',
+            title: 'Status',
             dataIndex: 'status', 
             filters: Object.values(orderStatus).map(status => ({ text: status, value: status })), 
             render: (status) => {
@@ -63,7 +104,7 @@ const Orders = () => {
                     case orderStatus.PENDING:
                         color = 'orange';
                         break;
-                    case orderStatus.PROCESSING:
+                    case orderStatus.PROCESSING:    
                         color = 'blue';
                         break;
                     case orderStatus.CANCELED:
@@ -84,16 +125,23 @@ const Orders = () => {
                 return <Tag color={color}>{status}</Tag>;
             }
         },
+        { 
+            title: 'Order Date', 
+            dataIndex: 'created_at', 
+            sorter: true, 
+            render: date => new Date(date).toLocaleDateString() 
+        },
         {
             title: 'Action',
             dataIndex: 'id',
             render: (id, record) => (
                 <span>
-                    <Link to={`/order-detail/${id}`} style={{ marginRight: '10px' }}>
-                        <i className="fa-solid fa-edit" style={{ color: 'blue' }}></i>
-                    </Link>
                     {record.status === orderStatus.PENDING && (
-                        <i className="fa-solid fa-trash" style={{ color: 'red', cursor: 'pointer' }} onClick={() => handleDelete(id)}></i>
+                        <i className="fa-solid fa-trash" style={{ color: 'red', cursor: 'pointer' }} onClick={(event) =>{
+                                event.stopPropagation(); 
+                                handleDelete(id);
+                            }}
+                         ></i>
                     )}
                 </span>
             ),
@@ -146,6 +194,41 @@ const Orders = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const rowSelection = {
+        selectedRowKeys,
+        onChange: (selectedRowKeys) => {
+            setSelectedRowKeys(selectedRowKeys);
+        },
+    };
+
+    const handleDeleteSelected = () => {
+        Modal.confirm({
+            title: 'Do you want to delete the selected orders?',
+            icon: <ExclamationCircleFilled />,
+            content: 'Confirm to delete these orders, this action cannot be undone.',
+            okText: 'Confirm',
+            okType: 'danger',
+            onOk() {
+                return API.delete('orders/list/', {
+                    headers: {
+                        'Authorization': `Bearer ${userData.access}`,
+                    },
+                    data: { ids: selectedRowKeys }
+                })
+                    .then(() => {
+                        openSuccessNotification('Selected orders deleted successfully.');
+                        fetchData();
+                        setSelectedRowKeys([]);
+                    })
+                    .catch((error) => {
+                        console.error('Error deleting orders:', error);
+                        openErrorNotification('Error deleting orders.');
+                    });
+            },
+            onCancel() {},
+        });
     };
 
     useEffect(() => {
@@ -212,16 +295,26 @@ const Orders = () => {
                         </div>
                         <div className="col-md-6 text-start">
                             <Button type="primary" onClick={handleSearch}>Search</Button>
+                            {/* <Button className='m-2 btn-secondary' onClick={handleDeleteSelected} disabled={selectedRowKeys.length === 0}>Delete</Button> */}
                         </div>
                     </div>
                     <div className="table-responsive text-nowrap">
                         <Table
+                            rowSelection={{
+                                type: 'checkbox',
+                                ...rowSelection,
+                            }}
                             columns={columns}
                             dataSource={data}
                             rowKey={record => record.id}
                             pagination={tableParams.pagination}
                             loading={loading}
                             onChange={handleTableChange}
+                            onRow={(record) => ({
+                                onClick: () => 
+                                navigate(`/order-detail/${record.id}`),
+                                style: { cursor: 'pointer' }
+                            })}
                         />
                     </div>
                 </div>

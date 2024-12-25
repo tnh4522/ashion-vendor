@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import useUserContext from "../../hooks/useUserContext.jsx";
 import API from "../../service/service.jsx";
 import useNotificationContext from "../../hooks/useNotificationContext.jsx";
@@ -15,7 +15,7 @@ import PrintOrder from './PrintOrder/PrintOrder.jsx';
 function OrderDetail() {
     const { openSuccessNotification, openErrorNotification } = useNotificationContext();
     const { userData, logout } = useUserContext();
-    const navigator = useNavigate();
+    const navigate = useNavigate();
     const order_id = useParams().id;
 
     const [order, setOrder] = useState(null);
@@ -161,7 +161,7 @@ function OrderDetail() {
 
             setOrder(response.data);
             openSuccessNotification("Order updated successfully!");
-            navigator("/orders");
+            navigate("/orders");
         } catch (error) {
             console.error("Error updating order data:", error);
             openErrorNotification("Failed to update order.");
@@ -290,8 +290,7 @@ function OrderDetail() {
                             
                         </div>
                         <div className="text-end">
-                            <button type="submit" className="btn btn-primary">Save </button>
-                            <Link to={"/orders"} className="btn btn-secondary m-1">
+                            <Link to={"/orders"} className="btn btn-primary m-1">
                                 <i className="bx bx-arrow-back me-2"></i>
                                 Back
                             </Link>
@@ -323,8 +322,8 @@ function OrderDetail() {
                         <div style={{flex:"0 0 auto", width:"7%"}}>
                             <Tag color={
                                 formData.payment_status === 'UNPAID' ? 'gray' :
-                                formData.payment_status === 'PAID' ? 'blue' :
-                                formData.payment_status === 'REFUNDED' ? 'green' :
+                                formData.payment_status === 'PAID' ? 'green' :
+                                formData.payment_status === 'REFUNDED' ? 'blue' :
                                 'default' 
                             }>
                                 {formData.payment_status}
