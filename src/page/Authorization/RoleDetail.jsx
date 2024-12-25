@@ -1,5 +1,5 @@
 import {useState, useEffect} from "react";
-import {useParams, Link} from "react-router-dom";
+import {useParams, Link, useNavigate} from "react-router-dom";
 import {Table, Switch, Empty} from "antd";
 import API from "../../service/service.jsx";
 import useUserContext from "../../hooks/useUserContext.jsx";
@@ -10,6 +10,7 @@ const RoleDetail = () => {
     const {id} = useParams();
     const {userData, logout} = useUserContext();
     const {openSuccessNotification, openErrorNotification} = useNotificationContext();
+    const navigator = useNavigate();
 
     const [roleDetails, setRoleDetails] = useState(null);
     const [permissions, setPermissions] = useState([]);
@@ -92,6 +93,7 @@ const RoleDetail = () => {
 
             if (response.status === 200) {
                 openSuccessNotification("Permissions updated successfully.");
+                navigator("/roles");
             }
         } catch (error) {
             openErrorNotification("There was an error updating the permissions.");

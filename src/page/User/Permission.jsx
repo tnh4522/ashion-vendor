@@ -1,13 +1,13 @@
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import API from "../../service/service.jsx";
 import useUserContext from "../../hooks/useUserContext.jsx";
 import useNotificationContext from "../../hooks/useNotificationContext.jsx";
-import {Modal, Empty, Switch} from 'antd';
+import { Modal, Empty, Switch } from 'antd';
 
 function Permission(props) {
-    const {userData, logout} = useUserContext();
-    const {openSuccessNotification, openErrorNotification} = useNotificationContext();
-    const {user} = props;
+    const { userData, logout } = useUserContext();
+    const { openSuccessNotification, openErrorNotification } = useNotificationContext();
+    const { user } = props;
     const [openModal, setOpenModal] = useState(false);
 
     const [permissions, setPermissions] = useState([]);
@@ -80,7 +80,7 @@ function Permission(props) {
         setPermissions((prevPermissions) =>
             prevPermissions.map((perm) =>
                 perm.id === permissionId
-                    ? {...perm, allowed: !perm.allowed}
+                    ? { ...perm, allowed: !perm.allowed }
                     : perm
             )
         );
@@ -152,7 +152,21 @@ function Permission(props) {
             console.error("There was an error adding the permission:", error);
             openErrorNotification("There was an error adding the permission");
         }
-    }
+    };
+
+    // Hàm nhóm permissions theo model_name
+    const groupPermissionsByModel = (permissionsList) => {
+        return permissionsList.reduce((groups, permission) => {
+            const { model_name } = permission.permission;
+            if (!groups[model_name]) {
+                groups[model_name] = [];
+            }
+            groups[model_name].push(permission);
+            return groups;
+        }, {});
+    };
+
+    const groupedPermissions = groupPermissionsByModel(permissions);
 
     return (
         <div className="card-body">
@@ -168,7 +182,7 @@ function Permission(props) {
                 <div className="card-body">
                     <h5 className="card-title">Add permissions</h5>
                 </div>
-                <hr className="my-0"/>
+                <hr className="my-0" />
                 {/* Form */}
                 <div className="card-body">
                     <form id="formAddPermission" method="POST" onSubmit={handleSubmitPermission}>
@@ -179,7 +193,7 @@ function Permission(props) {
                                 name="permissionId"
                                 className="form-select"
                                 onChange={(e) =>
-                                    setAddPermission((prev) => ({...prev, permissionId: e.target.value}))}
+                                    setAddPermission((prev) => ({ ...prev, permissionId: e.target.value }))}
                                 required
                             >
                                 <option value="">Select a permission</option>
@@ -199,9 +213,9 @@ function Permission(props) {
                     </form>
                 </div>
             </Modal>
-            <div className="mt-3" style={{textAlign: "end"}}>
+            <div className="mt-3" style={{ textAlign: "end" }}>
                 {permissions.length ? (
-                    <button type="submit" className="btn btn-primary me-2">
+                    <button type="submit" className="btn btn-primary me-2" form="formAccountSettings">
                         Update permissions
                     </button>
                 ) : null}
@@ -211,33 +225,42 @@ function Permission(props) {
             </div>
             <form id="formAccountSettings" method="POST" onSubmit={handleSubmit}>
                 {permissions.length ? (
-                    <div className="table-responsive text-nowrap">
-                        <table className="table my-4">
-                            <thead>
-                            <tr>
-                                <th>Permission</th>
-                                <th>Status</th>
-                            </tr>
-                            </thead>
-                            <tbody className="table-border-bottom-0">
-                            {permissions.map((userPermission) => (
-                                <tr key={userPermission.id}>
-                                    <td>{userPermission.permission.description} - {userPermission.permission.action}</td>
-                                    <td>
-                                        <Switch
-                                            checked={userPermission.allowed}
-                                            onChange={() => handleSwitchChange(userPermission.id)}
-                                        />
-                                    </td>
-                                </tr>
-                            ))}
-                            </tbody>
-                        </table>
-                    </div>
+                    Object.keys(groupedPermissions).map((model) => (
+                        <div key={model} className="mb-4">
+                            <h5 className="mb-3">{model.charAt(0).toUpperCase() + model.slice(1)} Permissions</h5>
+                            <div className="table-responsive text-nowrap">
+                                <table className="table my-4" style={{ tableLayout: 'fixed', width: '100%' }}>
+                                    <thead>
+                                    <tr>
+                                        <th style={{ width: '20%' }}></th>
+                                        <th style={{ width: '10%' }}></th>
+                                        <th style={{ width: '60%' }}></th>
+                                        <th style={{ width: '10%' }}></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody className="table-border-bottom-0">
+                                    {groupedPermissions[model].map((userPermission) => (
+                                        <tr key={userPermission.id}>
+                                            <td>{userPermission.permission.model_name}</td>
+                                            <td>{userPermission.permission.action}</td>
+                                            <td>{userPermission.permission.description}</td>
+                                            <td>
+                                                <Switch
+                                                    checked={userPermission.allowed}
+                                                    onChange={() => handleSwitchChange(userPermission.id)}
+                                                />
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    ))
                 ) : (
-                    <Empty description="No permissions found"/>
+                    <Empty description="No permissions found" />
                 )}
-                <div className="mt-3" style={{textAlign: "end"}}>
+                <div className="mt-3" style={{ textAlign: "end" }}>
                     {permissions.length ? (
                         <button type="submit" className="btn btn-primary me-2">
                             Update permissions

@@ -1,16 +1,19 @@
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import useUserContext from "../../hooks/useUserContext.jsx";
 import API from "../../service/service.jsx";
 import useNotificationContext from "../../hooks/useNotificationContext.jsx";
-import {Tabs} from 'antd';
+import { Tabs, Table, Button, Modal, Form, TimePicker, Select } from 'antd';
 import Permission from "../User/Permission.jsx";
-import {Link, useNavigate, useParams} from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import Addresses from '../Address/Addresses';
+import moment from 'moment';
+
+const { Option } = Select;
 
 function UserDetail() {
-    const {openSuccessNotification, openErrorNotification} = useNotificationContext();
+    const { openSuccessNotification, openErrorNotification } = useNotificationContext();
 
-    const {userData, logout} = useUserContext();
+    const { userData, logout } = useUserContext();
     const navigator = useNavigate();
 
     const [user, setUser] = useState(null);
@@ -36,12 +39,27 @@ function UserDetail() {
         instagram: "",
     });
 
-    const handleSocialLinksChange = (e) => {
-        const {name, value} = e.target;
-        setSocialLinks({...socialLinks, [name]: value});
-    };
-
     const [profilePictureFile, setProfilePictureFile] = useState(null);
+
+    // State cho Lịch làm việc
+    const [schedule, setSchedule] = useState([
+        // Dữ liệu mẫu
+        {
+            id: 1,
+            day: 'MONDAY',
+            start_time: '09:00',
+            end_time: '17:00',
+        },
+        {
+            id: 2,
+            day: 'TUESDAY',
+            start_time: '09:00',
+            end_time: '17:00',
+        },
+    ]);
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [editingSchedule, setEditingSchedule] = useState(null);
+    const [form] = Form.useForm();
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -52,7 +70,7 @@ function UserDetail() {
                     },
                 });
 
-                if (response.status === 401 || response.code == 'token_not_valid') {
+                if (response.status === 401 || response.code === 'token_not_valid') {
                     openErrorNotification("Unauthorized access");
                     logout();
                     return;
@@ -80,6 +98,9 @@ function UserDetail() {
                     facebook: response.data.social_links?.facebook || "",
                     instagram: response.data.social_links?.instagram || "",
                 });
+
+                // Nếu có API, bạn có thể gọi fetchScheduleData ở đây
+                // Tuy nhiên, vì chưa có API, sử dụng dữ liệu mẫu
             } catch (error) {
                 console.error("Error fetching user data:", error);
                 if (error.status === 401) {
@@ -95,9 +116,14 @@ function UserDetail() {
         }
     }, [userData.access]);
 
+    const handleSocialLinksChange = (e) => {
+        const { name, value } = e.target;
+        setSocialLinks({ ...socialLinks, [name]: value });
+    };
+
     const handleInputChange = (e) => {
-        const {name, value} = e.target;
-        setFormData({...formData, [name]: value});
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
     };
 
     const handleFileChange = async (e) => {
@@ -178,7 +204,7 @@ function UserDetail() {
                 return;
             }
 
-            const response = await API.post(`/user/${user_id}/add_permission/`, {permission}, {
+            const response = await API.post(`/user/${user_id}/add_permission/`, { permission }, {
                 headers: {
                     Authorization: `Bearer ${userData.access}`,
                 },
@@ -195,6 +221,109 @@ function UserDetail() {
         }
     };
 
+    // Hàm để mở modal thêm/sửa lịch làm việc
+    const showModal = (record = null) => {
+        setEditingSchedule(record);
+        if (record) {
+            form.setFieldsValue({
+                day: record.day,
+                start_time: moment(record.start_time, 'HH:mm'),
+                end_time: moment(record.end_time, 'HH:mm'),
+            });
+        } else {
+            form.resetFields();
+        }
+        setIsModalVisible(true);
+    };
+
+    // Hàm để xử lý khi submit form thêm/sửa lịch làm việc
+    const handleOk = () => {
+        form.validateFields()
+            .then(values => {
+                const newSchedule = {
+                    id: editingSchedule ? editingSchedule.id : schedule.length ? schedule[schedule.length - 1].id + 1 : 1,
+                    day: values.day,
+                    start_time: values.start_time.format('HH:mm'),
+                    end_time: values.end_time.format('HH:mm'),
+                };
+
+                if (editingSchedule) {
+                    // Cập nhật lịch làm việc
+                    setSchedule(prev =>
+                        prev.map(item => item.id === editingSchedule.id ? newSchedule : item)
+                    );
+                    openSuccessNotification("Cập nhật lịch làm việc thành công!");
+                } else {
+                    // Thêm mới lịch làm việc
+                    setSchedule(prev => [...prev, newSchedule]);
+                    openSuccessNotification("Thêm lịch làm việc thành công!");
+                }
+                setIsModalVisible(false);
+                form.resetFields();
+            })
+            .catch(info => {
+                console.log('Validate Failed:', info);
+            });
+    };
+
+    // Hàm để xử lý khi hủy modal
+    const handleCancel = () => {
+        setIsModalVisible(false);
+        form.resetFields();
+    };
+
+    // Hàm để xóa lịch làm việc
+    const handleDeleteSchedule = (id) => {
+        Modal.confirm({
+            title: 'Bạn có chắc chắn muốn xóa lịch làm việc này?',
+            onOk: () => {
+                setSchedule(prev => prev.filter(item => item.id !== id));
+                openSuccessNotification("Xóa lịch làm việc thành công!");
+            },
+        });
+    };
+
+    // Cột cho bảng lịch làm việc
+    const columns = [
+        {
+            title: 'Day',
+            dataIndex: 'day',
+            key: 'day',
+            render: (text) => {
+                const days = {
+                    MONDAY: 'Thứ Hai',
+                    TUESDAY: 'Thứ Ba',
+                    WEDNESDAY: 'Thứ Tư',
+                    THURSDAY: 'Thứ Năm',
+                    FRIDAY: 'Thứ Sáu',
+                    SATURDAY: 'Thứ Bảy',
+                    SUNDAY: 'Chủ Nhật',
+                };
+                return days[text] || text;
+            },
+        },
+        {
+            title: 'Time Start',
+            dataIndex: 'start_time',
+            key: 'start_time',
+        },
+        {
+            title: 'Time End',
+            dataIndex: 'end_time',
+            key: 'end_time',
+        },
+        {
+            title: 'Action',
+            key: 'action',
+            render: (_, record) => (
+                <>
+                    <Button type="link" onClick={() => showModal(record)}>Sửa</Button>
+                    <Button type="link" danger onClick={() => handleDeleteSchedule(record.id)}>Xóa</Button>
+                </>
+            ),
+        },
+    ];
+
     return (
         <div className="container-xxl flex-grow-1 container-p-y">
             <div className="row">
@@ -208,17 +337,17 @@ function UserDetail() {
                         <Tabs
                             defaultActiveKey="1"
                             type="card"
-                            size="large"
-                            style={{margin: '1.5rem 1rem'}}
+                            size="small"
+                            style={{ margin: '1.5rem 1rem' }}
                         >
                             <Tabs.TabPane tab="Profile Details" key="1">
+                                {/* Nội dung tab Profile Details */}
                                 <div className="card-body">
                                     <form id="formAccountSettings" method="POST" onSubmit={handleSubmit}>
                                         <div className="row">
                                             {/* First Name */}
                                             <div className="mb-3 col-md-6">
-                                                <label htmlFor="first_name" className="form-label">First
-                                                    Name</label>
+                                                <label htmlFor="first_name" className="form-label">First Name</label>
                                                 <input
                                                     className="form-control"
                                                     type="text"
@@ -230,8 +359,7 @@ function UserDetail() {
                                             </div>
                                             {/* Last Name */}
                                             <div className="mb-3 col-md-6">
-                                                <label htmlFor="last_name" className="form-label">Last
-                                                    Name</label>
+                                                <label htmlFor="last_name" className="form-label">Last Name</label>
                                                 <input
                                                     className="form-control"
                                                     type="text"
@@ -243,8 +371,7 @@ function UserDetail() {
                                             </div>
                                             {/* Date of Birth */}
                                             <div className="mb-3 col-md-6">
-                                                <label htmlFor="date_of_birth" className="form-label">Date of
-                                                    Birth</label>
+                                                <label htmlFor="date_of_birth" className="form-label">Date of Birth</label>
                                                 <input
                                                     className="form-control"
                                                     type="date"
@@ -282,6 +409,7 @@ function UserDetail() {
                                 </div>
                             </Tabs.TabPane>
                             <Tabs.TabPane tab="Account Information" key="2">
+                                {/* Nội dung tab Account Information */}
                                 <div className="card-body">
                                     <form id="formAccountSettings" method="POST" onSubmit={handleSubmit}>
                                         <div className="row">
@@ -314,8 +442,7 @@ function UserDetail() {
                                             </div>
                                             {/* Phone Number */}
                                             <div className="mb-3 col-md-6">
-                                                <label className="form-label" htmlFor="phone_number">Phone
-                                                    Number</label>
+                                                <label className="form-label" htmlFor="phone_number">Phone Number</label>
                                                 <input
                                                     type="text"
                                                     id="phone_number"
@@ -340,6 +467,7 @@ function UserDetail() {
                                 <Addresses userId={user_id} />
                             </Tabs.TabPane>
                             <Tabs.TabPane tab="Social Links" key="4">
+                                {/* Nội dung tab Social Links */}
                                 <div className="card-body">
                                     <form id="formAccountSettings" method="POST" onSubmit={handleSubmit}>
                                         <div className="row">
@@ -407,34 +535,66 @@ function UserDetail() {
                                     </form>
                                 </div>
                             </Tabs.TabPane>
-                            <Tabs.TabPane tab="Preferences" key="5">
-                                <div className="card-body">
-                                    <form id="formAccountSettings" method="POST" onSubmit={handleSubmit}>
-                                        <div className="row">
-                                            {/* Preferences */}
-                                            <div className="mb-3 col-md-12">
-                                                <label htmlFor="preferences" className="form-label">Preferences
-                                                    (JSON
-                                                    format)</label>
-                                                <textarea
-                                                    className="form-control"
-                                                    id="preferences"
-                                                    name="preferences"
-                                                    rows="3"
-                                                    value={formData.preferences}
-                                                    onChange={handleInputChange}
-                                                ></textarea>
-                                            </div>
-                                        </div>
-                                        <div className="mt-2 text-end">
-                                            <button type="reset" className="btn btn-outline-secondary me-2">Cancel</button>
-                                            <button type="submit" className="btn btn-primary">Save changes</button>
-                                        </div>
-                                    </form>
-                                </div>
+                            <Tabs.TabPane tab="Permissions" key="5">
+                                <Permission user={user} onAddPermission={handleAddPermission} />
                             </Tabs.TabPane>
-                            <Tabs.TabPane tab="Permissions" key="6">
-                                <Permission user={user} onAddPermission={handleAddPermission}/>
+                            <Tabs.TabPane tab="Work Schedule" key="6">
+                                <div className="card-body">
+                                    <Button type="primary" onClick={() => showModal()} className="mb-3">
+                                        Add Schedule
+                                    </Button>
+                                    <Table
+                                        dataSource={schedule}
+                                        columns={columns}
+                                        rowKey="id"
+                                        pagination={false}
+                                    />
+                                    {/* Modal để thêm/sửa lịch làm việc */}
+                                    <Modal
+                                        title={editingSchedule ? "Sửa Lịch Làm Việc" : "Thêm Lịch Làm Việc"}
+                                        visible={isModalVisible}
+                                        onOk={handleOk}
+                                        onCancel={handleCancel}
+                                        okText="Lưu"
+                                        cancelText="Hủy"
+                                    >
+                                        <Form
+                                            form={form}
+                                            layout="vertical"
+                                            name="scheduleForm"
+                                        >
+                                            <Form.Item
+                                                name="day"
+                                                label="Ngày"
+                                                rules={[{ required: true, message: 'Vui lòng chọn ngày!' }]}
+                                            >
+                                                <Select placeholder="Chọn ngày">
+                                                    <Option value="MONDAY">Thứ Hai</Option>
+                                                    <Option value="TUESDAY">Thứ Ba</Option>
+                                                    <Option value="WEDNESDAY">Thứ Tư</Option>
+                                                    <Option value="THURSDAY">Thứ Năm</Option>
+                                                    <Option value="FRIDAY">Thứ Sáu</Option>
+                                                    <Option value="SATURDAY">Thứ Bảy</Option>
+                                                    <Option value="SUNDAY">Chủ Nhật</Option>
+                                                </Select>
+                                            </Form.Item>
+                                            <Form.Item
+                                                name="start_time"
+                                                label="Giờ Bắt Đầu"
+                                                rules={[{ required: true, message: 'Vui lòng chọn giờ bắt đầu!' }]}
+                                            >
+                                                <TimePicker format="HH:mm" style={{ width: '100%' }} />
+                                            </Form.Item>
+                                            <Form.Item
+                                                name="end_time"
+                                                label="Giờ Kết Thúc"
+                                                rules={[{ required: true, message: 'Vui lòng chọn giờ kết thúc!' }]}
+                                            >
+                                                <TimePicker format="HH:mm" style={{ width: '100%' }} />
+                                            </Form.Item>
+                                        </Form>
+                                    </Modal>
+                                </div>
                             </Tabs.TabPane>
                         </Tabs>
                     </div>
