@@ -1,6 +1,3 @@
-// src/App.jsx
-
-import React from "react";
 import { Route, Routes, useLocation } from "react-router-dom";
 import SideBar from "./layout/SideBar.jsx";
 import UserContextProvider from "./context/UserContext.jsx";
@@ -125,7 +122,7 @@ function App() {
                                     <Route
                                         path="/account"
                                         element={
-                                            <ProtectedRoute requiredPermissions={['account:read']}>
+                                            <ProtectedRoute>
                                                 <Account />
                                             </ProtectedRoute>
                                         }

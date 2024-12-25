@@ -4,22 +4,7 @@ import {Link} from 'react-router-dom';
 import LogoAdmin from "../component/LogoAdmin.jsx";
 import {UserContext} from "../context/UserContext.jsx";
 import {hasPermission} from '../constant/permissions.js';
-import {
-    DashboardOutlined,
-    UserOutlined,
-    SettingOutlined,
-    ShoppingCartOutlined,
-    AppstoreOutlined,
-    WalletOutlined,
-    CarryOutOutlined,
-    ProfileOutlined,
-    TeamOutlined,
-    AuditOutlined,
-    FolderOpenOutlined,
-    FileTextOutlined,
-    LogoutOutlined,
-    QuestionCircleOutlined
-} from '@ant-design/icons';
+import {SettingOutlined, AuditOutlined} from '@ant-design/icons';
 
 const SideBar = () => {
     const {userData, logout} = useContext(UserContext);
@@ -123,14 +108,14 @@ const SideBar = () => {
             key: 'account',
             icon: <i className="menu-icon tf-icons fa-solid fa-address-card"></i>,
             label: <Link to="/account">Account Settings</Link>,
-            permission: 'account:read'
+            permission: null
         },
         {
             key: 'support',
             icon: <i className="menu-icon tf-icons fa-solid fa-headset"></i>,
             label: <a href="https://github.com/themeselection/sneat-html-admin-template-free/issues" target="_blank"
                       rel="noopener noreferrer">Support</a>,
-            permission: null // Không yêu cầu quyền, luôn hiển thị
+            permission: null
         },
         {
             key: 'documentation',
