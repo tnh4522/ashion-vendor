@@ -53,7 +53,7 @@ function OrderDetail() {
 
     const handleStatusChange = async (newOrderStatus, newPaymentStatus) => {
         try {
-            const response = await API.patch(`/orders/${order_id}/`, {
+            const response = await API.patch(`/orders/detail/${order_id}/`, {
                 status: newOrderStatus,
                 payment_status: newPaymentStatus
             }, {
@@ -79,7 +79,7 @@ function OrderDetail() {
 
     useEffect(() => {
         const fetchOrderData = async () => {
-            const response = await API.get(`orders/${order_id}/`, {
+            const response = await API.get(`orders/detail/${order_id}/`, {
                 headers: {
                     Authorization: `Bearer ${userData.access}`,
                 },
@@ -153,7 +153,7 @@ function OrderDetail() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await API.put(`/orders/${order_id}/`, formData, {
+            const response = await API.put(`/orders/detail/${order_id}/`, formData, {
                 headers: {
                     Authorization: `Bearer ${userData.access}`,
                 },
@@ -299,8 +299,8 @@ function OrderDetail() {
                     </div>
 
                     <div className="row">
-                        <p style={{flex:"0 0 auto", width:"17%"}}><strong>Created : </strong> {new Date(formData.created_at).toLocaleString()}</p>
-                        <p style={{flex:"0 0 auto", width:"25%", paddingLeft:3}}><strong>Modified : </strong> {new Date(formData.updated_at).toLocaleString()}</p>
+                        <p style={{flex:"0 0 auto", width:"20%"}}><strong>Created:</strong> {new Date(formData.created_at).toLocaleString()}</p>
+                        <p style={{flex:"0 0 auto", width:"25%", paddingLeft:3}}><strong>Modified:</strong> {new Date(formData.updated_at).toLocaleString()}</p>
                     </div>
 
                     {/* Status */}
@@ -312,9 +312,9 @@ function OrderDetail() {
                                 formData.status === "PROCESSING" ? 'blue' :
                                 formData.status === "CANCELED" ? 'red' :
                                 formData.status === "SHIPPED" ? 'green' :
-                                formData.status === "DELIVERED" ? 'green' :
+                                formData.status === "DELIVERED" ? 'blue' :
                                 formData.status === "RETURNED" ? 'violet' :
-                                'blue' 
+                                'gray' 
                             }>
                                 {formData.status}
                             </Tag>

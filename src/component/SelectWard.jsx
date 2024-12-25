@@ -25,6 +25,7 @@ function SelectWard({ district_id, selectedWard, onSelectWard = () => {} }) {
             className="form-select"
             value={selectedWard || ""}
             onChange={(e) => onSelectWard(e.target.value)}
+            required
         >
             <option value="" disabled>
                 Please select a ward

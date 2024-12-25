@@ -11,10 +11,14 @@ function SelectProvince({ selectedProvince, onSelectProvince }) {
     }, []);
 
 
-
     return (
-        <select className="form-select" value={selectedProvince} onChange={(e) => onSelectProvince(e.target.value)}>
-            <option>Please select a province</option>
+        <select 
+            className="form-select" 
+            required
+            value={selectedProvince || ""} 
+            onChange={(e) => onSelectProvince(e.target.value)}
+        >
+            <option value="">Please select a province</option>
             {provinces.map((province, index) => (
                 <option key={index} value={province.ProvinceID}>
                     {province.ProvinceName}

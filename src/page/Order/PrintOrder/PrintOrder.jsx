@@ -6,7 +6,7 @@ import formatCurrency from "../../../constant/formatCurrency.js";
 const PrintOrder = React.forwardRef(({ order, customer, provinceName, districtName, wardName }, ref) => {
     console.log(order);
     if (!order || !order.order_number) {
-        return null; // hoặc return <div>Loading...</div>;
+        return null;
     }
     return (
         <div ref={ref} style={{ padding: '20px' }}>

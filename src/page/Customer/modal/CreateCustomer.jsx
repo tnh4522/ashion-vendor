@@ -136,6 +136,7 @@ const CreateCustomer = ({onCustomerAdd, closeModal}) => {
                             name="first_name"
                             value={formData.first_name}
                             onChange={handleInputChange}
+                            required
                         />
                     </div>
                     {/* Last Name */}
@@ -148,6 +149,7 @@ const CreateCustomer = ({onCustomerAdd, closeModal}) => {
                             name="last_name"
                             value={formData.last_name}
                             onChange={handleInputChange}
+                            required
                         />
                     </div>
                     {/* Email */}
@@ -160,6 +162,7 @@ const CreateCustomer = ({onCustomerAdd, closeModal}) => {
                             name="email"
                             value={formData.email}
                             onChange={handleInputChange}
+                            required
                         />
                     </div>
                     {/* Phone Number */}
@@ -172,6 +175,7 @@ const CreateCustomer = ({onCustomerAdd, closeModal}) => {
                             name="phone_number"
                             value={formData.phone_number}
                             onChange={handleInputChange}
+                            required
                         />
                     </div>
                     {/* Province */}
@@ -181,7 +185,7 @@ const CreateCustomer = ({onCustomerAdd, closeModal}) => {
                             id="province"
                             selectedProvince={formData.address.province}
                             onSelectProvince={onSelectProvince}
-                        ></SelectProvince>
+                        />
                     </div>
                     {/* District */}
                     <div className="mb-3 col-md-6">
@@ -191,7 +195,7 @@ const CreateCustomer = ({onCustomerAdd, closeModal}) => {
                             province_id={formData.address.province}
                             selectedDistrict={formData.address.district}
                             onSelectDistrict={onSelectDistrict}
-                        ></SelectDistrict>
+                        />
                     </div>
                     {/* Ward */}
                     <div className="mb-3 col-md-6">
@@ -201,7 +205,7 @@ const CreateCustomer = ({onCustomerAdd, closeModal}) => {
                             district_id={formData.address.district}
                             selectedWard={formData.address.ward}
                             onSelectWard={onSelectWard}
-                        ></SelectWard>
+                        />
                     </div>
                     {/* Street Address */}
                     <div className="mb-3 col-md-6">
@@ -213,6 +217,7 @@ const CreateCustomer = ({onCustomerAdd, closeModal}) => {
                             name="street_address"
                             value={formData.address.street_address}
                             onChange={handleInputChange}
+                            required
                         />
                     </div>
                     {/* Country */}
@@ -237,6 +242,7 @@ const CreateCustomer = ({onCustomerAdd, closeModal}) => {
                             name="postal_code"
                             value={formData.address.postal_code}
                             onChange={handleInputChange}
+                            required
                         />
                     </div>
                 </div>
