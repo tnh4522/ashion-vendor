@@ -258,7 +258,9 @@ const CreateOrder = () => {
     const handleOrderSubmit = async (e) => {
         e.preventDefault();
         try {
-            orderData.tax_amount = formatTaxAmount(orderData.tax_amount);
+            orderData.tax_amount = formatPrice(orderData.tax_amount);
+            orderData.total_price = formatPrice(orderData.total_price);
+            orderData.subtotal_price = formatPrice(orderData.subtotal_price);
             const response = await API.post('orders/create/', orderData, {
                 headers: {
                     'Authorization': `Bearer ${userData.access}`,
@@ -331,18 +333,18 @@ const CreateOrder = () => {
         }
     }, [selectedCustomer, shippingAddress.province, shippingAddress.district, shippingAddress.ward]);
 
-    function formatTaxAmount(taxAmount) {
-        const numericValue = parseFloat(taxAmount);
+    function formatPrice(amount) {
+        const sanitizedAmount = String(amount).replace(/,/g, "").trim();
+
+        const numericValue = parseFloat(sanitizedAmount);
 
         if (isNaN(numericValue)) {
-            throw new Error("Invalid tax amount");
+            throw new Error("Invalid price amount");
         }
 
-        return numericValue.toLocaleString("en-US", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
+        return numericValue.toFixed(2);
     }
+
 
     return (
         <div className="container-xxl flex-grow-1 container-p-y">
