@@ -12,6 +12,7 @@ const ActivityLog = () => {
     const {userData, logout} = useUserContext();
     const {openErrorNotification} = useNotificationContext();
 
+    const [logs, setLogs] = useState([]);
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
     const [searchParams, setSearchParams] = useState({
@@ -27,6 +28,27 @@ const ActivityLog = () => {
         filters: {},
         sorter: {},
     });
+
+    useEffect(() => {
+        const eventSource = new EventSource(`http://localhost:8000/api/activity/log-stream/`);
+
+        eventSource.onmessage = (event) => {
+            const newLog = JSON.parse(event.data);
+            console.log('New log:', newLog);
+            setLogs((prevLogs) => [newLog, ...prevLogs]);
+        };
+
+        eventSource.onerror = (error) => {
+            console.error("SSE connection error:", error);
+            eventSource.close();
+        };
+
+        return () => {
+            eventSource.close();
+        };
+    }, []);
+
+
 
     const fetchData = async () => {
         setLoading(true);

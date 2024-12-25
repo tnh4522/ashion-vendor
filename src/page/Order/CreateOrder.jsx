@@ -1,9 +1,9 @@
-import {useState, useEffect} from 'react';
+import {useEffect, useState} from 'react';
 import API from "../../service/service.jsx";
 import useUserContext from "../../hooks/useUserContext.jsx";
 import useNotificationContext from "../../hooks/useNotificationContext.jsx";
 import {useNavigate} from "react-router-dom";
-import {Modal, Button, Select} from 'antd';
+import {Button, Modal, Select} from 'antd';
 import {PlusOutlined, SearchOutlined} from '@ant-design/icons';
 import SelectProduct from "./CustomSelect/SelectProduct.jsx";
 import SelectCustomer from "./CustomSelect/SelectCustomer.jsx";
@@ -13,7 +13,6 @@ import {getDistrictInformation, getWardInformation, GTTK_TOKEN, SHOP_ID} from ".
 import provincesData from "../../constant/province.json";
 import axios from "axios";
 import formatCurrency from "../../constant/formatCurrency.js";
-import processPayment from "../../constant/processPayment.js";
 
 const {Option} = Select;
 
@@ -63,7 +62,6 @@ const CreateOrder = () => {
             }
         ],
     });
-
 
 
     const [shippingTotal, setShippingTotal] = useState(0);
@@ -228,33 +226,6 @@ const CreateOrder = () => {
         });
     };
 
-    const handlePayment = async (data) => {
-        try {
-            const paymentDetails = {
-                amount: data.total_price,
-                customer: {
-                    email: selectedCustomer.email,
-                    fullName: selectedCustomer.first_name + ' ' + selectedCustomer.last_name,
-                    phone: selectedCustomer.phone_number,
-                    countryCode: 'VN',
-                    requestLang: 'vi-VN',
-                },
-                sourceCode: '4715',
-                merchantTrns: data.order_number,
-            };
-
-            const response = await processPayment(paymentDetails);
-
-            if (response.orderCode) {
-                localStorage.setItem('orderCode', response.orderCode);
-                window.location.href = 'https://demo.vivapayments.com/web2?ref=' + response.orderCode;
-            }
-        } catch (err) {
-            console.error('Error processing payment:', err);
-            openErrorNotification('Error processing payment.');
-        }
-    };
-
     const handleOrderSubmit = async (e) => {
         e.preventDefault();
         try {
@@ -268,12 +239,12 @@ const CreateOrder = () => {
             });
             if (response.status === 201) {
                 localStorage.setItem('order', JSON.stringify(response.data));
-                if(orderData.payment_method === 'CREDIT_CARD') {
-                    await handlePayment(response.data);
+                openSuccessNotification('Order created successfully');
+                if(response.data.payment) {
+                    window.location.href = 'https://demo.vivapayments.com/web2?ref=' + response.data.payment.orderCode;
                 } else {
                     navigate('/orders');
                 }
-                openSuccessNotification('Order created successfully');
             }
         } catch (error) {
             if (error.response && error.response.status === 401) {
@@ -344,7 +315,6 @@ const CreateOrder = () => {
 
         return numericValue.toFixed(2);
     }
-
 
     return (
         <div className="container-xxl flex-grow-1 container-p-y">
