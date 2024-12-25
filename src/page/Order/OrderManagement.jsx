@@ -203,33 +203,33 @@ const Orders = () => {
         },
     };
 
-    const handleDeleteSelected = () => {
-        Modal.confirm({
-            title: 'Do you want to delete the selected orders?',
-            icon: <ExclamationCircleFilled />,
-            content: 'Confirm to delete these orders, this action cannot be undone.',
-            okText: 'Confirm',
-            okType: 'danger',
-            onOk() {
-                return API.delete('orders/list/', {
-                    headers: {
-                        'Authorization': `Bearer ${userData.access}`,
-                    },
-                    data: { ids: selectedRowKeys }
-                })
-                    .then(() => {
-                        openSuccessNotification('Selected orders deleted successfully.');
-                        fetchData();
-                        setSelectedRowKeys([]);
-                    })
-                    .catch((error) => {
-                        console.error('Error deleting orders:', error);
-                        openErrorNotification('Error deleting orders.');
-                    });
-            },
-            onCancel() {},
-        });
-    };
+    // const handleDeleteSelected = () => {
+    //     Modal.confirm({
+    //         title: 'Do you want to delete the selected orders?',
+    //         icon: <ExclamationCircleFilled />,
+    //         content: 'Confirm to delete these orders, this action cannot be undone.',
+    //         okText: 'Confirm',
+    //         okType: 'danger',
+    //         onOk() {
+    //             return API.delete('orders/list/', {
+    //                 headers: {
+    //                     'Authorization': `Bearer ${userData.access}`,
+    //                 },
+    //                 data: { ids: selectedRowKeys }
+    //             })
+    //                 .then(() => {
+    //                     openSuccessNotification('Selected orders deleted successfully.');
+    //                     fetchData();
+    //                     setSelectedRowKeys([]);
+    //                 })
+    //                 .catch((error) => {
+    //                     console.error('Error deleting orders:', error);
+    //                     openErrorNotification('Error deleting orders.');
+    //                 });
+    //         },
+    //         onCancel() {},
+    //     });
+    // };
 
     useEffect(() => {
         if (
