@@ -48,8 +48,8 @@ const CreateOrder = () => {
         total_weight: 0,
         shipping_address: '',
         billing_address: '',
-        shipping_method: 'EXPRESS',
-        payment_method: 'BANK_TRANSFER',
+        shipping_method: 'NONE',
+        payment_method: 'COD',
         note: '',
         items: [
             {
@@ -561,7 +561,7 @@ const CreateOrder = () => {
                                         </Select>
                                     </div>
 
-                                    {orderData.payment_method !== 'COD' ? (
+                                    {orderData.payment_method === 'CREDIT_CARD' ? (
                                         <div className="mb-3 col-md-6">
                                             <label className="form-label">Module Payment</label>
                                             <Select
