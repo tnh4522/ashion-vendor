@@ -1,3 +1,4 @@
+// components/AddInventoryDetails.jsx
 import React from 'react';
 import { Table, InputNumber, Typography, Button, Upload, Image, Modal, message } from 'antd';
 import { UploadOutlined, DeleteOutlined } from '@ant-design/icons';
@@ -13,6 +14,7 @@ const AddInventoryDetails = ({
                                  isDisabled,
                              }) => {
 
+    // Xử lý thay đổi số lượng cho một biến thể cụ thể
     const handleQuantityChange = (value, record) => {
         const updatedVariants = variants.map(variant => {
             if (variant.id === record.id) {
@@ -23,37 +25,40 @@ const AddInventoryDetails = ({
         setVariants(updatedVariants);
     };
 
+    // Xử lý thay đổi hình ảnh của một biến thể
     const handleReplaceVariantImage = (file, variant) => {
         if (!file) return;
         const updatedImages = { ...variantImages };
         updatedImages[variant.variant_name] = {
-            id: variant.id,
+            id: variant.id, // Assuming variant has an 'id'
             file: file,
             url: URL.createObjectURL(file),
         };
         setVariantImages(updatedImages);
-        message.success(`Variant's Image ${variant.variant_name} has just changed successfully!`);
+        message.success(`Hình ảnh cho biến thể ${variant.variant_name} đã được thay thế thành công`);
     };
 
+    // Xử lý xóa hình ảnh của một biến thể
     const handleDeleteVariantImage = (variant) => {
         confirm({
-            title: `Do you want to delete this image of ${variant.variant_name}?`,
-            content: 'This action cannot be redone.',
-            okText: 'Yes',
+            title: `Bạn có chắc chắn muốn xóa hình ảnh cho biến thể ${variant.variant_name}?`,
+            content: 'Hành động này không thể hoàn tác.',
+            okText: 'Có',
             okType: 'danger',
-            cancelText: 'No',
+            cancelText: 'Không',
             onOk() {
                 const updatedImages = { ...variantImages };
                 delete updatedImages[variant.variant_name];
                 setVariantImages(updatedImages);
-                message.success(`Variant's Image ${variant.variant_name} has just deleted successfully!`);
+                message.success(`Hình ảnh cho biến thể ${variant.variant_name} đã được xóa thành công`);
             },
         });
     };
 
+    // Xử lý thêm hình ảnh cho một biến thể (nếu chưa có)
     const handleAddVariantImage = (file, variant) => {
         if (variantImages[variant.variant_name]) {
-            message.error(`Please replace the current image of Variant ${variant.variant_name}!`);
+            message.error(`Biến thể ${variant.variant_name} đã có hình ảnh. Vui lòng thay thế hình ảnh hiện tại.`);
             return;
         }
         const updatedImages = { ...variantImages };
@@ -63,18 +68,18 @@ const AddInventoryDetails = ({
             url: URL.createObjectURL(file),
         };
         setVariantImages(updatedImages);
-        message.success(`Variant's Image ${variant.variant_name} has just added successfully!`);
+        message.success(`Hình ảnh cho biến thể ${variant.variant_name} đã được thêm thành công`);
     };
 
     const columns = [
         {
-            title: 'Variant Name',
+            title: 'Tên Biến Thể',
             dataIndex: 'variant_name',
             key: 'variant_name',
             render: text => <Text>{text}</Text>,
         },
         {
-            title: 'Quantity',
+            title: 'Số Lượng',
             dataIndex: 'quantity',
             key: 'quantity',
             render: (text, record) => (
@@ -87,7 +92,7 @@ const AddInventoryDetails = ({
             ),
         },
         {
-            title: 'Variatn Image',
+            title: 'Hình Ảnh Biến Thể',
             dataIndex: 'variant_image',
             key: 'variant_image',
             render: (text, record) => {
@@ -103,18 +108,18 @@ const AddInventoryDetails = ({
                             />
                         ) : (
                             <div style={{ width: '50px', height: '50px', background: '#f0f0f0', display: 'flex', justifyContent: 'center', alignItems: 'center', marginRight: '10px' }}>
-                                <Text type="secondary">Not Yet</Text>
+                                <Text type="secondary">Chưa có</Text>
                             </div>
                         )}
                         <Upload
                             beforeUpload={(file) => {
                                 handleReplaceVariantImage(file, record);
-                                return false; 
+                                return false; // Ngăn không upload tự động
                             }}
                             showUploadList={false}
                             disabled={isDisabled}
                         >
-                            <Button icon={<UploadOutlined />} size="small">Replace</Button>
+                            <Button icon={<UploadOutlined />} size="small">Thay Thế</Button>
                         </Upload>
                         {image ? (
                             <Button
@@ -134,7 +139,7 @@ const AddInventoryDetails = ({
                                 showUploadList={false}
                                 disabled={isDisabled}
                             >
-                                <Button icon={<UploadOutlined />} size="small">Add</Button>
+                                <Button icon={<UploadOutlined />} size="small">Thêm</Button>
                             </Upload>
                         )}
                     </div>
