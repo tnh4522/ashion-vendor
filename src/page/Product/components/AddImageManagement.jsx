@@ -63,7 +63,7 @@ const AddImageManagement = ({
                         </Card>
                     </Col>
                 ))}
-                {productImages.length < 5 && !isDisabled && (
+                {productImages.length < 6 && !isDisabled && (
                     <Col xs={24} sm={12} md={8} lg={4}>
                         <Card
                             hoverable

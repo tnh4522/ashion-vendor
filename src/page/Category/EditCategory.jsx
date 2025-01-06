@@ -14,7 +14,7 @@ const EditCategory = () => {
     const { id } = useParams();
     const [category, setCategory] = useState(null);
     const [loading, setLoading] = useState(false);
-    const { logout } = useUserContext();
+    const {userData, logout } = useUserContext();
     const navigate = useNavigate();
     const [fileList, setFileList] = useState([]);
 
@@ -24,9 +24,9 @@ const EditCategory = () => {
             try {
                 const response = await API.get(`categories/${id}/`);
                 setCategory(response.data);
-
+                console.log(response.data.image);
                 if (response.data.image) {
-                    setFileList([{ url: convertUrl(BE_URL + response.data.image) }]);
+                    setFileList([{ url: BE_URL + response.data.image}]);
                 }
             } catch (error) {
                 if (error.status === 401) {
@@ -101,9 +101,9 @@ const EditCategory = () => {
                                 <Form.Item
                                     label="Slug"
                                     name="slug"
-                                    rules={[{ required: true, message: 'Please input the category slug!' }]}
+
                                 >
-                                    <Input />
+                                    <Input disabled/>
                                 </Form.Item>
                                 <Form.Item
                                     label="Description"

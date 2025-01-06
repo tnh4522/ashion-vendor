@@ -141,10 +141,18 @@ function App() {
                                         path="/add-product"
                                         element={
                                             <ProtectedRoute requiredPermissions={['product:create']}>
-                                                <AddProduct />
+                                            <AddProduct />
                                             </ProtectedRoute>
                                         }
-                                    />
+                                        />
+                                        <Route
+                                        path="/add-product/:id_category"
+                                        element={
+                                            <ProtectedRoute requiredPermissions={['product:create']}>
+                                            <AddProduct />
+                                            </ProtectedRoute>
+                                        }
+                                        />
                                     <Route
                                         path="/edit-product/:id"
                                         element={
@@ -167,7 +175,7 @@ function App() {
                                         path="/categories"
                                         element={
                                             <ProtectedRoute requiredPermissions={['category:read']}>
-                                                <Categories />
+                                                <Categories/>
                                             </ProtectedRoute>
                                         }
                                     />

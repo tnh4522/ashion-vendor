@@ -44,8 +44,8 @@ function customSlugify(str) {
 }
 
 const EditProduct = () => {
-    const { id } = useParams();
-    const { userData, logout } = useUserContext();
+    const {id} = useParams();
+    const {userData, logout } = useUserContext();
     const { openSuccessNotification, openErrorNotification } = useNotificationContext();
     const navigate = useNavigate();
 
@@ -203,8 +203,8 @@ const EditProduct = () => {
      */
     const fetchCategories = async () => {
         try {
-            const response = await API.get('categories/');
-            setCategories(response.data.results);
+            const response = await API.get('categories/leaf-with-parent/?is_active=1');
+            setCategories(response.data);
         } catch (error) {
             console.error('Error fetching categories:', error);
             openErrorNotification('There was an error fetching the categories.');
@@ -356,7 +356,7 @@ const EditProduct = () => {
      * @returns {boolean} - False to prevent automatic upload.
      */
     const handleAddImage = (file) => {
-        if (productImages.length >= 5) {
+        if (productImages.length >= 6) {
             openErrorNotification("You can only upload a maximum of 5 images");
             return false;
         }
@@ -554,7 +554,7 @@ const EditProduct = () => {
                 await updateVariants();
                 await updateVariantImages();
                 openSuccessNotification('Product updated successfully');
-                navigate('/products');
+                navigate(-1);
             }
         } catch (error) {
             if (error.response && error.response.status === 401) {
@@ -647,7 +647,7 @@ const EditProduct = () => {
                             <Button
                                 type="link"
                                 icon={<ArrowLeftOutlined />}
-                                onClick={() => navigate('/products')}
+                                onClick={() => navigate(-1)}
                             >
                                 Back
                             </Button>
@@ -722,7 +722,7 @@ const EditProduct = () => {
                             </Button>
                             <Button
                                 type="default"
-                                onClick={() => navigate('/products')}
+                                onClick={() => navigate(-1)}
                             >
                                 Cancel
                             </Button>
