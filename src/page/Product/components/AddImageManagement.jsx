@@ -1,3 +1,4 @@
+// components/AddImageManagement.jsx
 import React from 'react';
 import { Row, Col, Card, Image, Button, Upload, Typography, Modal, message } from 'antd';
 import { UploadOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
@@ -19,6 +20,7 @@ const AddImageManagement = ({
                             }) => {
     return (
         <div className="row">
+            {/* General Product Images */}
             <Row justify="center" align="middle" gutter={[16, 16]} style={{ marginBottom: '40px' }}>
                 <Col span={24}>
                     <Text strong>Product Images</Text>
@@ -61,12 +63,12 @@ const AddImageManagement = ({
                         </Card>
                     </Col>
                 ))}
-                {productImages.length < 5 && !isDisabled && (
+                {productImages.length < 6 && !isDisabled && (
                     <Col xs={24} sm={12} md={8} lg={4}>
                         <Card
                             hoverable
                             style={{ borderStyle: 'dashed', height: '200px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
-                            onClick={() => { /* ... */ }}
+                            onClick={() => { /* Do nothing */ }}
                         >
                             <Upload
                                 beforeUpload={handleAddImage}
@@ -82,6 +84,7 @@ const AddImageManagement = ({
                 )}
             </Row>
 
+            {/* Variant Images */}
             <Row justify="center" align="middle" gutter={[16, 16]}>
                 <Col span={24}>
                     <Text strong>Variant Images</Text>

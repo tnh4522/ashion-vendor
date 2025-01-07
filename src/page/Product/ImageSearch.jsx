@@ -13,7 +13,7 @@ import {
     message
 } from 'antd';
 import { UploadOutlined, SearchOutlined, LoadingOutlined } from '@ant-design/icons';
-import API from "../../service/service"; // Sử dụng API abstraction
+import API from "../../service/service"; // API abstraction
 import useUserContext from "../../hooks/useUserContext";
 import useNotificationContext from "../../hooks/useNotificationContext";
 import { Link } from 'react-router-dom';
@@ -29,7 +29,7 @@ const ImageSearch = () => {
     const { openSuccessNotification, openErrorNotification } = useNotificationContext();
 
     const handleChange = ({ fileList }) => {
-        setFileList(fileList.slice(-1)); // Chỉ giữ lại 1 file
+        setFileList(fileList.slice(-1)); // Keep only the latest file
     };
 
     const handleUpload = () => {
@@ -51,7 +51,17 @@ const ImageSearch = () => {
             .then(response => {
                 setLoading(false);
                 setCategory(response.data.category);
-                setResults(response.data.products);
+
+                // Deduplicate products based on product.id
+                const uniqueProductsMap = new Map();
+                response.data.products.forEach(product => {
+                    if (!uniqueProductsMap.has(product.id)) {
+                        uniqueProductsMap.set(product.id, product);
+                    }
+                });
+                const uniqueProducts = Array.from(uniqueProductsMap.values());
+
+                setResults(uniqueProducts);
                 openSuccessNotification('Image search completed successfully.');
             })
             .catch(error => {
@@ -77,7 +87,7 @@ const ImageSearch = () => {
                     <Col xs={24} sm={24} md={12}>
                         <Upload
                             listType="picture"
-                            beforeUpload={() => false} // Ngăn Upload tự động
+                            beforeUpload={() => false} // Prevent automatic upload
                             onChange={handleChange}
                             fileList={fileList}
                             accept="image/*"
@@ -106,13 +116,13 @@ const ImageSearch = () => {
                                         dataSource={results}
                                         locale={{ emptyText: 'No similar products found.' }}
                                         renderItem={product => (
-                                            <List.Item>
+                                            <List.Item key={product.id}>
                                                 <Card
                                                     hoverable
                                                     cover={
                                                         <img
                                                             alt={product.name}
-                                                            src={product.main_image}
+                                                            src={product.images[0].image}
                                                             style={{ height: '200px', objectFit: 'cover' }}
                                                             onError={(e) => {
                                                                 e.target.onerror = null;
@@ -120,9 +130,14 @@ const ImageSearch = () => {
                                                             }}
                                                         />
                                                     }
+                                                    actions={[
+                                                        <Link to={`/edit-product/${product.id}/`} key="edit">
+                                                            Edit Product
+                                                        </Link>
+                                                    ]}
                                                 >
                                                     <Card.Meta
-                                                        title={<Link to={`/product/${product.slug}`}>{product.name}</Link>}
+                                                        title={<Link to={`/edit-product/${product.id}/`}>{product.name}</Link>}
                                                         description={`Price: ${product.sale_price ? `$${product.sale_price}` : `$${product.price}`}`}
                                                     />
                                                 </Card>

@@ -1,3 +1,4 @@
+// ImageManagement.jsx
 import React from 'react';
 import { Row, Col, Card, Image, Button, Upload, Typography } from 'antd';
 import { UploadOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';

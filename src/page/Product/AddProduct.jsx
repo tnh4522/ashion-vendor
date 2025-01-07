@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
+import { useParams } from 'react-router-dom';
 import API from "../../service/service";
 import useUserContext from "../../hooks/useUserContext";
 import useNotificationContext from "../../hooks/useNotificationContext";
@@ -37,6 +38,7 @@ function customSlugify(str) {
 }
 
 const AddProduct = () => {
+    const {id_category } = useParams();
     const { userData, logout } = useUserContext();
     const { openSuccessNotification, openErrorNotification } = useNotificationContext();
     const navigate = useNavigate();
@@ -65,7 +67,7 @@ const AddProduct = () => {
         description: '',
         material: '',
         care_instructions: '',
-        category: '',
+        category: id_category || '',
         price: '',
         sale_price: '',
         start_sale_date: '',
@@ -91,10 +93,22 @@ const AddProduct = () => {
         fetchStocks();
     }, [userData.access]);
 
+    useEffect(() => {
+        if (id_category && categories.length) {
+            const selectedCategory = categories.find(category => category.id === parseInt(id_category));
+            if (selectedCategory) {
+                setFormData(prev => ({
+                    ...prev,
+                    category: selectedCategory.id
+                }));
+            }
+        }
+    }, [categories, id_category]);
+
     const fetchCategories = async () => {
         try {
-            const response = await API.get('categories/');
-            setCategories(response.data.results);
+            const response = await API.get('categories/leaf-with-parent/?is_active=1');
+            setCategories(response.data);
         } catch (error) {
             console.error('There was an error fetching the categories:', error);
         }
@@ -120,6 +134,7 @@ const AddProduct = () => {
         const { name, value, type, checked } = e.target;
         let newValue = (type === 'checkbox' ? checked : value);
 
+        // Nếu field name thay đổi, tự sinh slug từ name
         if (name === 'name') {
             const generatedSlug = customSlugify(newValue || '');
             setFormData(prev => ({
@@ -350,7 +365,6 @@ const AddProduct = () => {
                 }
             }
         });
-
         productImages.forEach((img) => {
             if (img.newFile) {
                 formDataToSend.append('images', img.newFile);
@@ -367,7 +381,7 @@ const AddProduct = () => {
 
             if (response.status === 201) {
                 openSuccessNotification('Product added successfully');
-                navigate('/products');
+                navigate(-1);
             }
         } catch (error) {
             if (error.response && error.response.status === 401) {
@@ -395,14 +409,14 @@ const AddProduct = () => {
                             <Button
                                 type="link"
                                 icon={<ArrowLeftOutlined />}
-                                onClick={() => navigate('/products')}
+                                onClick={() => navigate(-1)}
                             >
                                 Back
                             </Button>
                         </Col>
                     </Row>
 
-                    {/* 4 field in header ...*/}
+                    {/* Luôn hiển thị 4 trường trên cùng */}
                     <Row gutter={[16, 16]} justify="center" style={{ marginBottom: '20px' }}>
                         <Col xs={24} sm={24} md={6}>
                             <Title level={4}>Product Name<span style={{color: 'red'}}>*</span></Title>

@@ -1,5 +1,5 @@
 // src/components/Products/Products.jsx
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Table,
     Button,
@@ -8,11 +8,11 @@ import {
     Input,
     Space,
     Select,
-    Row,
-    Col,
+    Drawer,
+    Checkbox,
     Form,
     Slider,
-    Badge
+    Badge,
 } from 'antd';
 import qs from 'qs';
 import API from "../../service/service";
@@ -24,7 +24,9 @@ import {
     ReloadOutlined,
     ExclamationCircleOutlined,
     PlusOutlined,
-    UploadOutlined, // Thêm biểu tượng UploadOutlined
+    UploadOutlined,
+    FilterOutlined,
+    PictureOutlined,
 } from '@ant-design/icons';
 import moment from 'moment';
 import formatCurrency from "../../constant/formatCurrency.js";
@@ -37,34 +39,42 @@ const Products = () => {
     const [categories, setCategories] = useState([]);
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [recommendations, setRecommendations] = useState([]); // State cho gợi ý giảm giá
 
     // State cho bộ lọc nâng cao
     const [form] = Form.useForm();
     const [tableParams, setTableParams] = useState({
         pagination: {
             current: 1,
-            pageSize: 5,
+            pageSize: 5, // Giữ nguyên pageSize là 5
         },
         sortOrder: null,
         sortField: null,
         searchName: '',
         searchCategories: [],
         filterStatus: '',
-        filterPrice: [0, 1000],
+        filterPrice: [0, 1000], // Giữ nguyên filterPrice là [0, 1000]
+        exactMatch: false, // Thêm thuộc tính exactMatch
     });
 
     const { userData, logout } = useUserContext();
     const { openSuccessNotification, openErrorNotification } = useNotificationContext();
     const navigate = useNavigate();
 
-    // State để lưu sp cần decision support
-    const [staleProducts, setStaleProducts] = useState([]);
-    const thresholdDays = 30; // quá 30 ngày chưa update
+    // State để kiểm soát hiển thị Drawer
+    const [drawerVisible, setDrawerVisible] = useState(false);
+
+    // State để kiểm soát hiển thị Modal Generate Image
+    const [generateModalVisible, setGenerateModalVisible] = useState(false);
+    const [featuredProducts, setFeaturedProducts] = useState([]);
+    const [selectedFeaturedProduct, setSelectedFeaturedProduct] = useState(null);
+    const [generating, setGenerating] = useState(false);
 
     const fetchData = () => {
         setLoading(true);
         const params = qs.stringify(getProductParams(tableParams), { arrayFormat: 'repeat', skipNulls: true });
-        API.get(`product/list/?${params}`, {
+        console.log('Fetching products with params:', params); // Để kiểm tra
+        API.get(`product/list/?${params}`, { // Đảm bảo đường dẫn đúng
             headers: {
                 'Authorization': `Bearer ${userData.access}`,
             },
@@ -80,7 +90,6 @@ const Products = () => {
                         total: count,
                     },
                 }));
-                checkStaleProducts(results);
             })
             .catch((error) => {
                 setLoading(false);
@@ -105,11 +114,50 @@ const Products = () => {
             });
     };
 
+    // Hàm mới để fetch recommendations
+    const fetchRecommendations = () => {
+        API.get('product/recommendations/', { // Đường dẫn API gợi ý
+            headers: {
+                'Authorization': `Bearer ${userData.access}`,
+            },
+        })
+            .then((response) => {
+                setRecommendations(response.data.results); // Chỉ lấy mảng 'results'
+                console.log('Recommendations:', response.data.results); // In ra mảng 'results'
+            })
+            .catch((error) => {
+                console.error('Error fetching recommendations:', error);
+                // Không cần thông báo lỗi vì gợi ý không phải là chức năng chính
+            });
+    };
+
+    // Hàm để fetch các sản phẩm được đánh dấu là featured
+    const fetchFeaturedProducts = () => {
+        API.get('product/list/?is_featured=true', { // Đảm bảo backend hỗ trợ filter is_featured
+            headers: {
+                'Authorization': `Bearer ${userData.access}`,
+            },
+        })
+            .then((response) => {
+                setFeaturedProducts(response.data.results);
+            })
+            .catch((error) => {
+                console.error('Error fetching featured products:', error);
+                openErrorNotification('There was an error fetching the featured products.');
+            });
+    };
+
     useEffect(() => {
         fetchData();
         fetchCategories();
+        fetchRecommendations(); // Gọi hàm fetchRecommendations khi component mount
+        fetchFeaturedProducts(); // Fetch featured products
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [JSON.stringify(tableParams)]);
+
+    useEffect(() => {
+        console.log('Recommendations:', recommendations);
+    }, [recommendations]);
 
     const handleEdit = (id) => {
         navigate(`/edit-product/${id}`);
@@ -123,7 +171,7 @@ const Products = () => {
             okType: 'danger',
             cancelText: 'No',
             onOk: () => {
-                API.delete(`product/detail/${id}/`, {
+                API.delete(`product/detail/${id}/`, { // Đảm bảo đường dẫn đúng
                     headers: {
                         'Authorization': `Bearer ${userData.access}`,
                     },
@@ -131,6 +179,7 @@ const Products = () => {
                     .then(() => {
                         openSuccessNotification('Product deleted successfully');
                         fetchData();
+                        fetchRecommendations(); // Cập nhật lại recommendations
                     })
                     .catch((error) => {
                         console.error('Error deleting the product:', error);
@@ -275,17 +324,26 @@ const Products = () => {
         const queryObj = {
             page_size: params.pagination?.pageSize,
             page: params.pagination?.current,
-            search: params.searchName && params.searchName.trim() !== '' ? params.searchName.trim() : undefined,
             ordering: sortField ? `${params.sortOrder === 'descend' ? '-' : ''}${sortField}` : undefined,
         };
 
+        if (params.exactMatch && params.searchName.trim() !== '') {
+            queryObj['name_exact'] = params.searchName.trim();
+        } else if (params.searchName.trim() !== '') {
+            queryObj['search'] = params.searchName.trim();
+        }
+
         if (params.searchCategories && params.searchCategories.length > 0) {
-            queryObj['categories__name'] = params.searchCategories;
+            queryObj['category__name'] = params.searchCategories;
         }
 
         if (params.filterStatus && params.filterStatus !== '') {
             queryObj['status'] = params.filterStatus;
         }
+
+        // Điều chỉnh filterPrice để phù hợp với backend
+        queryObj['price__gte'] = params.filterPrice[0];
+        queryObj['price__lte'] = params.filterPrice[1];
 
         return queryObj;
     };
@@ -307,7 +365,9 @@ const Products = () => {
             searchCategories: values.searchCategories || [],
             filterStatus: values.filterStatus || '',
             filterPrice: values.filterPrice || [0, 1000],
+            exactMatch: values.exactMatch || false,
         }));
+        setDrawerVisible(false);
     };
 
     const onReset = () => {
@@ -319,34 +379,62 @@ const Products = () => {
             searchCategories: [],
             filterStatus: '',
             filterPrice: [0, 1000],
+            exactMatch: false,
         }));
+        setDrawerVisible(false);
     };
 
-    // Hàm kiểm tra sp cũ
-    const checkStaleProducts = (products) => {
-        const now = moment();
-        const filtered = products.filter(prod => {
-            if (prod.status !== 'ACTIVE') return false;
-            if (!prod.stock_variants || prod.stock_variants.length === 0) return false;
+    const handleOpenGenerateModal = () => {
+        setGenerateModalVisible(true);
+    };
 
-            const totalQty = prod.stock_variants.reduce((acc, v) => acc + v.quantity, 0);
-            if (totalQty <= 10) return false;
+    const handleGenerateImage = () => {
+        if (!selectedFeaturedProduct) {
+            openErrorNotification('Please select a featured product.');
+            return;
+        }
 
-            const oldestUpdate = prod.stock_variants.reduce((oldest, v) => {
-                const variantDate = moment(v.updated_at);
-                if (!oldest || variantDate.isBefore(oldest)) {
-                    return variantDate;
-                }
-                return oldest;
-            }, null);
-
-            if (!oldestUpdate) return false;
-
-            const diffDays = now.diff(oldestUpdate, 'days');
-            return diffDays > thresholdDays;
+        confirm({
+            title: 'Bạn có chắc chắn muốn tạo ảnh mới cho sản phẩm này?',
+            icon: <ExclamationCircleOutlined />,
+            content: `Sản phẩm: ${selectedFeaturedProduct.name}`,
+            okText: 'Yes',
+            okType: 'primary',
+            cancelText: 'No',
+            onOk() {
+                setGenerating(true);
+                API.post('product/generate-image/', { product_id: selectedFeaturedProduct.id }, { // Đảm bảo đường dẫn đúng
+                    headers: {
+                        'Authorization': `Bearer ${userData.access}`,
+                    },
+                })
+                    .then((response) => {
+                        setGenerating(false);
+                        const newProduct = response.data;
+                        openSuccessNotification('Image generated and product cloned successfully.');
+                        setGenerateModalVisible(false);
+                        fetchData();
+                        fetchRecommendations();
+                        // Điều hướng tới trang thêm sản phẩm với dữ liệu đã được clone
+                        navigate('/add-product', { state: { preloadedProduct: newProduct } });
+                    })
+                    .catch((error) => {
+                        setGenerating(false);
+                        console.error('Error generating image:', error);
+                        if (error.response && error.response.status === 401) {
+                            openErrorNotification('Unauthorized access. Please log in again.');
+                            logout();
+                        } else if (error.response && error.response.data.detail) {
+                            openErrorNotification(error.response.data.detail);
+                        } else {
+                            openErrorNotification('There was an error generating the image.');
+                        }
+                    });
+            },
+            onCancel() {
+                // Do nothing
+            },
         });
-
-        setStaleProducts(filtered);
     };
 
     return (
@@ -360,6 +448,7 @@ const Products = () => {
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
+                        flexWrap: 'wrap'
                     }}
                 >
                     <Title level={5} style={{ margin: 0 }}>List Products</Title>
@@ -378,84 +467,99 @@ const Products = () => {
                         >
                             Image Search
                         </Button>
+                        <Button
+                            type="default"
+                            icon={<FilterOutlined />}
+                            onClick={() => setDrawerVisible(true)} // Mở Drawer
+                        >
+                            Filter & Search
+                        </Button>
+                        <Button
+                            type="default"
+                            icon={<PictureOutlined />} // Icon mới
+                            onClick={handleOpenGenerateModal} // Mở Modal Generate Image
+                        >
+                            Generate Image
+                        </Button>
                     </Space>
                 </div>
                 <div style={{ padding: '20px' }}>
-                    <Form
-                        form={form}
-                        layout="vertical"
-                        onFinish={onFinish}
-                        initialValues={{
-                            searchName: tableParams.searchName,
-                            searchCategories: tableParams.searchCategories,
-                            filterStatus: tableParams.filterStatus,
-                            filterPrice: tableParams.filterPrice,
-                        }}
+                    <Drawer
+                        title="Filter & Search Products"
+                        placement="right"
+                        width={350}
+                        onClose={() => setDrawerVisible(false)}
+                        visible={drawerVisible}
+                        destroyOnClose
                     >
-                        <Row gutter={16}>
-                            <Col xs={24} sm={12} md={6}>
-                                <Form.Item name="searchName" label="Search by Product Name">
-                                    <Input
-                                        placeholder="Enter product name"
-                                        allowClear
-                                        prefix={<SearchOutlined />}
-                                    />
-                                </Form.Item>
-                            </Col>
-                            <Col xs={24} sm={12} md={6}>
-                                <Form.Item name="searchCategories" label="Search by Category">
-                                    <Select
-                                        mode="multiple"
-                                        allowClear
-                                        placeholder="Select categories"
-                                        showSearch
-                                        optionFilterProp="children"
-                                        filterOption={(input, option) =>
-                                            option.children.toLowerCase().includes(input.toLowerCase())
-                                        }
-                                    >
-                                        {categories.map(cat => (
-                                            <Option key={cat.id} value={cat.name}>
-                                                {cat.name}
-                                            </Option>
-                                        ))}
-                                    </Select>
-                                </Form.Item>
-                            </Col>
-                            <Col xs={24} sm={12} md={6}>
-                                <Form.Item name="filterStatus" label="Filter by Status">
-                                    <Select
-                                        allowClear
-                                        placeholder="Select status"
-                                    >
-                                        <Option value="ACTIVE">Active</Option>
-                                        <Option value="INACTIVE">Inactive</Option>
-                                        <Option value="DRAFT">Draft</Option>
-                                    </Select>
-                                </Form.Item>
-                            </Col>
-                            <Col xs={24} sm={12} md={6}>
-                                <Form.Item name="filterPrice" label="Filter by Price Range">
-                                    <Slider
-                                        range
-                                        min={0}
-                                        max={10000}
-                                        step={50}
-                                        marks={{
-                                            0: '$0',
-                                            2500: '$2,500',
-                                            5000: '$5,000',
-                                            7500: '$7,500',
-                                            10000: '$10,000',
-                                        }}
-                                        tipFormatter={(value) => `$${value}`}
-                                        defaultValue={[0, 10000]}
-                                    />
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                        <Row gutter={16} justify="end">
-                            <Col>
+                        <Form
+                            form={form}
+                            layout="vertical"
+                            onFinish={onFinish}
+                            initialValues={{
+                                searchName: tableParams.searchName,
+                                searchCategories: tableParams.searchCategories,
+                                filterStatus: tableParams.filterStatus,
+                                filterPrice: tableParams.filterPrice,
+                                exactMatch: tableParams.exactMatch,
+                            }}
+                        >
+                            <Form.Item name="searchName" label="Search by Product Name">
+                                <Input
+                                    placeholder="Enter product name"
+                                    allowClear
+                                    prefix={<SearchOutlined />}
+                                />
+                            </Form.Item>
+                            <Form.Item name="exactMatch" valuePropName="checked">
+                                <Checkbox>Exact Match</Checkbox>
+                            </Form.Item>
+                            <Form.Item name="searchCategories" label="Search by Category">
+                                <Select
+                                    mode="multiple"
+                                    allowClear
+                                    placeholder="Select categories"
+                                    showSearch
+                                    optionFilterProp="children"
+                                    filterOption={(input, option) =>
+                                        option.children.toLowerCase().includes(input.toLowerCase())
+                                    }
+                                >
+                                    {categories.map(cat => (
+                                        <Option key={cat.id} value={cat.name}>
+                                            {cat.name}
+                                        </Option>
+                                    ))}
+                                </Select>
+                            </Form.Item>
+                            <Form.Item name="filterStatus" label="Filter by Status">
+                                <Select
+                                    allowClear
+                                    placeholder="Select status"
+                                >
+                                    <Option value="ACTIVE">Active</Option>
+                                    <Option value="INACTIVE">Inactive</Option>
+                                    <Option value="DRAFT">Draft</Option>
+                                </Select>
+                            </Form.Item>
+                            <Form.Item name="filterPrice" label="Filter by Price Range">
+                                <Slider
+                                    range
+                                    min={0}
+                                    max={1000}
+                                    step={50}
+                                    marks={{
+                                        0: '$0',
+                                        250: '$250',
+                                        500: '$500',
+                                        750: '$750',
+                                        1000: '$1,000',
+                                    }}
+                                    tipFormatter={(value) => `$${value}`}
+                                    defaultValue={[0, 1000]}
+                                />
+                            </Form.Item>
+                            <Form.Item>
                                 <Space>
                                     <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
                                         Apply Filters
@@ -464,10 +568,11 @@ const Products = () => {
                                         Reset Filters
                                     </Button>
                                 </Space>
-                            </Col>
-                        </Row>
-                    </Form>
+                            </Form.Item>
+                        </Form>
+                    </Drawer>
 
+                    {/* Hiển thị bảng sản phẩm */}
                     <div style={{ marginTop: '20px' }}>
                         <Table
                             columns={columns}
@@ -476,32 +581,28 @@ const Products = () => {
                             pagination={tableParams.pagination}
                             loading={loading}
                             onChange={handleTableChange}
-                            onRow={(record) => ({
-                                style: {
-                                    backgroundColor: record.status === 'INACTIVE' ? '#fff1f0' : 'inherit',
-                                },
-                            })}
                             bordered
                             scroll={{ x: 'max-content' }}
                         />
                     </div>
 
-                    {staleProducts.length > 0 && (
+                    {/* Hiển thị gợi ý giảm giá */}
+                    {recommendations.length > 0 ? (
                         <div style={{ marginTop: 20, padding: 20, background: '#fffbe6', border: '1px solid #ffe58f', borderRadius: '4px' }}>
-                            <Title level={5}>Decision Support</Title>
+                            <Title level={5}>Recommendation</Title>
                             <Text>
-                                Some products have not been updated for over {thresholdDays} days. Consider applying a discount to boost sales:
+                                Some products have not been ordered in the past week, have not been updated for over a week, and are not discounted. Consider applying a discount to boost sales:
                             </Text>
                             <ul style={{ marginTop: 10 }}>
-                                {staleProducts.map(p => (
+                                {recommendations.map(p => (
                                     <li key={p.id} style={{ marginBottom: 10 }}>
                                         <span>
-                                            <strong>{p.name}</strong> was last updated over {thresholdDays} days ago.
+                                            <strong>{p.name}</strong> has not been updated or ordered recently.
                                         </span>
                                         <Button
                                             type="link"
                                             style={{ marginLeft: 10 }}
-                                            onClick={() => navigate(`/edit-product/${p.id}?tab=3`)}
+                                            onClick={() => navigate(`/edit-product/${p.id}?recommend=true`)}
                                         >
                                             Apply Discount
                                         </Button>
@@ -509,12 +610,142 @@ const Products = () => {
                                 ))}
                             </ul>
                         </div>
+                    ) : (
+                        <div style={{ marginTop: 20, padding: 20, background: '#f5f5f5', border: '1px solid #d9d9d9', borderRadius: '4px' }}>
+                            <Title level={5}>Recommendation</Title>
+                            <Text type="secondary">
+                                There are currently no product recommendations available.
+                            </Text>
+                        </div>
                     )}
+
+                    {/* Modal Generate Image */}
+                    <Modal
+                        title="Generate Image for Featured Product"
+                        visible={generateModalVisible}
+                        onCancel={() => setGenerateModalVisible(false)}
+                        footer={[
+                            <Button key="back" onClick={() => setGenerateModalVisible(false)}>
+                                Cancel
+                            </Button>,
+                            <Button key="submit" type="primary" onClick={handleGenerateImage} disabled={!selectedFeaturedProduct} loading={generating}>
+                                Generate
+                            </Button>,
+                        ]}
+                    >
+                        <Space direction="vertical" style={{ width: '100%' }}>
+                            <Text>Select a featured product to generate a new image:</Text>
+                            <Table
+                                columns={[
+                                    {
+                                        title: 'Image',
+                                        key: 'image',
+                                        width: '10%',
+                                        render: (text, record) => {
+                                            const firstImage = record.images && record.images.length > 0 ? record.images[0].image : null;
+                                            const imageUrl = firstImage ? convertUrl(firstImage) : null;
+                                            return imageUrl ? (
+                                                <img
+                                                    src={imageUrl}
+                                                    alt={record.name}
+                                                    style={{
+                                                        width: '50px',
+                                                        height: '50px',
+                                                        objectFit: 'cover',
+                                                        borderRadius: '4px',
+                                                        border: '1px solid #f0f0f0'
+                                                    }}
+                                                    onError={(e) => {
+                                                        e.target.onerror = null;
+                                                        e.target.src = 'https://via.placeholder.com/50';
+                                                    }}
+                                                />
+                                            ) : (
+                                                <div style={{
+                                                    width: '50px',
+                                                    height: '50px',
+                                                    backgroundColor: '#f0f0f0',
+                                                    borderRadius: '4px'
+                                                }} />
+                                            );
+                                        },
+                                    },
+                                    {
+                                        title: 'Product Name',
+                                        dataIndex: 'name',
+                                        sorter: true,
+                                        width: '20%',
+                                        render: (text, record) => (
+                                            <span style={{ color: record.status === 'INACTIVE' ? '#ff4d4f' : 'inherit', fontWeight: '500' }}>
+                                                {text}
+                                            </span>
+                                        ),
+                                    },
+                                    {
+                                        title: 'Category',
+                                        dataIndex: 'category',
+                                        sorter: true,
+                                        width: '15%',
+                                        render: (categoryId) => {
+                                            const category = categories.find((c) => c.id === categoryId);
+                                            return category ? category.name : '';
+                                        },
+                                    },
+                                    {
+                                        title: 'Price',
+                                        dataIndex: 'price',
+                                        sorter: true,
+                                        width: '10%',
+                                        render: (price) => (
+                                            <Text strong style={{ color: '#52c41a' }}>
+                                                {formatCurrency(price)}
+                                            </Text>
+                                        ),
+                                    },
+                                    {
+                                        title: 'Quantity',
+                                        dataIndex: 'stock',
+                                        sorter: true,
+                                        width: '10%',
+                                        render: (stock) => <Text>{stock}</Text>,
+                                    },
+                                    {
+                                        title: 'Status',
+                                        dataIndex: 'status',
+                                        sorter: true,
+                                        width: '10%',
+                                        render: (status) => (
+                                            <Badge
+                                                status={
+                                                    status === 'ACTIVE'
+                                                        ? 'success'
+                                                        : status === 'INACTIVE'
+                                                            ? 'error'
+                                                            : 'processing'
+                                                }
+                                                text={status.charAt(0) + status.slice(1).toLowerCase()}
+                                            />
+                                        ),
+                                    },
+                                ]}
+                                rowKey={(record) => record.id}
+                                dataSource={featuredProducts}
+                                pagination={{ pageSize: 5 }}
+                                loading={loading}
+                                onRow={(record) => ({
+                                    onClick: () => setSelectedFeaturedProduct(record),
+                                })}
+                                rowClassName={(record) => (record.id === selectedFeaturedProduct?.id ? 'selected-row' : '')}
+                                scroll={{ x: 'max-content' }}
+                            />
+                        </Space>
+                    </Modal>
                 </div>
             </div>
             <hr className="my-5" />
         </div>
     );
+
 };
 
 export default Products;

@@ -194,7 +194,7 @@ const Categories = () => {
         formDataToSend.append('name', newCategoryName);
         formDataToSend.append('is_active', false);
         formDataToSend.append('slug', convertToSlug(newCategoryName));
-
+        
         try {
             const response = await API.post('categories/create/', formDataToSend, {
                 headers: {
@@ -344,7 +344,6 @@ const Categories = () => {
                     Object.entries(row).filter(([key, value]) => value !== "" && value !== null)
                 );
             });
-
             importData(processedData);
         };
         reader.readAsText(file);
@@ -394,22 +393,38 @@ const Categories = () => {
     };
     
     const importData = async (data) => {
-        const formData = new FormData();
-        formData.append('data', JSON.stringify(data)); 
+        for (let item of data) {
+            if (item.parent && isNaN(item.parent)) {
+                try {
+                    const response = await API.get(`categories/${item.parent}/id/`);
+                    item.parent = response.data.id; 
+                } catch (error) {
+                    console.error(`Failed to fetch parent ID for slug: ${item.parent}`, error);
+                    message.error(`Failed to find parent with slug: ${item.parent}`);
+                    return;
+                }
+            }
     
-        try {
-            const response = await API.post('categories/import/', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-            message.success('Import data successfully!');
-            fetchCategories(true);
-        } catch (error) {
-            console.error('Error importing data:', error);
-            message.error('Failed to import data');
+            try {
+                const formData = new FormData();
+                formData.append('data', JSON.stringify([item])); 
+                await API.post('categories/import/', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                });
+                message.success(`Imported category: ${item.name}`);
+            } catch (error) {
+                console.error(`Error importing category: ${item.name}`, error);
+                message.error(`Failed to import category: ${item.name}`);
+                return;
+            }
         }
+    
+        fetchCategories(true);
     };
+    
+    
 
     const handleAddCategory = () => {
         fetchCategories(true);
@@ -513,6 +528,9 @@ const Categories = () => {
                             ...rowSelection,
                         }}
                         columns={columns}
+                        pagination={{
+                            pageSize: 6,
+                        }}
                         dataSource={data}
                         rowKey={(record) => record.id}
                         loading={loading}
@@ -573,7 +591,6 @@ const Categories = () => {
                                             <strong>Selected file:</strong> {importFile.name}
                                         </div>
                                     )}
-
                                     <Space>
                                         <Button onClick={hideImportModal}>Cancel</Button>
                                         <Button
