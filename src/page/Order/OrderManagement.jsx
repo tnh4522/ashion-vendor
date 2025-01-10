@@ -166,7 +166,6 @@ const Orders = () => {
             const params = {
                 page: tableParams.pagination.current,
                 page_size: tableParams.pagination.pageSize,
-                ordering: tableParams.sorter.order === 'ascend' ? tableParams.sorter.field : `-${tableParams.sorter.field}`,
                 search: searchText,
             };
             const response = await API.get('orders/list/', {
